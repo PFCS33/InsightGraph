@@ -34,7 +34,7 @@
               step="0.01"
               min="0"
               max="1"
-              @blur="handleBlur('alpha')"
+              @blur="handleBaseBlur('alpha')"
               class="input-control"
             />
           </el-form-item>
@@ -46,7 +46,7 @@
               step="0.001"
               min="0"
               max="1"
-              @blur="handleBlur('alphaMin')"
+              @blur="handleBaseBlur('alphaMin')"
               class="input-control"
             />
           </el-form-item>
@@ -58,7 +58,7 @@
               step="0.001"
               min="0"
               max="1"
-              @blur="handleBlur('alphaDecay')"
+              @blur="handleBaseBlur('alphaDecay')"
               class="input-control"
             />
           </el-form-item>
@@ -70,7 +70,7 @@
               step="0.001"
               min="0"
               max="1"
-              @blur="handleBlur('alphaTarget')"
+              @blur="handleBaseBlur('alphaTarget')"
               class="input-control"
             />
           </el-form-item>
@@ -82,7 +82,7 @@
               step="0.01"
               min="0"
               max="1"
-              @blur="handleBlur('velocityDecay')"
+              @blur="handleBaseBlur('velocityDecay')"
               class="input-control"
             />
           </el-form-item>
@@ -93,13 +93,74 @@
           <el-icon><setting /></el-icon>
           <span>Force Config</span>
         </template>
-        <el-menu-item index="2-1">
-          <el-icon><Location /></el-icon>
-          <template #title>Center Force</template>
-        </el-menu-item>
+        <el-sub-menu index="2-1">
+          <template #title>
+            <el-icon><Location /></el-icon>
+            <span>Center Force</span>
+          </template>
+
+          <el-form
+            label-position="top"
+            label-width="100px"
+            style="max-width: 460px"
+            @submit.prevent
+            size="small"
+            class="form"
+            novalidate
+          >
+            <el-form-item>
+              <BaseButton @click="forceDefaultSet" class="config-btn btn"
+                >Default</BaseButton
+              >
+            </el-form-item>
+            <el-form-item label="CenterX" class="form-item-control">
+              <el-input
+                type="number"
+                id="centerX"
+                v-model="centerX"
+                step="1"
+                min="0"
+                class="input-control"
+                @blur="handleCenterBlur('X')"
+              />
+              <el-slider
+                v-model="centerX"
+                :min="0"
+                :max="defaultForceConfig.center.X * 2"
+              />
+            </el-form-item>
+            <el-form-item label="CenterY" class="form-item-control">
+              <el-input
+                type="number"
+                id="centerY"
+                v-model="centerY"
+                step="1"
+                min="0"
+                class="input-control"
+                @blur="handleCenterBlur('Y')"
+              />
+              <el-slider
+                v-model="centerY"
+                :min="0"
+                :max="defaultForceConfig.center.Y * 2"
+              />
+            </el-form-item>
+            <el-form-item label="CenterStrength" class="form-item-control">
+              <el-input
+                type="number"
+                id="centerStrength"
+                v-model="centerStrength"
+                step="0.1"
+                min="-1"
+                class="input-control"
+                @blur="handleCenterBlur('Strength')"
+              />
+            </el-form-item>
+          </el-form>
+        </el-sub-menu>
         <el-menu-item index="2-2">
           <el-icon><Location /></el-icon>
-          <template #title>X/Y Force</template>
+          <template #title>Position Force</template>
         </el-menu-item>
         <el-menu-item index="2-3">
           <el-icon><IconMenu /></el-icon>
@@ -154,20 +215,36 @@ export default {
   },
   data() {
     return {
+      width: null,
+      height: null,
       simulation: null,
       ticks: 0,
       editMode: false,
+      // Base Config
       alpha: 1,
       alphaMin: 0.001,
       alphaDecay: 1 - Math.pow(0.001, 1 / 300),
       alphaTarget: 0,
       velocityDecay: 0.4,
-      defaultConfig: {
+      defaultBaseConfig: {
         alpha: 1,
         alphaMin: 0.001,
         alphaDecay: 1 - Math.pow(0.001, 1 / 300),
         alphaTarget: 0,
         velocityDecay: 0.4,
+      },
+
+      // Force Config
+      // center config
+      centerX: null,
+      centerY: null,
+      centerStrength: 1,
+      defaultForceConfig: {
+        center: {
+          X: null,
+          Y: null,
+          Strength: 1,
+        },
       },
     };
   },
@@ -182,6 +259,10 @@ export default {
         this.drawGraph();
       }
     },
+
+    /* -------------------------------------------------------------------------- */
+    // default config
+    /* -------------------------------------------------------------------------- */
     alpha(newVal, oldVal) {
       if (newVal !== oldVal) {
         if (newVal > 1) {
@@ -189,7 +270,7 @@ export default {
         } else if (newVal < 0) {
           this.alpha = 0;
         } else {
-          this.defaultConfigSet("alpha", newVal);
+          this.baseConfigSet("alpha", newVal);
         }
       }
     },
@@ -200,7 +281,7 @@ export default {
         } else if (newVal < 0) {
           this.alphaMin = 0;
         } else {
-          this.defaultConfigSet("alphaMin", newVal);
+          this.baseConfigSet("alphaMin", newVal);
         }
       }
     },
@@ -211,7 +292,7 @@ export default {
         } else if (newVal < 0) {
           this.alphaDecay = 0;
         } else {
-          this.defaultConfigSet("alphaDecay", newVal);
+          this.baseConfigSet("alphaDecay", newVal);
         }
       }
     },
@@ -222,7 +303,7 @@ export default {
         } else if (newVal < 0) {
           this.alphaTarget = 0;
         } else {
-          this.defaultConfigSet("alphaTarget", newVal);
+          this.baseConfigSet("alphaTarget", newVal);
         }
       }
     },
@@ -233,31 +314,56 @@ export default {
         } else if (newVal < 0) {
           this.velocityDecay = 0;
         } else {
-          this.defaultConfigSet("velocityDecay", newVal);
+          this.baseConfigSet("velocityDecay", newVal);
+        }
+      }
+    },
+    /* -------------------------------------------------------------------------- */
+    // center force config
+    /* -------------------------------------------------------------------------- */
+
+    centerX(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal < 0) {
+          this.conterX = 0;
+        } else {
+          this.forceConfigSet("center", "x", newVal);
+        }
+      }
+    },
+    centerY(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal < 0) {
+          this.conterY = 0;
+        } else {
+          this.forceConfigSet("center", "y", newVal);
+        }
+      }
+    },
+    centerStrength(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal < -1) {
+          this.centerStrength = -1;
+        } else {
+          this.forceConfigSet("center", "strength", newVal);
         }
       }
     },
   },
   methods: {
-    // 修正输入为空的情况
-    handleBlur(configType) {
-      //console.log(target);
-
-      if (!this[configType]) {
-        this[configType] = this.defaultConfig[configType];
-      }
-    },
+    // 载入nodes和links数据
     loadData() {
       this.$store.dispatch("force/loadData");
     },
-
-    // 设置 default config
-    defaultConfigSet(configType, newVal) {
-      this.simulation[configType](newVal);
-      if (configType !== "alpha") {
-        this.simulation.alpha(this.alpha);
+    /* -------------------------------------------------------------------------- */
+    // base config
+    /* -------------------------------------------------------------------------- */
+    // 修正输入为空的情况
+    handleBaseBlur(configType) {
+      //console.log(target);
+      if (!this[configType]) {
+        this[configType] = this.defaultBaseConfig[configType];
       }
-      this.restart();
     },
     simStop() {
       this.simulation.stop();
@@ -266,17 +372,16 @@ export default {
     // reset all config to default
     simRestart() {
       if (this.simulation) {
-        this.alpha = this.defaultConfig.alpha;
-        this.alphaMin = this.defaultConfig.alphaMin;
-        this.alphaDecay = this.defaultConfig.alphaDecay;
-        this.alphaTarget = this.defaultConfig.alphaTarget;
-        this.velocityDecay = this.defaultConfig.velocityDecay;
-        this.simulation.alpha(this.defaultConfig.alpha);
-        this.simulation.alphaMin(this.defaultConfig.alphaMin);
-        this.simulation.alphaDecay(this.defaultConfig.alphaDecay);
-        this.simulation.alphaTarget(this.defaultConfig.alphaTarget);
-        this.simulation.velocityDecay(this.defaultConfig.velocityDecay);
-
+        this.alpha = this.defaultBaseConfig.alpha;
+        this.alphaMin = this.defaultBaseConfig.alphaMin;
+        this.alphaDecay = this.defaultBaseConfig.alphaDecay;
+        this.alphaTarget = this.defaultBaseConfig.alphaTarget;
+        this.velocityDecay = this.defaultBaseConfig.velocityDecay;
+        this.simulation.alpha(this.defaultBaseConfig.alpha);
+        this.simulation.alphaMin(this.defaultBaseConfig.alphaMin);
+        this.simulation.alphaDecay(this.defaultBaseConfig.alphaDecay);
+        this.simulation.alphaTarget(this.defaultBaseConfig.alphaTarget);
+        this.simulation.velocityDecay(this.defaultBaseConfig.velocityDecay);
         this.restart();
       }
     },
@@ -311,7 +416,39 @@ export default {
       // reset alpha to reheat
       this.simulation.restart();
     },
+    // 设置 default config
+    baseConfigSet(configType, newVal) {
+      this.simulation[configType](newVal);
+      if (configType !== "alpha") {
+        this.simulation.alpha(this.alpha);
+      }
+      this.restart();
+    },
 
+    /* -------------------------------------------------------------------------- */
+    // center force config
+    /* -------------------------------------------------------------------------- */
+    forceConfigSet(forceType, configType, newVal) {
+      this.simulation.force(forceType)[configType](newVal);
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+      //this.restart();
+    },
+    forceDefaultSet() {
+      this.centerX = this.defaultForceConfig.center.X;
+      this.centerY = this.defaultForceConfig.center.Y;
+      this.centerStrength = this.defaultForceConfig.center.Strength;
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+      //this.restart();
+    },
+    handleCenterBlur(configType) {
+      const name = "center" + configType;
+      this[name] = this.defaultForceConfig.center[configType];
+    },
+    /* -------------------------------------------------------------------------- */
+    // other
+    /* -------------------------------------------------------------------------- */
     toggleEditMode() {
       this.editMode = !this.editMode;
     },
@@ -415,9 +552,10 @@ export default {
         if (!event.active)
           simulation
             .alphaTarget(
-              that.alphaTarget + 0.3 > 1 ? 1 : that.alphaTarget + 0.3
+              +that.alphaTarget + 0.3 > 1 ? 1 : +that.alphaTarget + 0.3
             )
             .restart();
+        // console.log(+that.alphaTarget + 0.3 > 1 ? 1 : +that.alphaTarget + 0.3);
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
       }
@@ -455,7 +593,10 @@ export default {
         group.attr("transform", transform);
       }
 
+      // initialize the data
       this.simulation = simulation;
+      this.centerX = this.defaultForceConfig.center.X = width / 2;
+      this.centerY = this.defaultForceConfig.center.Y = height / 2;
     },
   },
 
@@ -555,9 +696,13 @@ export default {
 
 <!-- form -->
 <style scoped>
-.form {
-  padding: 1vw 2vw 0.8vw 1vw;
+.el-menu-item {
+  height: fit-content;
 }
+.form {
+  padding: 0.8vw 2vw 1vw 2vw;
+}
+
 .form-item-control {
   margin-bottom: 10px;
 }
@@ -573,6 +718,11 @@ export default {
 }
 </style>
 
+<style scoped>
+.el-slider {
+  width: 100%;
+}
+</style>
 <style>
 .el-form-item__label {
   margin-bottom: 2px !important;
