@@ -12,16 +12,16 @@
           label-width="100px"
           style="max-width: 460px"
           @submit.prevent
-          class="form"
           size="small"
+          class="form"
           novalidate
         >
           <el-form-item class="form-item-control">
-            <div form-btn-control>
+            <div class="form-btn-control">
               <BaseButton @click="simRestart" class="config-btn btn"
                 >Default</BaseButton
               >
-              <BaseButton @click="simRestart" class="config-btn btn"
+              <BaseButton @click="simStop" class="config-btn btn"
                 >Stop</BaseButton
               >
             </div>
@@ -35,6 +35,7 @@
               min="0"
               max="1"
               @blur="handleBlur('alpha')"
+              class="input-control"
             />
           </el-form-item>
           <el-form-item label="AlphaMin" class="form-item-control">
@@ -46,6 +47,7 @@
               min="0"
               max="1"
               @blur="handleBlur('alphaMin')"
+              class="input-control"
             />
           </el-form-item>
           <el-form-item label="AlphaDecay" class="form-item-control">
@@ -57,6 +59,7 @@
               min="0"
               max="1"
               @blur="handleBlur('alphaDecay')"
+              class="input-control"
             />
           </el-form-item>
           <el-form-item label="AlphaTarget" class="form-item-control">
@@ -68,6 +71,7 @@
               min="0"
               max="1"
               @blur="handleBlur('alphaTarget')"
+              class="input-control"
             />
           </el-form-item>
           <el-form-item label="VelocityDecay" class="form-item-control">
@@ -79,6 +83,7 @@
               min="0"
               max="1"
               @blur="handleBlur('velocityDecay')"
+              class="input-control"
             />
           </el-form-item>
         </el-form>
@@ -90,24 +95,24 @@
         </template>
         <el-menu-item index="2-1">
           <el-icon><Location /></el-icon>
-          <template #title>Force Center</template>
+          <template #title>Center Force</template>
         </el-menu-item>
         <el-menu-item index="2-2">
           <el-icon><Location /></el-icon>
-          <template #title>Force X/Y</template>
+          <template #title>X/Y Force</template>
         </el-menu-item>
         <el-menu-item index="2-3">
           <el-icon><IconMenu /></el-icon>
-          <template #title>Force ManyBody</template>
+          <template #title>ManyBody Force</template>
         </el-menu-item>
         <el-menu-item index="2-4">
           <el-icon><Warning /></el-icon>
-          <template #title>Force Collide</template>
+          <template #title>Collide Force</template>
         </el-menu-item>
 
         <el-menu-item index="2-5">
           <el-icon><Share /></el-icon>
-          <template #title>Force Link</template>
+          <template #title>Link Force</template>
         </el-menu-item>
       </el-sub-menu>
     </el-menu>
@@ -121,6 +126,7 @@
         <Tools />
       </el-icon>
     </BaseButton>
+    <BaseCard :inset="true" class="ticks-card"> {{ ticks }} </BaseCard>
     <div id="svg-container"></div>
   </div>
 </template>
@@ -149,6 +155,7 @@ export default {
   data() {
     return {
       simulation: null,
+      ticks: 0,
       editMode: false,
       alpha: 1,
       alphaMin: 0.001,
@@ -253,7 +260,7 @@ export default {
       this.restart();
     },
     simStop() {
-      this.sim;
+      this.simulation.stop();
     },
 
     // reset all config to default
@@ -269,12 +276,14 @@ export default {
         this.simulation.alphaDecay(this.defaultConfig.alphaDecay);
         this.simulation.alphaTarget(this.defaultConfig.alphaTarget);
         this.simulation.velocityDecay(this.defaultConfig.velocityDecay);
+
         this.restart();
       }
     },
 
     // rebind data of dom element and sim system
     restart() {
+      this.ticks = 0;
       // 获取原始绘画数据
       const data = this.drawData;
 
@@ -383,6 +392,7 @@ export default {
       function ticked() {
         //console.log("ticked");
         //console.log("alpha", simulation.alpha());
+        that.ticks++;
         linkGroup
           .attr("x1", (d) => d.source.x)
           .attr("y1", (d) => d.source.y)
@@ -494,6 +504,17 @@ export default {
   right: 3%;
 }
 
+.ticks-card {
+  position: fixed;
+  top: 5%;
+  right: 3%;
+  padding: 1vw;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .icon {
   display: flex;
   align-items: center;
@@ -532,12 +553,13 @@ export default {
 }
 </style>
 
+<!-- form -->
 <style scoped>
 .form {
-  padding: 0.8vw 1vw;
+  padding: 1vw 2vw 0.8vw 1vw;
 }
 .form-item-control {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .config-btn {
 }
@@ -545,6 +567,9 @@ export default {
 .form-btn-control {
   display: flex;
   gap: 12px;
+}
+.input-control {
+  /* width: 90%; */
 }
 </style>
 

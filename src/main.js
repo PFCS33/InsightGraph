@@ -10,6 +10,7 @@ import BaseCard from "./components/ui/BaseCard.vue";
 import BaseButton from "./components/ui/BaseButton.vue";
 import * as d3 from "d3";
 
+// debug
 window.d3 = d3;
 
 const app = createApp(App);
