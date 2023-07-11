@@ -1,12 +1,157 @@
 <template>
-  <div id="svg-container"></div>
+  <div class="container">
+    <!-- <transition name="slide"> -->
+    <el-menu default-active="1" class="edit-panel" :collapse="!editMode">
+      <el-sub-menu index="1">
+        <template #title>
+          <el-icon><operation /></el-icon>
+          <span>Base Config</span>
+        </template>
+        <div class="sub-menu">
+          <BaseButton @click="simRestart">Default</BaseButton>
+          <el-form-item label="Alpha">
+            <el-input
+              class="input"
+              type="number"
+              id="alpha"
+              v-model="alpha"
+              step="0.01"
+              min="0"
+              max="1"
+              @blur="handleBlur('alpha')"
+            />
+          </el-form-item>
+
+          <label class="label" for="alphaMin">AlphaMin</label>
+          <input
+            class="input"
+            type="number"
+            id="alphaMin"
+            v-model="alphaMin"
+            step="0.001"
+            min="0"
+            max="1"
+            @blur="handleBlur('alphaMin')"
+          />
+          <label class="label" for="alphaDecay">AlphaDecay</label>
+          <input
+            class="input"
+            type="number"
+            id="alphaDecay"
+            v-model="alphaDecay"
+            step="0.001"
+            min="0"
+            max="1"
+            @blur="handleBlur('alphaDecay')"
+          />
+          <label class="label" for="alphaTarget">AlphaTarget</label>
+          <input
+            class="input"
+            type="number"
+            id="alphaTarget"
+            v-model="alphaTarget"
+            step="0.001"
+            min="0"
+            max="1"
+            @blur="handleBlur('alphaTarget')"
+          />
+          <label class="label" for="velocityDecay">VelocityDecay</label>
+          <input
+            class="input"
+            type="number"
+            id="velocityDecay"
+            v-model="velocityDecay"
+            step="0.01"
+            min="0"
+            max="1"
+            @blur="handleBlur('velocityDecay')"
+          />
+        </div>
+      </el-sub-menu>
+      <el-sub-menu index="2">
+        <template #title>
+          <el-icon><setting /></el-icon>
+          <span>Force Config</span>
+        </template>
+        <el-menu-item index="2-1">
+          <el-icon><Location /></el-icon>
+          <template #title>Force Center</template>
+        </el-menu-item>
+        <el-menu-item index="2-2">
+          <el-icon><Location /></el-icon>
+          <template #title>Force X/Y</template>
+        </el-menu-item>
+        <el-menu-item index="2-3">
+          <el-icon><IconMenu /></el-icon>
+          <template #title>Force ManyBody</template>
+        </el-menu-item>
+        <el-menu-item index="2-4">
+          <el-icon><Warning /></el-icon>
+          <template #title>Force Collide</template>
+        </el-menu-item>
+
+        <el-menu-item index="2-5">
+          <el-icon><Share /></el-icon>
+          <template #title>Force Link</template>
+        </el-menu-item>
+      </el-sub-menu>
+    </el-menu>
+    <!-- <BaseCard class="edit-panel" v-show="editMode">
+        <BaseButton class="btn"> Restart </BaseButton>
+        <div class="form-control"></div>
+      </BaseCard> -->
+    <!-- </transition> -->
+    <BaseButton
+      @click="toggleEditMode"
+      class="edit-btn btn"
+      :class="{ 'active-btn': editMode }"
+    >
+      <el-icon size="large" class="icon">
+        <Tools />
+      </el-icon>
+    </BaseButton>
+    <div id="svg-container"></div>
+  </div>
 </template>
 
 <script>
-import * as d3 from "d3";
+import {
+  Tools,
+  Share,
+  Menu as IconMenu,
+  Location,
+  Setting,
+  Operation,
+  Warning,
+} from "@element-plus/icons-vue";
+
 export default {
+  components: {
+    Tools,
+    Location,
+    IconMenu,
+    Setting,
+    Share,
+    Operation,
+    Warning,
+  },
   data() {
-    return {};
+    return {
+      simulation: null,
+      editMode: false,
+      alpha: 1,
+      alphaMin: 0.001,
+      alphaDecay: 1 - Math.pow(0.001, 1 / 300),
+      alphaTarget: 0,
+      velocityDecay: 0.4,
+      defaultConfig: {
+        alpha: 1,
+        alphaMin: 0.001,
+        alphaDecay: 1 - Math.pow(0.001, 1 / 300),
+        alphaTarget: 0,
+        velocityDecay: 0.4,
+      },
+    };
   },
   computed: {
     drawData() {
@@ -19,12 +164,140 @@ export default {
         this.drawGraph();
       }
     },
+    alpha(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal > 1) {
+          this.alpha = 1;
+        } else if (newVal < 0) {
+          this.alpha = 0;
+        } else {
+          this.defaultConfigSet("alpha", newVal);
+        }
+      }
+    },
+    alphaMin(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal > 1) {
+          this.alphaMin = 1;
+        } else if (newVal < 0) {
+          this.alphaMin = 0;
+        } else {
+          this.defaultConfigSet("alphaMin", newVal);
+        }
+      }
+    },
+    alphaDecay(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal > 1) {
+          this.alphaDecay = 1;
+        } else if (newVal < 0) {
+          this.alphaDecay = 0;
+        } else {
+          this.defaultConfigSet("alphaDecay", newVal);
+        }
+      }
+    },
+    alphaTarget(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal > 1) {
+          this.alphaTarget = 1;
+        } else if (newVal < 0) {
+          this.alphaTarget = 0;
+        } else {
+          this.defaultConfigSet("alphaTarget", newVal);
+        }
+      }
+    },
+    velocityDecay(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal > 1) {
+          this.velocityDecay = 1;
+        } else if (newVal < 0) {
+          this.velocityDecay = 0;
+        } else {
+          this.defaultConfigSet("velocityDecay", newVal);
+        }
+      }
+    },
   },
   methods: {
+    // 修正输入为空的情况
+    handleBlur(configType) {
+      //console.log(target);
+
+      if (!this[configType]) {
+        this[configType] = this.defaultConfig[configType];
+      }
+    },
     loadData() {
       this.$store.dispatch("force/loadData");
     },
+
+    // 设置 default config
+    defaultConfigSet(configType, newVal) {
+      this.simulation[configType](newVal);
+      if (configType !== "alpha") {
+        this.simulation.alpha(this.alpha);
+      }
+      this.restart();
+    },
+    simStop() {
+      this.sim;
+    },
+
+    // reset all config to default
+    simRestart() {
+      if (this.simulation) {
+        this.alpha = this.defaultConfig.alpha;
+        this.alphaMin = this.defaultConfig.alphaMin;
+        this.alphaDecay = this.defaultConfig.alphaDecay;
+        this.alphaTarget = this.defaultConfig.alphaTarget;
+        this.velocityDecay = this.defaultConfig.velocityDecay;
+        this.simulation.alpha(this.defaultConfig.alpha);
+        this.simulation.alphaMin(this.defaultConfig.alphaMin);
+        this.simulation.alphaDecay(this.defaultConfig.alphaDecay);
+        this.simulation.alphaTarget(this.defaultConfig.alphaTarget);
+        this.simulation.velocityDecay(this.defaultConfig.velocityDecay);
+        this.restart();
+      }
+    },
+
+    // rebind data of dom element and sim system
+    restart() {
+      // 获取原始绘画数据
+      const data = this.drawData;
+
+      // 创建原始数据的copy，因为 force simulation 会改变数组数据
+      const links = data.links.map((d) => ({ ...d }));
+      const nodes = data.nodes.map((d) => ({ ...d }));
+
+      // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
+
+      const nodeG = d3
+        .select("#svg-container")
+        .select("svg")
+        .select("g.node-group");
+      const linkG = d3
+        .select("#svg-container")
+        .select("svg")
+        .select("g.link-group");
+
+      // rebind data
+      nodeG.selectAll("circle").data(nodes).join("circle");
+      linkG.selectAll("line").data(links).join("line");
+      this.simulation.nodes(nodes);
+      this.simulation.force("link").links(links);
+
+      // reset alpha to reheat
+      this.simulation.restart();
+    },
+
+    toggleEditMode() {
+      this.editMode = !this.editMode;
+    },
+    // initial drawing, create DOM elements and sim system
     drawGraph() {
+      const that = this;
       // 获取绘画数据
       const data = this.drawData;
       // 创建原始数据的copy，因为 force simulation 会改变数组数据
@@ -40,6 +313,7 @@ export default {
       // 先把svg图和nodes+links 元素画出来
       // 随便设置一个种类的颜色映射
       const color = d3.scaleOrdinal(d3.schemeCategory10);
+      const selectedColor = "#c92a2a";
       // 创建svg
       const svg = svgContainer
         .append("svg")
@@ -50,6 +324,7 @@ export default {
       // 画links
       const linkGroup = svg
         .append("g")
+        .attr("class", "link-group")
         .attr("stroke", "#999")
         .attr("stroke-opacity", 0.6)
         .selectAll()
@@ -60,15 +335,27 @@ export default {
       //画nodes
       const nodeGroup = svg
         .append("g")
+        .attr("class", "node-group")
         .attr("stroke", "#fff")
         .attr("stroke-width", 1.5)
+        .style("cursor", "pointer")
         .selectAll()
         .data(nodes)
         .join("circle")
         .attr("r", 5)
         // node 进行分类颜色映射
-        .attr("fill", (d) => color(d.group));
-
+        .attr("fill", (d) => color(d.group))
+        .style("transition", "r 0.2s")
+        .on("mouseover", function (event, d) {
+          //颜色变，表示被选中
+          d3.select(this).attr("fill", selectedColor).attr("r", 20);
+        })
+        .on("mouseout", function () {
+          d3.select(this)
+            .attr("r", 5)
+            .attr("fill", (d) => color(d.group));
+        });
+      /* -------------------------------------------------------------------------- */
       // 力导向系统创建
       const simulation = d3
         .forceSimulation(nodes)
@@ -81,8 +368,10 @@ export default {
         .force("center", d3.forceCenter(width / 2, height / 2))
         .on("tick", ticked);
 
-      // 每次迭代回调函数
+      // 每次迭代回调函数，更新结点位置
       function ticked() {
+        //console.log("ticked");
+        //console.log("alpha", simulation.alpha());
         linkGroup
           .attr("x1", (d) => d.source.x)
           .attr("y1", (d) => d.source.y)
@@ -102,7 +391,12 @@ export default {
       );
       // 拖动开始时，重新加热迭代过程，并且修正被拖动点的fx,fy
       function dragstarted(event) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
+        if (!event.active)
+          simulation
+            .alphaTarget(
+              that.alphaTarget + 0.3 > 1 ? 1 : that.alphaTarget + 0.3
+            )
+            .restart();
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
       }
@@ -115,7 +409,7 @@ export default {
 
       // 拖动结束，降温
       function dragended(event) {
-        if (!event.active) simulation.alphaTarget(0);
+        if (!event.active) simulation.alphaTarget(that.alphaTarget);
         event.subject.fx = null;
         event.subject.fy = null;
       }
@@ -125,7 +419,7 @@ export default {
       // 创建缩放函数
       const zoom = d3
         .zoom()
-        .scaleExtent([0.5, 20]) // 设置缩放的范围
+        .scaleExtent([0.5, 30]) // 设置缩放的范围
         .translateExtent([
           [0, 0],
           [width, height],
@@ -139,6 +433,8 @@ export default {
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
       }
+
+      this.simulation = simulation;
     },
   },
 
@@ -149,8 +445,108 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
 #svg-container {
   height: 100%;
   width: 100%;
+}
+
+.edit-panel {
+  position: absolute;
+  top: 5%;
+  left: 1%;
+  z-index: 10;
+  height: 90%;
+  overflow: auto;
+}
+.edit-panel:not(.el-menu--collapse) {
+  width: 200px;
+}
+
+/* scroll bar hide */
+.edit-panel {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+.edit-panel::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.edit-btn {
+  position: fixed;
+  bottom: 5%;
+  right: 3%;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.active-btn {
+  box-shadow: inset 2px 2px 16px #4444442a, inset -2px -2px 16px #4444442a;
+}
+
+.btn {
+  border-radius: 12px;
+}
+</style>
+
+<!-- Animation -->
+<style scoped>
+.slide-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  transform: translateX(-200px); /* 初始状态和最终状态 */
+}
+
+.slide-enter-to,
+.slide-leave-from {
+  opacity: 1;
+  transform: translateX(0); /* 平移隐藏 */
+}
+</style>
+
+<style scoped>
+.form-control {
+  display: flex;
+  gap: 1vw;
+}
+.label {
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  /* font-weight: 600; */
+  font-size: 1vw;
+}
+
+.input {
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  width: 80%;
+  padding: 2px;
+}
+.sub-menu {
+  padding: 1svw 0;
+  padding-left: 1vw;
+  display: flex;
+  flex-direction: column;
+  gap: 1vw;
+  align-items: start;
 }
 </style>
