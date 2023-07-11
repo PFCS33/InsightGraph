@@ -7,11 +7,27 @@
           <el-icon><operation /></el-icon>
           <span>Base Config</span>
         </template>
-        <div class="sub-menu">
-          <BaseButton @click="simRestart">Default</BaseButton>
-          <el-form-item label="Alpha">
+        <el-form
+          label-position="top"
+          label-width="100px"
+          style="max-width: 460px"
+          @submit.prevent
+          class="form"
+          size="small"
+          novalidate
+        >
+          <el-form-item class="form-item-control">
+            <div form-btn-control>
+              <BaseButton @click="simRestart" class="config-btn btn"
+                >Default</BaseButton
+              >
+              <BaseButton @click="simRestart" class="config-btn btn"
+                >Stop</BaseButton
+              >
+            </div>
+          </el-form-item>
+          <el-form-item label="Alpha" class="form-item-control">
             <el-input
-              class="input"
               type="number"
               id="alpha"
               v-model="alpha"
@@ -21,52 +37,51 @@
               @blur="handleBlur('alpha')"
             />
           </el-form-item>
-
-          <label class="label" for="alphaMin">AlphaMin</label>
-          <input
-            class="input"
-            type="number"
-            id="alphaMin"
-            v-model="alphaMin"
-            step="0.001"
-            min="0"
-            max="1"
-            @blur="handleBlur('alphaMin')"
-          />
-          <label class="label" for="alphaDecay">AlphaDecay</label>
-          <input
-            class="input"
-            type="number"
-            id="alphaDecay"
-            v-model="alphaDecay"
-            step="0.001"
-            min="0"
-            max="1"
-            @blur="handleBlur('alphaDecay')"
-          />
-          <label class="label" for="alphaTarget">AlphaTarget</label>
-          <input
-            class="input"
-            type="number"
-            id="alphaTarget"
-            v-model="alphaTarget"
-            step="0.001"
-            min="0"
-            max="1"
-            @blur="handleBlur('alphaTarget')"
-          />
-          <label class="label" for="velocityDecay">VelocityDecay</label>
-          <input
-            class="input"
-            type="number"
-            id="velocityDecay"
-            v-model="velocityDecay"
-            step="0.01"
-            min="0"
-            max="1"
-            @blur="handleBlur('velocityDecay')"
-          />
-        </div>
+          <el-form-item label="AlphaMin" class="form-item-control">
+            <el-input
+              type="number"
+              id="alphaMin"
+              v-model="alphaMin"
+              step="0.001"
+              min="0"
+              max="1"
+              @blur="handleBlur('alphaMin')"
+            />
+          </el-form-item>
+          <el-form-item label="AlphaDecay" class="form-item-control">
+            <el-input
+              type="number"
+              id="alphaDecay"
+              v-model="alphaDecay"
+              step="0.001"
+              min="0"
+              max="1"
+              @blur="handleBlur('alphaDecay')"
+            />
+          </el-form-item>
+          <el-form-item label="AlphaTarget" class="form-item-control">
+            <el-input
+              type="number"
+              id="alphaTarget"
+              v-model="alphaTarget"
+              step="0.001"
+              min="0"
+              max="1"
+              @blur="handleBlur('alphaTarget')"
+            />
+          </el-form-item>
+          <el-form-item label="VelocityDecay" class="form-item-control">
+            <el-input
+              type="number"
+              id="velocityDecay"
+              v-model="velocityDecay"
+              step="0.01"
+              min="0"
+              max="1"
+              @blur="handleBlur('velocityDecay')"
+            />
+          </el-form-item>
+        </el-form>
       </el-sub-menu>
       <el-sub-menu index="2">
         <template #title>
@@ -96,11 +111,7 @@
         </el-menu-item>
       </el-sub-menu>
     </el-menu>
-    <!-- <BaseCard class="edit-panel" v-show="editMode">
-        <BaseButton class="btn"> Restart </BaseButton>
-        <div class="form-control"></div>
-      </BaseCard> -->
-    <!-- </transition> -->
+
     <BaseButton
       @click="toggleEditMode"
       class="edit-btn btn"
@@ -522,31 +533,23 @@ export default {
 </style>
 
 <style scoped>
-.form-control {
-  display: flex;
-  gap: 1vw;
+.form {
+  padding: 0.8vw 1vw;
 }
-.label {
-  display: flex;
-  align-items: center;
-  justify-self: center;
-  /* font-weight: 600; */
-  font-size: 1vw;
+.form-item-control {
+  margin-bottom: 8px;
+}
+.config-btn {
 }
 
-.input {
+.form-btn-control {
   display: flex;
-  align-items: center;
-  justify-self: center;
-  width: 80%;
-  padding: 2px;
+  gap: 12px;
 }
-.sub-menu {
-  padding: 1svw 0;
-  padding-left: 1vw;
-  display: flex;
-  flex-direction: column;
-  gap: 1vw;
-  align-items: start;
+</style>
+
+<style>
+.el-form-item__label {
+  margin-bottom: 2px !important;
 }
 </style>
