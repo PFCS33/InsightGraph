@@ -20,6 +20,8 @@ export default {
       description: "A simple bar chart with embedded data.",
       // render as svg
       usermeta: { embedOptions: { renderer: "svg" } },
+      width: 150,
+      height: 150,
       data: {
         values: this.drawData,
       },

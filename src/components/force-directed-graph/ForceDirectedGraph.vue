@@ -415,7 +415,7 @@ export default {
         .select("#svg-container")
         .select("svg")
         .select("g.link-group");
-      //      console.log("2: ", nodeG);
+      //console.log("2: ", nodeG);
 
       // rebind data
       nodeG.selectChildren("g").data(nodes).join("g");
@@ -473,6 +473,9 @@ export default {
         description: "A simple bar chart with embedded data.",
         // render as svg
         usermeta: { embedOptions: { renderer: "svg" } },
+        // 由于还有坐标轴，实际的svg大小还要大些(+50)
+        width: 150,
+        height: 150,
         data: {
           values: data,
         },
@@ -542,18 +545,16 @@ export default {
       const nodeGroup = svg
         .append("g")
         .attr("class", "node-group")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 1.5)
-        .style("cursor", "pointer")
+
         .selectAll("g")
         .data(nodes)
         .join("g")
-        // .style("width", "500px")
-        // .style("height", "500px")
         // for vega-lite
         .attr("id", (d) => "g-" + d.id.replace(".", ""))
-
         .append("circle")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 1.5)
+        .style("cursor", "pointer")
         .attr("r", 5)
         // node 进行分类颜色映射
         .attr("fill", (d) => color(d.group))
