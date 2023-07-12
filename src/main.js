@@ -9,9 +9,11 @@ import store from "./store/index.js";
 import BaseCard from "./components/ui/BaseCard.vue";
 import BaseButton from "./components/ui/BaseButton.vue";
 import * as d3 from "d3";
+import vegaEmbed from "vega-embed";
 
 // debug
 window.d3 = d3;
+window.vegaEmbed = vegaEmbed;
 
 const app = createApp(App);
 app.use(router);

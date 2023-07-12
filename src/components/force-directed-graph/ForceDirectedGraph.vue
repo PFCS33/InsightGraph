@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" ref="1">
     <!-- <transition name="slide"> -->
     <el-menu default-active="1" class="edit-panel" :collapse="!editMode">
       <el-sub-menu index="1">
@@ -257,6 +257,9 @@ export default {
     drawData() {
       return this.$store.getters["force/drawData"];
     },
+    vegaLiteData() {
+      return this.$store.getters["force/vegaLiteData"];
+    },
   },
   watch: {
     drawData(newVal) {
@@ -360,6 +363,7 @@ export default {
     loadData() {
       this.$store.dispatch("force/loadData");
     },
+
     /* -------------------------------------------------------------------------- */
     // base config
     /* -------------------------------------------------------------------------- */
@@ -411,9 +415,10 @@ export default {
         .select("#svg-container")
         .select("svg")
         .select("g.link-group");
+      //      console.log("2: ", nodeG);
 
       // rebind data
-      nodeG.selectAll("circle").data(nodes).join("circle");
+      nodeG.selectAll("g").data(nodes).join("g");
       linkG.selectAll("line").data(links).join("line");
       this.simulation.nodes(nodes);
       this.simulation.force("link").links(links);
@@ -455,6 +460,42 @@ export default {
       const name = "center" + configType;
       if (!this[name]) this[name] = this.defaultForceConfig.center[configType];
     },
+
+    /* -------------------------------------------------------------------------- */
+    // draw vegaLite
+    /* -------------------------------------------------------------------------- */
+    drawVegaLite(circle) {
+      // 获取data
+      const data = circle.datum()["vega-lite"];
+      // vega-lite config
+      var yourVlSpec = {
+        $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+        description: "A simple bar chart with embedded data.",
+        // render as svg
+        usermeta: { embedOptions: { renderer: "svg" } },
+        data: {
+          values: data,
+        },
+        mark: "bar",
+        encoding: {
+          x: { field: "a", type: "ordinal" },
+          y: { field: "b", type: "quantitative" },
+        },
+      };
+      // select container by id
+      const id = "g-" + circle.datum().id.replace(".", "");
+      const container = d3.select("#" + id);
+      // create vega-lite svg
+      vegaEmbed(container.node(), yourVlSpec).then(() => {
+        // 提出svg元素，并去掉多余的div和details
+        const svg = container.select("svg");
+        container.node().appendChild(svg.node());
+        container.select("div").remove();
+        container.select("details").remove();
+        // 设置svg元素位置变化
+        svg.style("transform", "translate(100,100)");
+      });
+    },
     /* -------------------------------------------------------------------------- */
     // other
     /* -------------------------------------------------------------------------- */
@@ -493,7 +534,7 @@ export default {
         .attr("class", "link-group")
         .attr("stroke", "#999")
         .attr("stroke-opacity", 0.6)
-        .selectAll()
+        .selectAll("line")
         .data(links)
         .join("line")
         // link的value值映射到粗细
@@ -505,9 +546,15 @@ export default {
         .attr("stroke", "#fff")
         .attr("stroke-width", 1.5)
         .style("cursor", "pointer")
-        .selectAll()
+        .selectAll("g")
         .data(nodes)
-        .join("circle")
+        .join("g")
+        // .style("width", "500px")
+        // .style("height", "500px")
+        // for vega-lite
+        .attr("id", (d) => "g-" + d.id.replace(".", ""))
+
+        .append("circle")
         .attr("r", 5)
         // node 进行分类颜色映射
         .attr("fill", (d) => color(d.group))
@@ -520,7 +567,23 @@ export default {
           d3.select(this)
             .attr("r", 5)
             .attr("fill", (d) => color(d.group));
+        })
+        .on("click", function () {
+          // 获取选择circle的数据，画vega-lite图
+          const circle = d3.select(this);
+          // circle.style("display", "none");
+          that.drawVegaLite(circle);
         });
+
+      // // rebind data to circle
+      const containerGroup = d3
+        .select("#svg-container")
+        .select("svg")
+        .select("g.node-group")
+        .selectAll("g");
+      // containerGroup.datum(null);
+      // nodeGroup.data(nodes);
+
       /* -------------------------------------------------------------------------- */
       // 力导向系统创建
       const simulation = d3
@@ -538,6 +601,8 @@ export default {
       function ticked() {
         //console.log("ticked");
         //console.log("alpha", simulation.alpha());
+        //console.log("link:", linkGroup);
+        const x = nodeGroup;
         that.ticks++;
         linkGroup
           .attr("x1", (d) => d.source.x)
@@ -545,11 +610,17 @@ export default {
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
 
-        nodeGroup.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+        // nodeGroup.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+        containerGroup.style("transform", (d) => {
+          return `translate(${d.x}px,${d.y}px)`;
+        });
+        // vega-lite
+
+        //console.log(nodeGroup);
       }
 
       // 设置结点拖动行为
-      nodeGroup.call(
+      containerGroup.call(
         d3
           .drag()
           .on("start", dragstarted)
@@ -582,8 +653,9 @@ export default {
         event.subject.fy = null;
       }
 
-      // 设置整体zoom行为
-      const group = svg.selectAll("g");
+      // 设置整体zoom行为,只选择最顶层的2个g即可
+      const group = svg.selectChildren("g");
+      //console.log(group);
       // 创建缩放函数
       const zoom = d3
         .zoom()
@@ -609,7 +681,7 @@ export default {
     },
   },
 
-  created() {
+  mounted() {
     this.loadData();
   },
 };

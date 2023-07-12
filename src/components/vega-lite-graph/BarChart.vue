@@ -1,5 +1,7 @@
 <template>
-  <div id="vis"></div>
+  <div class="container">
+    <g id="vis"></g>
+  </div>
 </template>
 <script>
 import vegaEmbed from "vega-embed";
@@ -7,24 +9,19 @@ export default {
   methods: {
     createBarchart() {},
   },
-  created() {
+  computed: {
+    drawData() {
+      return this.$store.getters["force/vegaLiteData"];
+    },
+  },
+  mounted() {
     var yourVlSpec = {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
       description: "A simple bar chart with embedded data.",
       // render as svg
       usermeta: { embedOptions: { renderer: "svg" } },
       data: {
-        values: [
-          { a: "A", b: 28 },
-          { a: "B", b: 55 },
-          { a: "C", b: 43 },
-          { a: "D", b: 91 },
-          { a: "E", b: 81 },
-          { a: "F", b: 53 },
-          { a: "G", b: 19 },
-          { a: "H", b: 87 },
-          { a: "I", b: 52 },
-        ],
+        values: this.drawData,
       },
       mark: "bar",
       encoding: {
@@ -32,8 +29,21 @@ export default {
         y: { field: "b", type: "quantitative" },
       },
     };
-    vegaEmbed("#vis", yourVlSpec);
+
+    vegaEmbed("#vis", yourVlSpec).then((result) => {
+      // 销毁图表实例
+      const container = d3.select("#vis");
+      const svg = container.select("svg").node();
+      container.node().appendChild(svg);
+      container.select("div").remove();
+      container.select("details").remove();
+    });
   },
 };
 </script>
-<style scoped></style>
+<style scoped>
+/* .container {
+  height: 100%;
+  width: 100%;
+} */
+</style>
