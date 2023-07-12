@@ -464,9 +464,9 @@ export default {
     /* -------------------------------------------------------------------------- */
     // draw vegaLite
     /* -------------------------------------------------------------------------- */
-    drawVegaLite(circle) {
+    drawVegaLite(g) {
       // 获取data
-      const data = circle.datum()["vega-lite"];
+      const data = g.datum()["vega-lite"];
       // vega-lite config
       var yourVlSpec = {
         $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -486,17 +486,21 @@ export default {
         },
       };
       // select container by id
-      const id = "g-" + circle.datum().id.replace(".", "");
-      const container = d3.select("#" + id);
+      // const id = "g-" + g.datum().id.replace(".", "");
+      // const container = d3.select("#" + id);
+      const circle = g.selectChild("circle");
       // create vega-lite svg
-      vegaEmbed(container.node(), yourVlSpec).then(() => {
+      vegaEmbed(g.node(), yourVlSpec).then(() => {
         // 提出svg元素，并去掉多余的div和details
-        const svg = container.select("svg");
-        container.node().appendChild(circle.node());
-        container.node().appendChild(svg.node());
-        container.select("div").remove();
-        container.select("details").remove();
+        const svg = g.select("svg");
+        g.node().appendChild(circle.node());
+        g.node().appendChild(svg.node());
+        g.select("div").remove();
+        g.select("details").remove();
       });
+    },
+    deleteVegaLite(g) {
+      g.selectChild("svg").remove();
     },
     /* -------------------------------------------------------------------------- */
     // other
@@ -545,12 +549,12 @@ export default {
       const nodeGroup = svg
         .append("g")
         .attr("class", "node-group")
-
         .selectAll("g")
         .data(nodes)
         .join("g")
-        // for vega-lite
-        .attr("id", (d) => "g-" + d.id.replace(".", ""))
+        // // for vega-lite vis
+        .attr("showDetail", "1")
+        // .attr("id", (d) => "g-" + d.id.replace(".", ""))
         .append("circle")
         .attr("stroke", "#fff")
         .attr("stroke-width", 1.5)
@@ -569,13 +573,22 @@ export default {
             .attr("fill", (d) => color(d.group));
         })
         .on("click", function () {
-          // 获取选择circle的数据，画vega-lite图
-          const circle = d3.select(this);
+          // 获取选择circle对应的container - g元素
+          const g = d3.select(this.parentNode);
           // circle.style("display", "none");
-          that.drawVegaLite(circle);
+
+          const showDetail = g.attr("showDetail");
+          //console.log(showDetail);
+
+          if (showDetail === "0") {
+            that.drawVegaLite(g);
+            g.attr("showDetail", "1");
+          } else if (showDetail === "1") {
+            that.deleteVegaLite(g);
+            g.attr("showDetail", "0");
+          }
         });
 
-      // // rebind data to circle
       const containerGroup = d3
         .select("#svg-container")
         .select("svg")
