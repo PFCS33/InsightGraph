@@ -109,9 +109,14 @@
             novalidate
           >
             <el-form-item>
-              <BaseButton @click="forceDefaultSet" class="config-btn btn"
-                >Default</BaseButton
-              >
+              <div class="form-btn-control">
+                <BaseButton @click="forceDefaultSet" class="config-btn btn"
+                  >Default</BaseButton
+                >
+                <BaseButton @click="forceReheat" class="config-btn btn"
+                  >Reheat</BaseButton
+                >
+              </div>
             </el-form-item>
             <el-form-item label="CenterX" class="form-item-control">
               <el-input
@@ -442,9 +447,13 @@ export default {
       this.simulation.restart();
       //this.restart();
     },
+    forceReheat() {
+      this.simulation.alpha(this.alpha);
+      this.restart();
+    },
     handleCenterBlur(configType) {
       const name = "center" + configType;
-      this[name] = this.defaultForceConfig.center[configType];
+      if (!this[name]) this[name] = this.defaultForceConfig.center[configType];
     },
     /* -------------------------------------------------------------------------- */
     // other
