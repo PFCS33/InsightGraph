@@ -418,7 +418,7 @@ export default {
       //      console.log("2: ", nodeG);
 
       // rebind data
-      nodeG.selectAll("g").data(nodes).join("g");
+      nodeG.selectChildren("g").data(nodes).join("g");
       linkG.selectAll("line").data(links).join("line");
       this.simulation.nodes(nodes);
       this.simulation.force("link").links(links);
@@ -489,11 +489,10 @@ export default {
       vegaEmbed(container.node(), yourVlSpec).then(() => {
         // 提出svg元素，并去掉多余的div和details
         const svg = container.select("svg");
+        container.node().appendChild(circle.node());
         container.node().appendChild(svg.node());
         container.select("div").remove();
         container.select("details").remove();
-        // 设置svg元素位置变化
-        svg.style("transform", "translate(100,100)");
       });
     },
     /* -------------------------------------------------------------------------- */
@@ -614,9 +613,6 @@ export default {
         containerGroup.style("transform", (d) => {
           return `translate(${d.x}px,${d.y}px)`;
         });
-        // vega-lite
-
-        //console.log(nodeGroup);
       }
 
       // 设置结点拖动行为
@@ -681,7 +677,7 @@ export default {
     },
   },
 
-  mounted() {
+  created() {
     this.loadData();
   },
 };
