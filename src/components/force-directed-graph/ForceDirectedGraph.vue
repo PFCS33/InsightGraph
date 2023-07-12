@@ -113,6 +113,7 @@
                 <BaseButton @click="forceDefaultSet" class="config-btn btn"
                   >Default</BaseButton
                 >
+
                 <BaseButton @click="forceReheat" class="config-btn btn"
                   >Reheat</BaseButton
                 >
@@ -798,12 +799,16 @@ export default {
   margin-bottom: 10px;
 }
 .config-btn {
+  font-size: 100%;
+  flex: 1 1 50%;
 }
 
 .form-btn-control {
   display: flex;
-  gap: 12px;
+  gap: 0.5vw;
+  width: 100%;
 }
+
 .input-control {
   /* width: 90%; */
 }
