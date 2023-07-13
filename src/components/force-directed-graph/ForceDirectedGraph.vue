@@ -350,7 +350,7 @@
         <el-sub-menu index="2-3">
           <template #title>
             <el-icon><IconMenu /></el-icon>
-            <span> MBody Force </span>
+            <span> NBody Force </span>
           </template>
         </el-sub-menu>
         <el-sub-menu index="2-4">
