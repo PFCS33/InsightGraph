@@ -109,27 +109,41 @@
             novalidate
           >
             <el-form-item>
+              <template #label>
+                <div class="btn-label" style="width: 100%">
+                  <span>Set</span>
+                  <el-switch
+                    v-model="setCenter"
+                    size="default"
+                    :disabled="false"
+                  />
+                </div>
+              </template>
+            </el-form-item>
+            <el-form-item>
               <div class="form-btn-control">
-                <BaseButton @click="forceDefaultSet" class="config-btn btn"
+                <BaseButton
+                  @click="forceDefaultSet('center')"
+                  class="config-btn btn"
+                  :disabled="!setCenter"
                   >Default</BaseButton
-                >
-
-                <BaseButton @click="forceReheat" class="config-btn btn"
-                  >Reheat</BaseButton
                 >
               </div>
             </el-form-item>
             <el-form-item label="CenterX" class="form-item-control">
               <el-input
+                :disabled="!setCenter"
                 type="number"
                 id="centerX"
                 v-model="centerX"
                 step="1"
                 min="0"
+                :max="defaultForceConfig.center.X * 2"
                 class="input-control"
                 @blur="handleCenterBlur('X')"
               />
               <el-slider
+                :disabled="!setCenter"
                 v-model="centerX"
                 :min="0"
                 :max="defaultForceConfig.center.X * 2"
@@ -137,15 +151,18 @@
             </el-form-item>
             <el-form-item label="CenterY" class="form-item-control">
               <el-input
+                :disabled="!setCenter"
                 type="number"
                 id="centerY"
                 v-model="centerY"
                 step="1"
                 min="0"
+                :max="defaultForceConfig.center.Y * 2"
                 class="input-control"
                 @blur="handleCenterBlur('Y')"
               />
               <el-slider
+                :disabled="!setCenter"
                 v-model="centerY"
                 :min="0"
                 :max="defaultForceConfig.center.Y * 2"
@@ -153,6 +170,7 @@
             </el-form-item>
             <el-form-item label="CenterStrength" class="form-item-control">
               <el-input
+                :disabled="!setCenter"
                 type="number"
                 id="centerStrength"
                 v-model="centerStrength"
@@ -164,23 +182,76 @@
             </el-form-item>
           </el-form>
         </el-sub-menu>
-        <el-menu-item index="2-2">
-          <el-icon><Location /></el-icon>
-          <template #title>Position Force</template>
-        </el-menu-item>
-        <el-menu-item index="2-3">
-          <el-icon><IconMenu /></el-icon>
-          <template #title>ManyBody Force</template>
-        </el-menu-item>
-        <el-menu-item index="2-4">
-          <el-icon><Warning /></el-icon>
-          <template #title>Collide Force</template>
-        </el-menu-item>
+        <el-sub-menu index="2-2">
+          <template #title>
+            <el-icon><Location /></el-icon>
+            <span> Position Force </span>
+          </template>
 
-        <el-menu-item index="2-5">
-          <el-icon><Share /></el-icon>
-          <template #title>Link Force</template>
-        </el-menu-item>
+          <el-menu-item-group index="2-2-1">
+            <template #title>
+              <div class="btn-label">
+                <span> ForceX </span>
+                <el-switch v-model="setX" size="default" />
+              </div>
+            </template>
+            <el-form
+              label-position="top"
+              label-width="100px"
+              style="max-width: 460px"
+              @submit.prevent
+              size="small"
+              class="form"
+              novalidate
+              :disabled="!setX"
+            >
+              <el-form-item label="X" class="form-item-control">
+                <el-input
+                  type="number"
+                  id="xX"
+                  v-model="xX"
+                  step="1"
+                  min="0"
+                  class="input-control"
+                />
+                <el-slider
+                  v-model="xX"
+                  :min="0"
+                  :max="defaultForceConfig.x.X * 2"
+                  :disabled="!setX"
+                />
+              </el-form-item>
+              <el-form-item label="Strength" class="form-item-control">
+                <el-input
+                  type="number"
+                  id="xStrength"
+                  v-model="xStrength"
+                  step="0.1"
+                  min="-1"
+                  class="input-control"
+                />
+              </el-form-item>
+            </el-form>
+          </el-menu-item-group>
+        </el-sub-menu>
+        <el-sub-menu index="2-3">
+          <template #title>
+            <el-icon><IconMenu /></el-icon>
+            <span> MBody Force </span>
+          </template>
+        </el-sub-menu>
+        <el-sub-menu index="2-4">
+          <template #title>
+            <el-icon><Warning /></el-icon>
+            <span> Collide Force </span>
+          </template>
+        </el-sub-menu>
+        <el-sub-menu index="2-5">
+          <template #title>
+            <el-icon><Share /></el-icon>
+            <span> Link Force </span>
+          </template>
+        </el-sub-menu>
       </el-sub-menu>
     </el-menu>
 
@@ -242,14 +313,23 @@ export default {
 
       // Force Config
       // center config
+      setCenter: true,
       centerX: null,
       centerY: null,
       centerStrength: 1,
+      // position config
+      setX: false,
+      xX: null,
+      xStrength: 0.1,
       defaultForceConfig: {
         center: {
           X: null,
           Y: null,
           Strength: 1,
+        },
+        x: {
+          X: null,
+          Strength: 0.1,
         },
       },
     };
@@ -330,6 +410,24 @@ export default {
     /* -------------------------------------------------------------------------- */
     // center force config
     /* -------------------------------------------------------------------------- */
+    setCenter(newVal) {
+      if (newVal) {
+        this.simulation.force(
+          "center",
+          d3
+            .forceCenter(
+              this.defaultForceConfig.center.X,
+              this.defaultForceConfig.center.Y
+            )
+            .strength(this.defaultForceConfig.center.Strength)
+        );
+      } else {
+        // remove center force
+        this.simulation.force("center", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
 
     centerX(newVal, oldVal) {
       if (newVal !== oldVal) {
@@ -355,6 +453,43 @@ export default {
           this.centerStrength = -1;
         } else {
           this.forceConfigSet("center", "strength", newVal);
+        }
+      }
+    },
+    /* -------------------------------------------------------------------------- */
+    // position force config
+    /* -------------------------------------------------------------------------- */
+    setX(newVal) {
+      if (newVal) {
+        const defaultConfig = this.defaultForceConfig.x;
+        this.simulation.force(
+          "x",
+          d3.forceX(defaultConfig.X).strength(defaultConfig.Strength)
+        );
+      } else {
+        this.simulation.force("x", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+
+    xX(newVal, oldVal) {
+      if (this.setX) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.xX = 0;
+          } else {
+            this.forceConfigSet("x", "x", newVal);
+          }
+        }
+      }
+    },
+    xStrength(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal < -1) {
+          this.xStrength = -1;
+        } else {
+          this.forceConfigSet("x", "strength", newVal);
         }
       }
     },
@@ -396,7 +531,8 @@ export default {
       }
     },
 
-    // rebind data of dom element and sim system
+    // ?
+    // rebind data of dom element(nodes and links) and sim system
     restart() {
       this.ticks = 0;
       // 获取原始绘画数据
@@ -418,9 +554,10 @@ export default {
         .select("g.link-group");
       //console.log("2: ", nodeG);
 
-      // rebind data
+      // rebind data of dom elements
       nodeG.selectChildren("g").data(nodes).join("g");
       linkG.selectAll("line").data(links).join("line");
+      // rebind data of simulation
       this.simulation.nodes(nodes);
       this.simulation.force("link").links(links);
 
@@ -437,7 +574,7 @@ export default {
     },
 
     /* -------------------------------------------------------------------------- */
-    // center force config
+    // force config
     /* -------------------------------------------------------------------------- */
     forceConfigSet(forceType, configType, newVal) {
       this.simulation.force(forceType)[configType](newVal);
@@ -445,25 +582,31 @@ export default {
       this.simulation.restart();
       //this.restart();
     },
-    forceDefaultSet() {
-      this.centerX = this.defaultForceConfig.center.X;
-      this.centerY = this.defaultForceConfig.center.Y;
-      this.centerStrength = this.defaultForceConfig.center.Strength;
+    forceDefaultSet(forceType) {
+      switch (forceType) {
+        case "center":
+          this.centerX = this.defaultForceConfig.center.X;
+          this.centerY = this.defaultForceConfig.center.Y;
+          this.centerStrength = this.defaultForceConfig.center.Strength;
+          break;
+      }
+      // reheat and restart
       this.simulation.alpha(this.alpha);
       this.simulation.restart();
       //this.restart();
     },
-    forceReheat() {
-      this.simulation.alpha(this.alpha);
-      this.restart();
-    },
+
+    /* -------------------------------------------------------------------------- */
+    // center force config
+    /* -------------------------------------------------------------------------- */
+
     handleCenterBlur(configType) {
       const name = "center" + configType;
       if (!this[name]) this[name] = this.defaultForceConfig.center[configType];
     },
 
     /* -------------------------------------------------------------------------- */
-    // draw vegaLite
+    // vegaLite relative
     /* -------------------------------------------------------------------------- */
     drawVegaLite(g) {
       // 获取data
@@ -581,12 +724,12 @@ export default {
           const showDetail = g.attr("showDetail");
           //console.log(showDetail);
 
-          if (showDetail === "0") {
+          if (showDetail === "1") {
             that.drawVegaLite(g);
-            g.attr("showDetail", "1");
-          } else if (showDetail === "1") {
-            that.deleteVegaLite(g);
             g.attr("showDetail", "0");
+          } else if (showDetail === "0") {
+            that.deleteVegaLite(g);
+            g.attr("showDetail", "1");
           }
         });
 
@@ -599,6 +742,8 @@ export default {
       // nodeGroup.data(nodes);
 
       /* -------------------------------------------------------------------------- */
+      const defaultBaseConfig = this.defaultBaseConfig;
+      const defaultForceConfig = this.defaultForceConfig;
       // 力导向系统创建
       const simulation = d3
         .forceSimulation(nodes)
@@ -608,15 +753,25 @@ export default {
           d3.forceLink(links).id((d) => d.id)
         )
         .force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force(
+          "center",
+          d3
+            .forceCenter(width / 2, height / 2)
+            .strength(defaultForceConfig.center.Strength)
+        )
+        .alpha(defaultBaseConfig.alpha)
+        .alphaMin(defaultBaseConfig.alphaMin)
+        .alphaTarget(defaultBaseConfig.alphaTarget)
+        .alphaDecay(defaultBaseConfig.alphaDecay)
+        .velocityDecay(defaultBaseConfig.velocityDecay)
         .on("tick", ticked);
-
+      // console.log("1", simulation.force("charge").strength());
       // 每次迭代回调函数，更新结点位置
       function ticked() {
         //console.log("ticked");
         //console.log("alpha", simulation.alpha());
         //console.log("link:", linkGroup);
-        const x = nodeGroup;
+
         that.ticks++;
         linkGroup
           .attr("x1", (d) => d.source.x)
@@ -687,7 +842,11 @@ export default {
 
       // initialize the data
       this.simulation = simulation;
-      this.centerX = this.defaultForceConfig.center.X = width / 2;
+      this.centerX =
+        this.defaultForceConfig.center.X =
+        this.xX =
+        this.defaultForceConfig.x.X =
+          width / 2;
       this.centerY = this.defaultForceConfig.center.Y = height / 2;
     },
   },
@@ -808,7 +967,12 @@ export default {
   gap: 0.5vw;
   width: 100%;
 }
-
+.btn-label {
+  width: 85%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 .input-control {
   /* width: 90%; */
 }
