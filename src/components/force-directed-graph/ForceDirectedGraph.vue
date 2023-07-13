@@ -182,189 +182,23 @@
             </el-form-item>
           </el-form>
         </el-sub-menu>
-        <el-sub-menu index="2-2">
-          <template #title>
-            <el-icon><Location /></el-icon>
-            <span> Position Force </span>
-          </template>
+        <el-menu-item index="2-2">
+          <el-icon><Location /></el-icon>
+          <template #title>Position Force</template>
+        </el-menu-item>
+        <el-menu-item index="2-3">
+          <el-icon><IconMenu /></el-icon>
+          <template #title>ManyBody Force</template>
+        </el-menu-item>
+        <el-menu-item index="2-4">
+          <el-icon><Warning /></el-icon>
+          <template #title>Collide Force</template>
+        </el-menu-item>
 
-          <el-menu-item-group index="2-2-1">
-            <template #title>
-              <div class="btn-label">
-                <span> ForceX </span>
-                <el-switch v-model="setX" size="default" />
-              </div>
-            </template>
-            <el-form
-              label-position="top"
-              label-width="100px"
-              style="max-width: 460px"
-              @submit.prevent
-              size="small"
-              class="form"
-              novalidate
-              :disabled="!setX"
-            >
-              <el-form-item label="X" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="xX"
-                  v-model="xX"
-                  step="1"
-                  min="0"
-                  class="input-control"
-                />
-                <el-slider
-                  v-model="xX"
-                  :min="0"
-                  :max="defaultForceConfig.x.X * 2"
-                />
-              </el-form-item>
-              <el-form-item label="Strength" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="xStrength"
-                  v-model="xStrength"
-                  step="0.1"
-                  min="-1"
-                  class="input-control"
-                />
-              </el-form-item>
-            </el-form>
-          </el-menu-item-group>
-          <el-menu-item-group index="2-2-2">
-            <template #title>
-              <div class="btn-label">
-                <span> ForceY </span>
-                <el-switch v-model="setY" size="default" />
-              </div>
-            </template>
-            <el-form
-              label-position="top"
-              label-width="100px"
-              style="max-width: 460px"
-              @submit.prevent
-              size="small"
-              class="form"
-              novalidate
-              :disabled="!setY"
-            >
-              <el-form-item label="Y" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="yY"
-                  v-model="yY"
-                  step="1"
-                  min="0"
-                  class="input-control"
-                />
-                <el-slider
-                  v-model="yY"
-                  :min="0"
-                  :max="defaultForceConfig.y.Y * 2"
-                />
-              </el-form-item>
-              <el-form-item label="Strength" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="yStrength"
-                  v-model="yStrength"
-                  step="0.1"
-                  min="-1"
-                  class="input-control"
-                />
-              </el-form-item>
-            </el-form>
-          </el-menu-item-group>
-          <el-menu-item-group index="2-2-3">
-            <template #title>
-              <div class="btn-label">
-                <span> ForceR </span>
-                <el-switch v-model="setRadicial" size="default" />
-              </div>
-            </template>
-            <el-form
-              label-position="top"
-              label-width="100px"
-              style="max-width: 460px"
-              @submit.prevent
-              size="small"
-              class="form"
-              novalidate
-              :disabled="!setRadicial"
-            >
-              <el-form-item label="X" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="radialX"
-                  v-model="radialX"
-                  step="1"
-                  min="0"
-                  class="input-control"
-                />
-                <el-slider
-                  v-model="radialX"
-                  :min="0"
-                  :max="defaultForceConfig.radial.X * 2"
-                />
-              </el-form-item>
-              <el-form-item label="Y" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="radialY"
-                  v-model="radialY"
-                  step="1"
-                  min="0"
-                  class="input-control"
-                />
-                <el-slider
-                  v-model="radialY"
-                  :min="0"
-                  :max="defaultForceConfig.radial.Y * 2"
-                />
-              </el-form-item>
-              <el-form-item label="R" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="radialR"
-                  v-model="radialR"
-                  step="1"
-                  min="0"
-                  class="input-control"
-                />
-                <el-slider v-model="radialR" :min="0" :max="1000" />
-              </el-form-item>
-              <el-form-item label="Strength" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="radialStrength"
-                  v-model="radialStrength"
-                  step="0.1"
-                  min="-1"
-                  class="input-control"
-                />
-              </el-form-item>
-            </el-form>
-          </el-menu-item-group>
-        </el-sub-menu>
-        <el-sub-menu index="2-3">
-          <template #title>
-            <el-icon><IconMenu /></el-icon>
-            <span> NBody Force </span>
-          </template>
-        </el-sub-menu>
-        <el-sub-menu index="2-4">
-          <template #title>
-            <el-icon><Warning /></el-icon>
-            <span> Collide Force </span>
-          </template>
-        </el-sub-menu>
-        <el-sub-menu index="2-5">
-          <template #title>
-            <el-icon><Share /></el-icon>
-            <span> Link Force </span>
-          </template>
-        </el-sub-menu>
+        <el-menu-item index="2-5">
+          <el-icon><Share /></el-icon>
+          <template #title>Link Force</template>
+        </el-menu-item>
       </el-sub-menu>
     </el-menu>
 
@@ -430,38 +264,10 @@ export default {
       centerX: null,
       centerY: null,
       centerStrength: 1,
-      // position config
-      setX: false,
-      xX: null,
-      xStrength: 0.1,
-
-      setY: false,
-      yY: null,
-      yStrength: 0.1,
-
-      setRadicial: false,
-      radialX: null,
-      radialY: null,
-      radialR: 100,
-      radialStrength: 0.1,
       defaultForceConfig: {
         center: {
           X: null,
           Y: null,
-          Strength: 1,
-        },
-        x: {
-          X: null,
-          Strength: 0.1,
-        },
-        y: {
-          Y: null,
-          Strength: 0.1,
-        },
-        radial: {
-          X: null,
-          Y: null,
-          R: 100,
           Strength: 1,
         },
       },
@@ -586,133 +392,6 @@ export default {
           this.centerStrength = -1;
         } else {
           this.forceConfigSet("center", "strength", newVal);
-        }
-      }
-    },
-    /* -------------------------------------------------------------------------- */
-    // position force config
-    /* -------------------------------------------------------------------------- */
-    setX(newVal) {
-      if (newVal) {
-        this.simulation.force("x", d3.forceX(this.xX).strength(this.yStrength));
-      } else {
-        this.simulation.force("x", null);
-      }
-      this.simulation.alpha(this.alpha);
-      this.simulation.restart();
-    },
-
-    xX(newVal, oldVal) {
-      if (this.setX) {
-        if (newVal !== oldVal) {
-          if (newVal < 0) {
-            this.xX = 0;
-          } else {
-            this.forceConfigSet("x", "x", newVal);
-          }
-        }
-      }
-    },
-    xStrength(newVal, oldVal) {
-      if (this.setX) {
-        if (newVal !== oldVal) {
-          if (newVal < -1) {
-            this.xStrength = -1;
-          } else {
-            this.forceConfigSet("x", "strength", newVal);
-          }
-        }
-      }
-    },
-
-    setY(newVal) {
-      if (newVal) {
-        this.simulation.force("y", d3.forceY(this.yY).strength(this.yStrength));
-      } else {
-        this.simulation.force("y", null);
-      }
-      this.simulation.alpha(this.alpha);
-      this.simulation.restart();
-    },
-
-    yY(newVal, oldVal) {
-      if (this.setY) {
-        if (newVal !== oldVal) {
-          if (newVal < 0) {
-            this.yY = 0;
-          } else {
-            this.forceConfigSet("y", "y", newVal);
-          }
-        }
-      }
-    },
-    yStrength(newVal, oldVal) {
-      if (this.setY) {
-        if (newVal !== oldVal) {
-          if (newVal < -1) {
-            this.yStrength = -1;
-          } else {
-            this.forceConfigSet("y", "strength", newVal);
-          }
-        }
-      }
-    },
-
-    setRadicial(newVal) {
-      if (newVal) {
-        this.simulation.force(
-          "radial",
-          d3
-            .forceRadial(this.radialR, this.radialX, this.radialY)
-            .strength(this.radialStrength)
-        );
-      } else {
-        this.simulation.force("radial", null);
-      }
-      this.simulation.alpha(this.alpha);
-      this.simulation.restart();
-    },
-    radialX(newVal, oldVal) {
-      if (this.setRadicial) {
-        if (newVal !== oldVal) {
-          if (newVal < 0) {
-            this.radialX = 0;
-          } else {
-            this.forceConfigSet("radial", "x", newVal);
-          }
-        }
-      }
-    },
-    radialY(newVal, oldVal) {
-      if (this.setRadicial) {
-        if (newVal !== oldVal) {
-          if (newVal < 0) {
-            this.radialY = 0;
-          } else {
-            this.forceConfigSet("radial", "y", newVal);
-          }
-        }
-      }
-    },
-    radialR(newVal, oldVal) {
-      if (this.setRadicial) {
-        if (newVal !== oldVal) {
-          if (newVal < 0) {
-            this.radialR = 0;
-          } else {
-            this.forceConfigSet("radial", "radius", newVal);
-          }
-        }
-      }
-    },
-    radialStrength(newVal, oldVal) {
-      if (this.setRadicial) {
-        if (newVal !== oldVal) {
-          if (newVal < -1) {
-            this.radialStrength = -1;
-          } else {
-            this.forceConfigSet("radial", "strength", newVal);
-          }
         }
       }
     },
@@ -1065,20 +744,8 @@ export default {
 
       // initialize the data
       this.simulation = simulation;
-      this.centerX =
-        this.defaultForceConfig.center.X =
-        this.xX =
-        this.defaultForceConfig.x.X =
-        this.radialX =
-        this.defaultForceConfig.radial.X =
-          width / 2;
-      this.centerY =
-        this.defaultForceConfig.center.Y =
-        this.yY =
-        this.defaultForceConfig.y.Y =
-        this.radialY =
-        this.defaultForceConfig.radial.Y =
-          height / 2;
+      this.centerX = this.defaultForceConfig.center.X = width / 2;
+      this.centerY = this.defaultForceConfig.center.Y = height / 2;
     },
   },
 
