@@ -98,7 +98,6 @@
             <el-icon><Location /></el-icon>
             <span>Center Force</span>
           </template>
-
           <el-form
             label-position="top"
             label-width="100px"
@@ -109,16 +108,14 @@
             novalidate
           >
             <el-form-item>
-              <template #label>
-                <div class="btn-label" style="width: 100%">
-                  <span>Set</span>
-                  <el-switch
-                    v-model="setCenter"
-                    size="default"
-                    :disabled="false"
-                  />
-                </div>
-              </template>
+              <div class="btn-label" style="width: 100%">
+                <span>Set</span>
+                <el-switch
+                  v-model="setCenter"
+                  size="default"
+                  :disabled="false"
+                />
+              </div>
             </el-form-item>
             <el-form-item>
               <div class="form-btn-control">
@@ -135,7 +132,7 @@
                 :disabled="!setCenter"
                 type="number"
                 id="centerX"
-                v-model="centerX"
+                v-model.number="centerX"
                 step="1"
                 min="0"
                 :max="defaultForceConfig.center.X * 2"
@@ -154,7 +151,7 @@
                 :disabled="!setCenter"
                 type="number"
                 id="centerY"
-                v-model="centerY"
+                v-model.number="centerY"
                 step="1"
                 min="0"
                 :max="defaultForceConfig.center.Y * 2"
@@ -173,7 +170,7 @@
                 :disabled="!setCenter"
                 type="number"
                 id="centerStrength"
-                v-model="centerStrength"
+                v-model.number="centerStrength"
                 step="0.1"
                 min="-1"
                 class="input-control"
@@ -209,7 +206,7 @@
                 <el-input
                   type="number"
                   id="xX"
-                  v-model="xX"
+                  v-model.number="xX"
                   step="1"
                   min="0"
                   class="input-control"
@@ -224,7 +221,7 @@
                 <el-input
                   type="number"
                   id="xStrength"
-                  v-model="xStrength"
+                  v-model.number="xStrength"
                   step="0.1"
                   min="-1"
                   class="input-control"
@@ -253,7 +250,7 @@
                 <el-input
                   type="number"
                   id="yY"
-                  v-model="yY"
+                  v-model.number="yY"
                   step="1"
                   min="0"
                   class="input-control"
@@ -268,7 +265,7 @@
                 <el-input
                   type="number"
                   id="yStrength"
-                  v-model="yStrength"
+                  v-model.number="yStrength"
                   step="0.1"
                   min="-1"
                   class="input-control"
@@ -297,7 +294,7 @@
                 <el-input
                   type="number"
                   id="radialX"
-                  v-model="radialX"
+                  v-model.number="radialX"
                   step="1"
                   min="0"
                   class="input-control"
@@ -312,7 +309,7 @@
                 <el-input
                   type="number"
                   id="radialY"
-                  v-model="radialY"
+                  v-model.number="radialY"
                   step="1"
                   min="0"
                   class="input-control"
@@ -327,7 +324,7 @@
                 <el-input
                   type="number"
                   id="radialR"
-                  v-model="radialR"
+                  v-model.number="radialR"
                   step="1"
                   min="0"
                   class="input-control"
@@ -338,7 +335,7 @@
                 <el-input
                   type="number"
                   id="radialStrength"
-                  v-model="radialStrength"
+                  v-model.number="radialStrength"
                   step="0.1"
                   min="-1"
                   class="input-control"
@@ -352,6 +349,92 @@
             <el-icon><IconMenu /></el-icon>
             <span> NBody Force </span>
           </template>
+          <el-form
+            label-position="top"
+            label-width="100px"
+            style="max-width: 460px"
+            @submit.prevent
+            size="small"
+            class="form"
+            novalidate
+          >
+            <el-form-item>
+              <div class="btn-label" style="width: 100%">
+                <span>Set</span>
+                <el-switch
+                  v-model="setManyBody"
+                  size="default"
+                  :disabled="false"
+                />
+              </div>
+            </el-form-item>
+            <el-form-item label="Strength" class="form-item-control">
+              <el-input
+                :disabled="!setManyBody"
+                type="number"
+                id="manyBodyStrength"
+                v-model.number="manyBodyStrength"
+                step="1"
+                min="-500"
+                max="500"
+                class="input-control"
+              />
+              <el-slider
+                :disabled="!setManyBody"
+                v-model="manyBodyStrength"
+                :min="-500"
+                :max="500"
+              />
+            </el-form-item>
+            <el-form-item label="Theta" class="form-item-control">
+              <el-input
+                type="number"
+                id="manyBodyTheta"
+                v-model.number="manyBodyTheta"
+                step="0.1"
+                min="0"
+                class="input-control"
+              />
+            </el-form-item>
+            <el-form-item label="DistanceMin" class="form-item-control">
+              <el-input
+                :disabled="!setManyBody"
+                type="number"
+                id="distanceMin"
+                v-model.number="manyBodyDistanceMin"
+                step="0.1"
+                min="0"
+                max="1000"
+                class="input-control"
+              />
+              <el-slider
+                :disabled="!setManyBody"
+                v-model="manyBodyDistanceMin"
+                :step="0.1"
+                :min="0"
+                :max="1000"
+              />
+            </el-form-item>
+            <el-form-item label="DistanceMax" class="form-item-control">
+              <el-input
+                :disabled="!setManyBody"
+                type="number"
+                id="manyBodyDistanceMax"
+                v-model.number="manyBodyDistanceMax"
+                step="0.1"
+                min="0"
+                max="5000"
+                class="input-control"
+              />
+              <el-slider
+                :disabled="!setManyBody"
+                v-model="manyBodyDistanceMax"
+                :step="0.1"
+                :min="0"
+                :max="5000"
+              />
+            </el-form-item>
+          </el-form>
         </el-sub-menu>
         <el-sub-menu index="2-4">
           <template #title>
@@ -444,6 +527,13 @@ export default {
       radialY: null,
       radialR: 100,
       radialStrength: 0.1,
+      // nbody config
+      setManyBody: true,
+      manyBodyStrength: -30,
+      manyBodyTheta: 0.9,
+      manyBodyDistanceMin: 1,
+      manyBodyDistanceMax: 5000,
+
       defaultForceConfig: {
         center: {
           X: null,
@@ -463,6 +553,12 @@ export default {
           Y: null,
           R: 100,
           Strength: 1,
+        },
+        manyBody: {
+          Strength: -30,
+          Theta: 0.9,
+          DistanceMin: 1,
+          DistanceMax: 5000,
         },
       },
     };
@@ -716,6 +812,78 @@ export default {
         }
       }
     },
+    /* -------------------------------------------------------------------------- */
+    // nbody force config
+    /* -------------------------------------------------------------------------- */
+    setManyBody(newVal) {
+      if (newVal) {
+        this.simulation.force(
+          "charge",
+          d3
+            .forceManyBody()
+            .strength(this.manyBodyStrength)
+            .theta(this.manyBodyTheta)
+            .distanceMin(this.manyBodyDistanceMin)
+            .distanceMax(this.manyBodyDistanceMax)
+        );
+      } else {
+        this.simulation.force("charge", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+    manyBodyStrength(newVal, oldVal) {
+      if (this.setManyBody) {
+        if (newVal !== oldVal) {
+          if (newVal < -500) {
+            this.manyBodyStrength = -500;
+          } else if (newVal > 500) {
+            this.manyBodyStrength = 500;
+          } else {
+            this.forceConfigSet("charge", "strength", newVal);
+          }
+        }
+      }
+    },
+    manyBodyTheta(newVal, oldVal) {
+      if (this.setManyBody) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.manyBodyTheta = 0;
+          } else if (newVal > 1) {
+            this.manyBodyTheta = 1;
+          } else {
+            this.forceConfigSet("charge", "theta", newVal);
+          }
+        }
+      }
+    },
+    manyBodyDistanceMin(newVal, oldVal) {
+      if (this.setManyBody) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.manyBodyDistanceMin = 0;
+          } else if (newVal > 1000) {
+            this.manyBodyDistanceMin = 1000;
+          } else {
+            this.forceConfigSet("charge", "distanceMin", newVal);
+          }
+        }
+      }
+    },
+    manyBodyDistanceMax(newVal, oldVal) {
+      if (this.setManyBody) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.manyBodyDistanceMax = 0;
+          } else if (newVal > 5000) {
+            this.manyBodyDistanceMax = 5000;
+          } else {
+            this.forceConfigSet("charge", "distanceMax", newVal);
+          }
+        }
+      }
+    },
   },
   methods: {
     // 载入nodes和links数据
@@ -737,7 +905,7 @@ export default {
       this.simulation.stop();
     },
 
-    // reset all config to default
+    // reset all base config to default
     simRestart() {
       if (this.simulation) {
         this.alpha = this.defaultBaseConfig.alpha;
@@ -800,6 +968,7 @@ export default {
     // force config
     /* -------------------------------------------------------------------------- */
     forceConfigSet(forceType, configType, newVal) {
+      //  console.log(1, configType, newVal);
       this.simulation.force(forceType)[configType](newVal);
       this.simulation.alpha(this.alpha);
       this.simulation.restart();
@@ -967,6 +1136,7 @@ export default {
       /* -------------------------------------------------------------------------- */
       const defaultBaseConfig = this.defaultBaseConfig;
       const defaultForceConfig = this.defaultForceConfig;
+
       // 力导向系统创建
       const simulation = d3
         .forceSimulation(nodes)
@@ -975,7 +1145,15 @@ export default {
           // 指明对应的是nodes数据的id属性
           d3.forceLink(links).id((d) => d.id)
         )
-        .force("charge", d3.forceManyBody())
+        .force(
+          "charge",
+          d3
+            .forceManyBody()
+            .strength(defaultForceConfig.manyBody.Strength)
+            .theta(defaultForceConfig.manyBody.Theta)
+            .distanceMin(defaultForceConfig.manyBody.DistanceMin)
+          // .distanceMax(defaultForceConfig.manyBody.DistanceMax)
+        )
         .force(
           "center",
           d3
