@@ -611,6 +611,12 @@ export default {
       height: null,
       circleR: 5,
       circleFocusR: 20,
+      vegaLiteHeight: 100,
+      vegaLiteWidth: 100,
+      diagonal: null,
+      axisOffsetX: 39,
+      axisOffsetY: 36,
+
       simulation: null,
       ticks: 0,
       editMode: false,
@@ -1125,7 +1131,7 @@ export default {
           "collide",
           d3.forceCollide((d) => {
             if (d.showDetail) {
-              return 100;
+              return that.diagonal;
             } else {
               return that.circleR;
             }
@@ -1284,6 +1290,7 @@ export default {
     // vegaLite relative
     /* -------------------------------------------------------------------------- */
     drawVegaLite(g) {
+      const that = this;
       // 获取data
       const data = g.datum()["vega-lite"];
       // vega-lite config
@@ -1293,8 +1300,8 @@ export default {
         // render as svg
         usermeta: { embedOptions: { renderer: "svg" } },
         // 由于还有坐标轴，实际的svg大小还要大些(+50)
-        width: 150,
-        height: 150,
+        width: this.vegaLiteWidth,
+        height: this.vegaLiteHeight,
         data: {
           values: data,
         },
@@ -1307,19 +1314,28 @@ export default {
       // select container by id
       // const id = "g-" + g.datum().id.replace(".", "");
       // const container = d3.select("#" + id);
-      const circle = g.selectChild("circle");
+
+      const container = g.select(".vega-lite-container");
       // create vega-lite svg
-      vegaEmbed(g.node(), yourVlSpec).then(() => {
+      vegaEmbed(container.node(), yourVlSpec).then(() => {
         // 提出svg元素，并去掉多余的div和details
-        const svg = g.select("svg");
-        g.node().appendChild(circle.node());
-        g.node().appendChild(svg.node());
-        g.select("div").remove();
-        g.select("details").remove();
+        const svg = container
+          .style(
+            "transform",
+            `translate(${-that.vegaLiteWidth / 2 - that.axisOffsetX}px,${
+              -that.vegaLiteHeight / 2 - that.axisOffsetY / 2
+            }px)`
+          )
+          .select("svg")
+          .attr("class", "vega-lite-graph");
+        //console.log(container.attr("width"));
+        container.node().appendChild(svg.node());
+        container.select("div").remove();
+        container.select("details").remove();
       });
     },
     deleteVegaLite(g) {
-      g.selectChild("svg").remove();
+      g.select(".vega-lite-container").selectChild("svg").remove();
     },
     /* -------------------------------------------------------------------------- */
     // other
@@ -1369,6 +1385,11 @@ export default {
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
+      const vWidth = this.vegaLiteWidth + this.axisOffsetX;
+      const vHeight = this.vegaLiteHeight + this.axisOffsetY;
+      const diagonal =
+        Math.ceil(Math.sqrt(vWidth * vWidth + vHeight * vHeight)) / 2;
+      // console.log(diagonal);
 
       // 先把svg图和nodes+links 元素画出来
       // 随便设置一个种类的颜色映射
@@ -1379,13 +1400,13 @@ export default {
         .append("svg")
         .attr("width", width)
         .attr("height", height)
-        .attr("viewbox", [0, 0, width, height])
+        .attr("viewbox", [-width, -height, width, height])
         .attr("style", "max-width: 100%; height: auto;");
       // 画links
       const linkGroup = svg
         .append("g")
         .attr("class", "link-group")
-        .attr("stroke", "#999")
+        .attr("stroke", "#99999999")
         .attr("stroke-opacity", 0.6)
         .selectAll("line")
         .data(links)
@@ -1393,7 +1414,7 @@ export default {
         // link的value值映射到粗细
         .attr("stroke-width", (d) => Math.sqrt(d.value));
       //画nodes
-      const nodeGroup = svg
+      svg
         .append("g")
         .attr("class", "node-group")
         .selectAll("g")
@@ -1411,21 +1432,25 @@ export default {
         .attr("fill", (d) => color(d.group))
         .style("transition", "r 0.2s")
         .on("mouseover", function (event, d) {
-          //颜色变，表示被选中
-          d3.select(this)
-            .attr("fill", selectedColor)
-            .attr("r", that.circleFocusR);
+          if (!d.showDetail) {
+            //颜色变，表示被选中
+            d3.select(this)
+              .attr("fill", selectedColor)
+              .attr("r", that.circleFocusR);
+          }
         })
-        .on("mouseout", function () {
-          d3.select(this)
-            .attr("r", that.circleR)
-            .attr("fill", (d) => color(d.group));
+        .on("mouseout", function (event, d) {
+          if (!d.showDetail) {
+            d3.select(this)
+              .attr("r", that.circleR)
+              .attr("fill", (d) => color(d.group));
+          }
         })
         .on("click", function () {
           // 获取选择circle对应的container - g元素
           const g = d3.select(this.parentNode);
+          const circle = d3.select(this);
           // circle.style("display", "none");
-
           const showDetail = !g.datum().showDetail;
           //console.log(showDetail);
           g.datum().showDetail = showDetail;
@@ -1433,9 +1458,17 @@ export default {
           const collideForce = that.simulation.force("collide");
           if (collideForce) collideForce.initialize(that.simulation.nodes());
           if (showDetail) {
+            circle
+              .attr("r", diagonal)
+              .attr("fill", "transparent")
+              .attr("stroke", "#ccc");
             that.drawVegaLite(g);
           } else {
             that.deleteVegaLite(g);
+            circle
+              .attr("r", that.circleR)
+              .attr("stroke", "#fff")
+              .attr("fill", (d) => color(d.group));
           }
         });
 
@@ -1446,6 +1479,7 @@ export default {
         .selectAll("g");
       // containerGroup.datum(null);
       // nodeGroup.data(nodes);
+      containerGroup.append("g").attr("class", "vega-lite-container");
 
       /* -------------------------------------------------------------------------- */
       const defaultBaseConfig = this.defaultBaseConfig;
@@ -1561,6 +1595,7 @@ export default {
       }
 
       // initialize the default data
+      this.diagonal = diagonal;
       this.simulation = simulation;
       this.centerX =
         this.defaultForceConfig.center.X =

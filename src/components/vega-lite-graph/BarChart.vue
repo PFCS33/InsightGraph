@@ -1,6 +1,9 @@
 <template>
   <div class="container">
-    <g id="vis"></g>
+    <svg class="svg" :viewBox="[0, 0, 500, 500]">
+      <circle class="circle"></circle>
+      <g id="vis"></g>
+    </svg>
   </div>
 </template>
 <script>
@@ -43,8 +46,22 @@ export default {
 };
 </script>
 <style scoped>
-/* .container {
-  height: 100%;
+.container {
   width: 100%;
-} */
+  height: 100%;
+}
+.svg {
+  width: 100%;
+  height: 100%;
+}
+.circle {
+  fill: none;
+  stroke: black;
+  stroke-width: 2;
+  r: 100;
+  cx: 250;
+  cy: 250;
+}
+#vis {
+}
 </style>
