@@ -1,68 +1,38 @@
 # D3 force-directed-graph & vega-lite
 
->🎡 This project has been deployed to github pages, you can play it over there: [online demo](https://pfcs33.github.io/customed-force-directed-graph/)
+## Run Project
 
-## 运行本项目
+### Step 1. Environment Requirement
 
-- 步骤
-  - 安装 node.js: [Node.js (nodejs.org)](https://nodejs.org/en)
-  - 安装 Vite (作者用的npm): [Vite | 下一代的前端工具链 (vitejs.cn)](https://vitejs.cn/vite3-cn/)
+- install node.js: [Node.js (nodejs.org)](https://nodejs.org/en)
+- install Vite (the author uses npm): [Vite | 下一代的前端工具链 (vitejs.cn)](https://vitejs.cn/vite3-cn/)
 
-### 2. 项目依赖安装
+### Step 2. Install Dependencies
 
 ```
 npm install
 ```
 
-### 3. 运行
+### Step 3. Run in dev mode
 
 ```
 npm run dev
 ```
 
-- 成功后直接在浏览器进入local url即可
+- then access the `local url`  in prompt
 
-## 进度说明
+## Function Description
 
-- 完成力导向图 - base config 和 center force config 的可视化配置
-- 初步完成 vega-lite 的svg 图与力导向图中结点的结合
-  - 现在只在第一个点加了vega-lite画图数据，只能点demo中的那个点进行测试
+- Complete the visualization of the **numerical** configuration of the D3 force directed graph
+  - You can have a quick view of almost all the API of D3's directed force  graph over there.
+    - Base on the official Documentation: https://d3js.org/d3-force
 
-## demo
+  - the params which can set to be a function is marked by \*
 
-![](./demo/demo1.gif)
+- embed the **Vega-Lite graph** in the circle of D3 force directed graph
+  - you can click **circles** to toggle the display of Vega-Lite graphs
 
-## 项目文件结构
 
-```bash
-│  App.vue
-│  main.js
-│  router.js
-│  style.css
-│
-├─assets
-│      vue.svg
-│
-├─components
-│  ├─force-directed-graph	#画热力图的组件，代码全在这里，其他全是debug/ui的
-│  │      ForceDirectedGraph.vue
-│  │
-│  ├─ui
-│  │      BaseButton.vue
-│  │      BaseCard.vue
-│  │
-│  └─vega-lite-graph
-│          BarChart.vue
-│
-├─pages
-│      MainPage.vue	# 路由挂载的主页，导入力导向图组件
-│      test.vue
-│
-└─store
-    │  index.js
-    │
-    └─modules
-            auth.js
-            force.js
-```
+## 👻Play with Demo
 
+This project has been deployed to github pages, you can play it over there: [online demo](https://pfcs33.github.io/customed-force-directed-graph/)
