@@ -185,164 +185,169 @@
             <span> Position Force </span>
           </template>
 
-          <el-menu-item-group index="2-2-1">
-            <template #title>
-              <div class="btn-label">
-                <span> ForceX </span>
-                <el-switch v-model="setX" size="default" />
-              </div>
-            </template>
-            <el-form
-              label-position="top"
-              label-width="100px"
-              style="max-width: 460px"
-              @submit.prevent
-              size="small"
-              class="form"
-              novalidate
-              :disabled="!setX"
-            >
-              <el-form-item label="X" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="xX"
-                  v-model.number="xX"
-                  step="1"
-                  min="0"
-                  class="input-control"
-                />
-                <el-slider
-                  v-model="xX"
-                  :min="0"
-                  :max="defaultForceConfig.x.X * 2"
-                />
-              </el-form-item>
-              <el-form-item label="Strength" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="xStrength"
-                  v-model.number="xStrength"
-                  step="0.1"
-                  min="-1"
-                  class="input-control"
-                />
-              </el-form-item>
-            </el-form>
-          </el-menu-item-group>
-          <el-menu-item-group index="2-2-2">
-            <template #title>
-              <div class="btn-label">
-                <span> ForceY </span>
-                <el-switch v-model="setY" size="default" />
-              </div>
-            </template>
-            <el-form
-              label-position="top"
-              label-width="100px"
-              style="max-width: 460px"
-              @submit.prevent
-              size="small"
-              class="form"
-              novalidate
-              :disabled="!setY"
-            >
-              <el-form-item label="Y" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="yY"
-                  v-model.number="yY"
-                  step="1"
-                  min="0"
-                  class="input-control"
-                />
-                <el-slider
-                  v-model="yY"
-                  :min="0"
-                  :max="defaultForceConfig.y.Y * 2"
-                />
-              </el-form-item>
-              <el-form-item label="Strength" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="yStrength"
-                  v-model.number="yStrength"
-                  step="0.1"
-                  min="-1"
-                  class="input-control"
-                />
-              </el-form-item>
-            </el-form>
-          </el-menu-item-group>
-          <el-menu-item-group index="2-2-3">
-            <template #title>
-              <div class="btn-label">
-                <span> ForceR </span>
-                <el-switch v-model="setRadicial" size="default" />
-              </div>
-            </template>
-            <el-form
-              label-position="top"
-              label-width="100px"
-              style="max-width: 460px"
-              @submit.prevent
-              size="small"
-              class="form"
-              novalidate
-              :disabled="!setRadicial"
-            >
-              <el-form-item label="X" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="radialX"
-                  v-model.number="radialX"
-                  step="1"
-                  min="0"
-                  class="input-control"
-                />
-                <el-slider
-                  v-model="radialX"
-                  :min="0"
-                  :max="defaultForceConfig.radial.X * 2"
-                />
-              </el-form-item>
-              <el-form-item label="Y" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="radialY"
-                  v-model.number="radialY"
-                  step="1"
-                  min="0"
-                  class="input-control"
-                />
-                <el-slider
-                  v-model="radialY"
-                  :min="0"
-                  :max="defaultForceConfig.radial.Y * 2"
-                />
-              </el-form-item>
-              <el-form-item label="R" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="radialR"
-                  v-model.number="radialR"
-                  step="1"
-                  min="0"
-                  class="input-control"
-                />
-                <el-slider v-model="radialR" :min="0" :max="1000" />
-              </el-form-item>
-              <el-form-item label="Strength" class="form-item-control">
-                <el-input
-                  type="number"
-                  id="radialStrength"
-                  v-model.number="radialStrength"
-                  step="0.1"
-                  min="-1"
-                  class="input-control"
-                />
-              </el-form-item>
-            </el-form>
-          </el-menu-item-group>
+          <el-collapse
+            v-model="positionForceActiveNames"
+            style="width: 80%; margin-left: auto"
+          >
+            <el-collapse-item name="1">
+              <template #title>
+                <div class="btn-label">
+                  <span> ForceX </span>
+                  <el-switch v-model="setX" size="default" @click.stop />
+                </div>
+              </template>
+              <el-form
+                label-position="top"
+                label-width="100px"
+                style="max-width: 460px; padding-left: 0"
+                @submit.prevent
+                size="small"
+                class="form"
+                novalidate
+                :disabled="!setX"
+              >
+                <el-form-item label="X" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="xX"
+                    v-model.number="xX"
+                    step="1"
+                    min="0"
+                    class="input-control"
+                  />
+                  <el-slider
+                    v-model="xX"
+                    :min="0"
+                    :max="defaultForceConfig.x.X * 2"
+                  />
+                </el-form-item>
+                <el-form-item label="Strength" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="xStrength"
+                    v-model.number="xStrength"
+                    step="0.1"
+                    min="-1"
+                    class="input-control"
+                  />
+                </el-form-item>
+              </el-form>
+            </el-collapse-item>
+            <el-collapse-item name="2">
+              <template #title>
+                <div class="btn-label">
+                  <span> ForceY </span>
+                  <el-switch v-model="setY" size="default" />
+                </div>
+              </template>
+              <el-form
+                label-position="top"
+                label-width="100px"
+                style="max-width: 460px"
+                @submit.prevent
+                size="small"
+                class="form"
+                novalidate
+                :disabled="!setY"
+              >
+                <el-form-item label="Y" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="yY"
+                    v-model.number="yY"
+                    step="1"
+                    min="0"
+                    class="input-control"
+                  />
+                  <el-slider
+                    v-model="yY"
+                    :min="0"
+                    :max="defaultForceConfig.y.Y * 2"
+                  />
+                </el-form-item>
+                <el-form-item label="Strength" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="yStrength"
+                    v-model.number="yStrength"
+                    step="0.1"
+                    min="-1"
+                    class="input-control"
+                  />
+                </el-form-item>
+              </el-form>
+            </el-collapse-item>
+            <el-collapse-item name="3">
+              <template #title>
+                <div class="btn-label">
+                  <span> ForceR </span>
+                  <el-switch v-model="setRadicial" size="default" />
+                </div>
+              </template>
+              <el-form
+                label-position="top"
+                label-width="100px"
+                style="max-width: 460px"
+                @submit.prevent
+                size="small"
+                class="form"
+                novalidate
+                :disabled="!setRadicial"
+              >
+                <el-form-item label="X" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="radialX"
+                    v-model.number="radialX"
+                    step="1"
+                    min="0"
+                    class="input-control"
+                  />
+                  <el-slider
+                    v-model="radialX"
+                    :min="0"
+                    :max="defaultForceConfig.radial.X * 2"
+                  />
+                </el-form-item>
+                <el-form-item label="Y" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="radialY"
+                    v-model.number="radialY"
+                    step="1"
+                    min="0"
+                    class="input-control"
+                  />
+                  <el-slider
+                    v-model="radialY"
+                    :min="0"
+                    :max="defaultForceConfig.radial.Y * 2"
+                  />
+                </el-form-item>
+                <el-form-item label="R" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="radialR"
+                    v-model.number="radialR"
+                    step="1"
+                    min="0"
+                    class="input-control"
+                  />
+                  <el-slider v-model="radialR" :min="0" :max="1000" />
+                </el-form-item>
+                <el-form-item label="Strength" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="radialStrength"
+                    v-model.number="radialStrength"
+                    step="0.1"
+                    min="-1"
+                    class="input-control"
+                  />
+                </el-form-item>
+              </el-form>
+            </el-collapse-item>
+          </el-collapse>
         </el-sub-menu>
         <el-sub-menu index="2-3">
           <template #title>
@@ -601,6 +606,10 @@ export default {
       simulation: null,
       ticks: 0,
       editMode: false,
+
+      // element plus
+      positionForceActiveNames: [],
+
       // Base Config
       alpha: 1,
       alphaMin: 0.001,
