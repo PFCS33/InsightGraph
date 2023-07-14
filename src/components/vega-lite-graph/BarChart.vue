@@ -4,7 +4,6 @@
   </div>
 </template>
 <script>
-import vegaEmbed from "vega-embed";
 export default {
   methods: {
     createBarchart() {},

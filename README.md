@@ -1,5 +1,7 @@
 # D3 force-directed-graph & vega-lite
 
+>🎡 This project has been deployed to github pages, you can play it over there: [online demo](https://pfcs33.github.io/customed-force-directed-graph/)
+
 ## 运行本项目
 
 - 步骤
