@@ -19,12 +19,14 @@ npm install
 npm run dev
 ```
 
-- then access the `local url`  in prompt
+- then access the `local url` in prompt
 
 ## Function Description
 
 - Complete the visualization of the **numerical** configuration of the D3 force directed graph
-  - You can have a quick view of almost all the API of D3's directed force  graph over there.
+
+  - You can have a quick view of almost all the API of D3's directed force graph over there.
+
     - Base on the official Documentation: https://d3js.org/d3-force
 
   - the params which can be set as a function is marked by \*
@@ -32,7 +34,6 @@ npm run dev
 - embed the **Vega-Lite graph** in the circle of D3 force directed graph
   - you can click **circles** to toggle the display of Vega-Lite graphs
   - Note: add collision force will look better (which is not set by default config of project)
-
 
 ## 👻Play with Demo
 
