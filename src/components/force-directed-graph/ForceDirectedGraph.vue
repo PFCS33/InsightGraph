@@ -361,11 +361,7 @@
             <el-form-item>
               <div class="btn-label" style="width: 100%">
                 <span>Set</span>
-                <el-switch
-                  v-model="setManyBody"
-                  size="default"
-                  :disabled="false"
-                />
+                <el-switch v-model="setManyBody" size="default" />
               </div>
             </el-form-item>
             <el-form-item label="Strength" class="form-item-control">
@@ -441,12 +437,122 @@
             <el-icon><Warning /></el-icon>
             <span> Collide Force </span>
           </template>
+          <el-form
+            label-position="top"
+            label-width="100px"
+            style="max-width: 460px"
+            @submit.prevent
+            size="small"
+            class="form"
+            novalidate
+          >
+            <el-form-item>
+              <div class="btn-label" style="width: 100%">
+                <span>Set</span>
+                <el-switch v-model="setCollide" size="default" />
+              </div>
+            </el-form-item>
+            <el-form-item label="Strength" class="form-item-control">
+              <el-input
+                :disabled="!setCollide"
+                type="number"
+                id="collideStrength"
+                v-model.number="collideStrength"
+                step="0.1"
+                min="0"
+                max="1"
+                class="input-control"
+              />
+            </el-form-item>
+            <el-form-item label="Iterations" class="form-item-control">
+              <el-input
+                :disabled="!setCollide"
+                type="number"
+                id="collideIterations"
+                v-model.number="collideIterations"
+                step="1"
+                min="0"
+                max="500"
+                class="input-control"
+              />
+              <el-slider
+                :disabled="!setCollide"
+                v-model="collideIterations"
+                :min="0"
+                :max="500"
+              />
+            </el-form-item>
+          </el-form>
         </el-sub-menu>
         <el-sub-menu index="2-5">
           <template #title>
             <el-icon><Share /></el-icon>
             <span> Link Force </span>
           </template>
+          <el-form
+            label-position="top"
+            label-width="100px"
+            style="max-width: 460px"
+            @submit.prevent
+            size="small"
+            class="form"
+            novalidate
+          >
+            <el-form-item>
+              <div class="btn-label" style="width: 100%">
+                <span>Set</span>
+                <el-switch v-model="setLink" size="default" />
+              </div>
+            </el-form-item>
+            <el-form-item label="Distance" class="form-item-control">
+              <el-input
+                :disabled="!setLink"
+                type="number"
+                id="linkDistance"
+                v-model.number="linkDistance"
+                step="1"
+                min="0"
+                max="300"
+                class="input-control"
+              />
+              <el-slider
+                :disabled="!setLink"
+                v-model="linkDistance"
+                :min="0"
+                :max="300"
+              />
+            </el-form-item>
+            <el-form-item label="Strength" class="form-item-control">
+              <el-input
+                :disabled="!setLink"
+                type="number"
+                id="linkStrength"
+                v-model.number="linkStrength"
+                step="0.1"
+                min="0"
+                max="1"
+                class="input-control"
+              />
+            </el-form-item>
+            <el-form-item label="Iterations" class="form-item-control">
+              <el-input
+                :disabled="!setLink"
+                type="number"
+                id="linkIterations"
+                v-model.number="linkIterations"
+                step="1"
+                min="0"
+                max="500"
+                class="input-control"
+              />
+              <el-slider
+                :disabled="!setLink"
+                v-model="linkIterations"
+                :min="0"
+                :max="500"
+              />
+            </el-form-item>
+          </el-form>
         </el-sub-menu>
       </el-sub-menu>
     </el-menu>
@@ -490,6 +596,8 @@ export default {
     return {
       width: null,
       height: null,
+      circleR: 5,
+      circleFocusR: 20,
       simulation: null,
       ticks: 0,
       editMode: false,
@@ -534,6 +642,18 @@ export default {
       manyBodyDistanceMin: 1,
       manyBodyDistanceMax: 5000,
 
+      // link config
+      setLink: true,
+      linkDistance: 30,
+      linkStrength: 0.1,
+      linkIterations: 1,
+
+      // collide config
+      setCollide: false,
+      collideRadius: null,
+      collideStrength: 1,
+      collideIterations: 1,
+
       defaultForceConfig: {
         center: {
           X: null,
@@ -559,6 +679,16 @@ export default {
           Theta: 0.9,
           DistanceMin: 1,
           DistanceMax: 5000,
+        },
+        link: {
+          Distance: 30,
+          Strength: 0.1,
+          Iterations: 1,
+        },
+        collide: {
+          Radius: null,
+          Strength: 1,
+          Iterations: 1,
         },
       },
     };
@@ -884,6 +1014,119 @@ export default {
         }
       }
     },
+    /* -------------------------------------------------------------------------- */
+    // link force config
+    /* -------------------------------------------------------------------------- */
+    setLink(newVal) {
+      if (newVal) {
+        // get links data
+        const links = d3
+          .select("#svg-container")
+          .select("svg")
+          .select("g.link-group")
+          .selectAll("line")
+          .data();
+        this.simulation.force(
+          "link",
+          d3.forceLink(links).id((d) => d.id)
+        );
+      } else {
+        this.simulation.force("link", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+
+    linkDistance(newVal, oldVal) {
+      if (this.setLink) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.linkDistance = 0;
+          } else if (newVal > 300) {
+            this.linkDistance = 300;
+          } else {
+            //   console.log("link");
+            this.forceConfigSet("link", "distance", newVal);
+          }
+        }
+      }
+    },
+    linkStrength(newVal, oldVal) {
+      if (this.setLink) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.linkStrength = 0;
+          } else if (newVal > 1) {
+            this.linkStrength = 1;
+          } else {
+            //   console.log(newVal);
+            this.forceConfigSet("link", "strength", newVal);
+          }
+        }
+      }
+    },
+    linkIterations(newVal, oldVal) {
+      if (this.setLink) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.linkIterations = 0;
+          } else if (newVal > 500) {
+            this.linkIterations = 500;
+          } else {
+            this.forceConfigSet("link", "iterations", newVal);
+          }
+        }
+      }
+    },
+    /* -------------------------------------------------------------------------- */
+    // collide force config
+    /* -------------------------------------------------------------------------- */
+    setCollide(newVal) {
+      const that = this;
+      if (newVal) {
+        this.simulation.force(
+          "collide",
+          d3.forceCollide((d) => {
+            if (d.showDetail) {
+              return 100;
+            } else {
+              return that.circleR;
+            }
+          })
+        );
+      } else {
+        this.simulation.force("collide", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+    collideStrength(newVal, oldVal) {
+      if (this.setCollide) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.collideStrength = 0;
+          } else if (newVal > 1) {
+            this.collideStrength = 1;
+          } else {
+            //   console.log(newVal);
+            this.forceConfigSet("collide", "strength", newVal);
+          }
+        }
+      }
+    },
+    collideIterations(newVal, oldVal) {
+      if (this.setCollide) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.collideIterations = 0;
+          } else if (newVal > 500) {
+            this.collideIterations = 500;
+          } else {
+            this.forceConfigSet("collide", "iterations", newVal);
+          }
+        }
+      }
+    },
   },
   methods: {
     // 载入nodes和links数据
@@ -968,8 +1211,11 @@ export default {
     // force config
     /* -------------------------------------------------------------------------- */
     forceConfigSet(forceType, configType, newVal) {
-      //  console.log(1, configType, newVal);
+      //console.log(configType, newVal, typeof newVal);
+      // since have set new force there, no need to reinitialize
       this.simulation.force(forceType)[configType](newVal);
+      //console.log(forceType);
+
       this.simulation.alpha(this.alpha);
       this.simulation.restart();
       //this.restart();
@@ -1051,7 +1297,8 @@ export default {
       const data = this.drawData;
       // 创建原始数据的copy，因为 force simulation 会改变数组数据
       const links = data.links.map((d) => ({ ...d }));
-      const nodes = data.nodes.map((d) => ({ ...d }));
+      // 加入showDetail属性，控制vega-lite图的显示
+      const nodes = data.nodes.map((d) => ({ ...d, showDetail: false }));
       //console.log(data.links);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
@@ -1089,23 +1336,25 @@ export default {
         .data(nodes)
         .join("g")
         // // for vega-lite vis
-        .attr("showDetail", "1")
+        // .attr("showDetail", "1")
         // .attr("id", (d) => "g-" + d.id.replace(".", ""))
         .append("circle")
         .attr("stroke", "#fff")
         .attr("stroke-width", 1.5)
         .style("cursor", "pointer")
-        .attr("r", 5)
+        .attr("r", this.circleR)
         // node 进行分类颜色映射
         .attr("fill", (d) => color(d.group))
         .style("transition", "r 0.2s")
         .on("mouseover", function (event, d) {
           //颜色变，表示被选中
-          d3.select(this).attr("fill", selectedColor).attr("r", 20);
+          d3.select(this)
+            .attr("fill", selectedColor)
+            .attr("r", that.circleFocusR);
         })
         .on("mouseout", function () {
           d3.select(this)
-            .attr("r", 5)
+            .attr("r", that.circleR)
             .attr("fill", (d) => color(d.group));
         })
         .on("click", function () {
@@ -1113,15 +1362,16 @@ export default {
           const g = d3.select(this.parentNode);
           // circle.style("display", "none");
 
-          const showDetail = g.attr("showDetail");
+          const showDetail = !g.datum().showDetail;
           //console.log(showDetail);
-
-          if (showDetail === "1") {
+          g.datum().showDetail = showDetail;
+          // reinitialize the collide force, if set
+          const collideForce = that.simulation.force("collide");
+          if (collideForce) collideForce.initialize(that.simulation.nodes());
+          if (showDetail) {
             that.drawVegaLite(g);
-            g.attr("showDetail", "0");
-          } else if (showDetail === "0") {
+          } else {
             that.deleteVegaLite(g);
-            g.attr("showDetail", "1");
           }
         });
 
@@ -1143,7 +1393,12 @@ export default {
         .force(
           "link",
           // 指明对应的是nodes数据的id属性
-          d3.forceLink(links).id((d) => d.id)
+          d3
+            .forceLink(links)
+            .id((d) => d.id)
+            .distance(defaultForceConfig.link.Distance)
+            .iterations(defaultForceConfig.link.Iterations)
+          // .strength(defaultForceConfig.link.Strength)
         )
         .force(
           "charge",
@@ -1241,7 +1496,7 @@ export default {
         group.attr("transform", transform);
       }
 
-      // initialize the data
+      // initialize the default data
       this.simulation = simulation;
       this.centerX =
         this.defaultForceConfig.center.X =
@@ -1257,6 +1512,8 @@ export default {
         this.radialY =
         this.defaultForceConfig.radial.Y =
           height / 2;
+      this.defaultForceConfig.collide.Radius = this.collideRadius =
+        this.circleR;
     },
   },
 
