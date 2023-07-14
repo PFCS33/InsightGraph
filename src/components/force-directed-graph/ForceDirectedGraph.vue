@@ -243,7 +243,11 @@
               <el-form
                 label-position="top"
                 label-width="100px"
+<<<<<<< HEAD
                 style="max-width: 460px; padding-left: 0"
+=======
+          
+>>>>>>> 4c6be6ac34a11ffd3fc1d39567e791962161bd8e
                 @submit.prevent
                 size="small"
                 class="form"
@@ -287,7 +291,11 @@
               <el-form
                 label-position="top"
                 label-width="100px"
+<<<<<<< HEAD
                 style="max-width: 460px; padding-left: 0"
+=======
+              
+>>>>>>> 4c6be6ac34a11ffd3fc1d39567e791962161bd8e
                 @submit.prevent
                 size="small"
                 class="form"
