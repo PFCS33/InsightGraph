@@ -185,10 +185,7 @@
             <span> Position Force </span>
           </template>
 
-          <el-collapse
-            v-model="positionForceActiveNames"
-            style="width: 80%; margin-left: auto"
-          >
+          <el-collapse style="width: 90%; margin-left: auto">
             <el-collapse-item name="1">
               <template #title>
                 <div class="btn-label">
@@ -206,22 +203,32 @@
                 novalidate
                 :disabled="!setX"
               >
-                <el-form-item label="X" class="form-item-control">
-                  <el-input
-                    type="number"
-                    id="xX"
-                    v-model.number="xX"
-                    step="1"
-                    min="0"
-                    class="input-control"
-                  />
-                  <el-slider
-                    v-model="xX"
-                    :min="0"
-                    :max="defaultForceConfig.x.X * 2"
-                  />
+                <el-form-item label="X *" class="form-item-control">
+                  <el-tabs v-model="forceXMode" @tab-click="handleTabClick">
+                    <el-tab-pane
+                      label="Number"
+                      name="number"
+                      style="margin-bottom: 10px"
+                    >
+                      <el-input
+                        type="number"
+                        id="xX"
+                        v-model.number="xX"
+                        step="1"
+                        min="0"
+                        class="input-control"
+                      />
+                      <el-slider
+                        v-model="xX"
+                        :min="0"
+                        :max="defaultForceConfig.x.X * 2"
+                      />
+                    </el-tab-pane>
+                    <el-tab-pane label="Aggregate" name="aggregate">
+                    </el-tab-pane>
+                  </el-tabs>
                 </el-form-item>
-                <el-form-item label="Strength" class="form-item-control">
+                <el-form-item label="Strength *" class="form-item-control">
                   <el-input
                     type="number"
                     id="xStrength"
@@ -250,7 +257,7 @@
                 novalidate
                 :disabled="!setY"
               >
-                <el-form-item label="Y" class="form-item-control">
+                <el-form-item label="Y *" class="form-item-control">
                   <el-input
                     type="number"
                     id="yY"
@@ -265,7 +272,7 @@
                     :max="defaultForceConfig.y.Y * 2"
                   />
                 </el-form-item>
-                <el-form-item label="Strength" class="form-item-control">
+                <el-form-item label="Strength *" class="form-item-control">
                   <el-input
                     type="number"
                     id="yStrength"
@@ -324,7 +331,7 @@
                     :max="defaultForceConfig.radial.Y * 2"
                   />
                 </el-form-item>
-                <el-form-item label="R" class="form-item-control">
+                <el-form-item label="R *" class="form-item-control">
                   <el-input
                     type="number"
                     id="radialR"
@@ -335,7 +342,7 @@
                   />
                   <el-slider v-model="radialR" :min="0" :max="1000" />
                 </el-form-item>
-                <el-form-item label="Strength" class="form-item-control">
+                <el-form-item label="Strength *" class="form-item-control">
                   <el-input
                     type="number"
                     id="radialStrength"
@@ -369,7 +376,7 @@
                 <el-switch v-model="setManyBody" size="default" />
               </div>
             </el-form-item>
-            <el-form-item label="Strength" class="form-item-control">
+            <el-form-item label="Strength *" class="form-item-control">
               <el-input
                 :disabled="!setManyBody"
                 type="number"
@@ -457,6 +464,7 @@
                 <el-switch v-model="setCollide" size="default" />
               </div>
             </el-form-item>
+            <el-form-item label="Radius *"> </el-form-item>
             <el-form-item label="Strength" class="form-item-control">
               <el-input
                 :disabled="!setCollide"
@@ -509,7 +517,7 @@
                 <el-switch v-model="setLink" size="default" />
               </div>
             </el-form-item>
-            <el-form-item label="Distance" class="form-item-control">
+            <el-form-item label="Distance *" class="form-item-control">
               <el-input
                 :disabled="!setLink"
                 type="number"
@@ -527,7 +535,7 @@
                 :max="300"
               />
             </el-form-item>
-            <el-form-item label="Strength" class="form-item-control">
+            <el-form-item label="Strength *" class="form-item-control">
               <el-input
                 :disabled="!setLink"
                 type="number"
@@ -608,7 +616,7 @@ export default {
       editMode: false,
 
       // element plus
-      positionForceActiveNames: [],
+      forceXMode: "number",
 
       // Base Config
       alpha: 1,
@@ -829,7 +837,27 @@ export default {
     /* -------------------------------------------------------------------------- */
     setX(newVal) {
       if (newVal) {
-        this.simulation.force("x", d3.forceX(this.xX).strength(this.yStrength));
+        const name = this.forceXMode;
+        switch (name) {
+          case "number":
+            this.simulation.force(
+              "x",
+              d3.forceX(this.xX).strength(this.xStrength)
+            );
+
+            break;
+          case "aggregate":
+            this.simulation.force(
+              "x",
+              d3
+                .forceX()
+                .x((d) => {
+                  return (+d.group + 1) * 100;
+                })
+                .strength(this.xStrength)
+            );
+            break;
+        }
       } else {
         this.simulation.force("x", null);
       }
@@ -1299,6 +1327,33 @@ export default {
     toggleEditMode() {
       this.editMode = !this.editMode;
     },
+    handleTabClick(tab, _event) {
+      if (this.setX) {
+        const name = tab.props.name;
+        switch (name) {
+          case "number":
+            this.simulation.force(
+              "x",
+              d3.forceX(this.xX).strength(this.xStrength)
+            );
+
+            break;
+          case "aggregate":
+            this.simulation.force(
+              "x",
+              d3
+                .forceX()
+                .x((d) => {
+                  return (+d.group + 1) * 100;
+                })
+                .strength(this.xStrength)
+            );
+            break;
+        }
+        this.simulation.alpha(this.alpha);
+        this.simulation.restart();
+      }
+    },
     // initial drawing, create DOM elements and sim system
     drawGraph() {
       const that = this;
@@ -1657,9 +1712,16 @@ export default {
 .el-slider {
   width: 100%;
 }
+.bugfix {
+  margin-top: 10px;
+}
 </style>
 <style>
 .el-form-item__label {
   margin-bottom: 2px !important;
+}
+.el-tabs__content {
+  display: flex;
+  align-items: center;
 }
 </style>
