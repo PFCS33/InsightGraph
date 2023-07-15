@@ -1376,10 +1376,14 @@ export default {
         container.node().appendChild(svg.node());
         container.select("div").remove();
         container.select("details").remove();
+        that.simulation.alpha(that.alpha);
+        that.simulation.restart();
       });
     },
     deleteVegaLite(g) {
       g.select(".vega-lite-container").selectChild("svg").remove();
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
     },
     /* -------------------------------------------------------------------------- */
     // other
