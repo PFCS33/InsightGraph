@@ -1256,7 +1256,8 @@ export default {
       linkG.selectAll("line").data(links).join("line");
       // rebind data of simulation
       this.simulation.nodes(nodes);
-      this.simulation.force("link").links(links);
+      const linkForce = this.simulation.force("link");
+      if (linkForce) this.simulation.force("link").links(links);
 
       // reset alpha to reheat
       this.simulation.restart();
@@ -1623,7 +1624,7 @@ export default {
         d3
           .drag()
           .subject(function (event, d) {
-            // 将父元素 g 作为 subject 返回
+            // 将父元素 g 作为 subject 返回 (因为数据挂载在父元素g上)
             // console.log(event.sourceEvent.target.parentNode);
             return d3.select(event.sourceEvent.target.parentNode).datum();
           })
