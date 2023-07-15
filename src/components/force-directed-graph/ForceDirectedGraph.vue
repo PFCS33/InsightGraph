@@ -1231,11 +1231,14 @@ export default {
 
       // 创建原始数据的copy，因为 force simulation 会改变数组数据
       const links = data.links.map((d) => ({ ...d }));
-      const nodes = data.nodes.map((d) => ({ ...d }));
+      const nodes = data.nodes.map((d) => ({ ...d, showDetail: false }));
 
-      this.showIndex.forEach((index) => {
-        nodes[index].showDetail = true;
-      });
+      //  console.log(this.showIndex);
+
+      if (this.showIndex.size)
+        this.showIndex.forEach((index) => {
+          nodes[index].showDetail = true;
+        });
       // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
 
       const nodeG = d3
@@ -1375,15 +1378,7 @@ export default {
       // create vega-lite svg
       vegaEmbed(container.node(), yourVlSpec).then(() => {
         // 提出svg元素，并去掉多余的div和details
-        const svg = container
-          // .style(
-          //   "transform",
-          //   `translate(${-that.vegaLiteWidth / 2 - that.axisOffsetX}px,${
-          //     -that.vegaLiteHeight / 2 - that.axisOffsetY / 2
-          //   }px)`
-          // )
-          .select("svg")
-          .attr("class", "vega-lite-graph");
+        const svg = container.select("svg").attr("class", "vega-lite-graph");
         //console.log(container.attr("width"));
         container.node().appendChild(svg.node());
         container.select("div").remove();
@@ -1393,7 +1388,7 @@ export default {
       });
     },
     deleteVegaLite(g) {
-      g.select(".vega-lite-container").selectChild("svg").remove();
+      g.select(".vega-lite-graph").remove();
       this.simulation.alpha(this.alpha);
       this.simulation.restart();
     },
@@ -1484,17 +1479,18 @@ export default {
         // .attr("id", (d) => "g-" + d.id.replace(".", ""))
         .append("circle")
         .attr("stroke", function () {
-          const g = d3.select(this.parentNode);
-          return g.showDetail ? "#555" : "#fff";
+          const gData = d3.select(this.parentNode).datum();
+
+          return gData.showDetail ? "#555" : "#fff";
         })
         .attr("r", function () {
-          const g = d3.select(this.parentNode);
-          return g.showDetail ? diagonal : that.circleR;
+          const gData = d3.select(this.parentNode).datum();
+          return gData.showDetail ? diagonal : that.circleR;
         })
         // node 进行分类颜色映射
         .attr("fill", function (d) {
-          const g = d3.select(this.parentNode);
-          return g.showDetail ? "transparent" : color(d.group);
+          const gData = d3.select(this.parentNode).datum();
+          return gData.showDetail ? "transparent" : color(d.group);
         })
         .attr("stroke-width", 1.5)
         .style("transition", "r 0.2s")
@@ -1518,8 +1514,6 @@ export default {
           // 获取选择circle对应的container - g元素
           const g = d3.select(this.parentNode);
           const circle = d3.select(this);
-
-          // circle.style("display", "none");
           const showDetail = !g.datum().showDetail;
           //console.log(showDetail);
           g.datum().showDetail = showDetail;
@@ -1605,7 +1599,16 @@ export default {
         // containerGroup.style("transform", (d) => {
         //   return `translate(${d.x}px,${d.y}px)`;
         // });
+        // 更新圆的位置，但是数据是挂在父节点g上的
+        circleGroup
+          .attr("cx", function () {
+            return d3.select(this.parentNode).datum().x;
+          })
+          .attr("cy", function () {
+            return d3.select(this.parentNode).datum().y;
+          });
 
+        // 让挂载vega-lite图的容器g元素也跟着动
         vegaLiteContainerGroup.style("transform", function () {
           const x = d3.select(this.parentNode).datum().x;
           const y = d3.select(this.parentNode).datum().y;
@@ -1613,24 +1616,17 @@ export default {
             x - that.vegaLiteWidth / 2 - that.axisOffsetX
           }px,${y - that.vegaLiteHeight / 2 - that.axisOffsetY / 2}px)`;
         });
-
-        // 更新圆的位置，但是数据是挂在父节点g上的
-        circleGroup
-          .attr("cx", function () {
-            const x = d3.select(this.parentNode).datum().x;
-
-            return x;
-          })
-          .attr("cy", function () {
-            const y = d3.select(this.parentNode).datum().y;
-            return y;
-          });
       }
 
       // 设置结点拖动行为，也是只在圆上设置，避免与vega-lite图的鼠标事件冲突
       circleGroup.call(
         d3
           .drag()
+          .subject(function (event, d) {
+            // 将父元素 g 作为 subject 返回
+            // console.log(event.sourceEvent.target.parentNode);
+            return d3.select(event.sourceEvent.target.parentNode).datum();
+          })
           .on("start", dragstarted)
           .on("drag", dragged)
           .on("end", dragended)
@@ -1644,33 +1640,35 @@ export default {
               +that.alphaTarget + 0.3 > 1 ? 1 : +that.alphaTarget + 0.3
             )
             .restart();
-        const g = d3.select(this.parentNode);
-        g.datum().fx = g.datum().x;
-        g.datum().fy = g.datum().y;
-        // event.subject.fx = event.subject.x;
-        // event.subject.fy = event.subject.y;
+        // const g = d3.select(this.parentNode);
+        // g.datum().fx = g.datum().x;
+        // g.datum().fy = g.datum().y;
+        // console.log("1", event);
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
       }
 
       // 拖动时，让点跟着鼠标走
       function dragged(event) {
         // 这里必须select this，不能通过 event 访问父节点。event可以选中其他东西
-        if (event) {
-          const g = d3.select(this.parentNode);
-          g.datum().fx = event.x;
-          g.datum().fy = event.y;
-        }
-        // event.subject.fx = event.x;
-        // event.subject.fy = event.y;
+
+        // const g = d3.select(this.parentNode);
+        // g.datum().fx = event.x;
+        // g.datum().fy = event.y;
+        // console.log("2", event);
+
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
       }
 
       // 拖动结束，降温
       function dragended(event) {
         if (!event.active) simulation.alphaTarget(that.alphaTarget);
-        const g = d3.select(this.parentNode);
-        g.datum().fx = null;
-        g.datum().fy = null;
-        // event.subject.fx = null;
-        // event.subject.fy = null;
+        // const g = d3.select(this.parentNode);
+        // g.datum().fx = null;
+        // g.datum().fy = null;
+        event.subject.fx = null;
+        event.subject.fy = null;
       }
 
       // 设置整体zoom行为,只选择最顶层的2个g即可
