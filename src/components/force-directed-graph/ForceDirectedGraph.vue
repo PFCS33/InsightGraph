@@ -1293,24 +1293,60 @@ export default {
       const that = this;
       // 获取data
       const data = g.datum()["vega-lite"];
-      // vega-lite config
-      var yourVlSpec = {
-        $schema: "https://vega.github.io/schema/vega-lite/v5.json",
-        description: "A simple bar chart with embedded data.",
-        // render as svg
-        usermeta: { embedOptions: { renderer: "svg" } },
-        // 由于还有坐标轴，实际的svg大小还要大些(+50)
-        width: this.vegaLiteWidth,
-        height: this.vegaLiteHeight,
-        data: {
-          values: data,
-        },
-        mark: "bar",
-        encoding: {
-          x: { field: "a", type: "ordinal" },
-          y: { field: "b", type: "quantitative" },
-        },
-      };
+      if (data) {
+        // vega-lite config
+        var yourVlSpec = {
+          $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+          description: "A simple bar chart with embedded data.",
+          // render as svg
+          usermeta: { embedOptions: { renderer: "svg" } },
+          // 由于还有坐标轴，实际的svg大小还要大些(+50)
+          width: this.vegaLiteWidth,
+          height: this.vegaLiteHeight,
+          data: {
+            values: data,
+          },
+          mark: { type: "bar", tooltip: true },
+          encoding: {
+            x: { field: "a", type: "ordinal" },
+            y: { field: "b", type: "quantitative" },
+          },
+        };
+      } else {
+        {
+          var yourVlSpec = {
+            $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+            description: "Drag out a rectangular brush to highlight points.",
+            usermeta: { embedOptions: { renderer: "svg" } },
+            width: this.vegaLiteWidth,
+            height: this.vegaLiteHeight,
+            data: {
+              url: "https://vega.github.io/vega-datasets/data/cars.json",
+            },
+            params: [
+              {
+                name: "brush",
+                select: "interval",
+                value: { x: [55, 160], y: [13, 37] },
+              },
+            ],
+            mark: "point",
+            encoding: {
+              x: { field: "Horsepower", type: "quantitative" },
+              y: { field: "Miles_per_Gallon", type: "quantitative" },
+              color: {
+                condition: {
+                  param: "brush",
+                  field: "Cylinders",
+                  type: "ordinal",
+                },
+                value: "grey",
+              },
+            },
+          };
+        }
+      }
+
       // select container by id
       // const id = "g-" + g.datum().id.replace(".", "");
       // const container = d3.select("#" + id);
@@ -1426,7 +1462,7 @@ export default {
         .append("circle")
         .attr("stroke", "#fff")
         .attr("stroke-width", 1.5)
-        .style("cursor", "pointer")
+
         .attr("r", this.circleR)
         // node 进行分类颜色映射
         .attr("fill", (d) => color(d.group))
@@ -1436,7 +1472,8 @@ export default {
             //颜色变，表示被选中
             d3.select(this)
               .attr("fill", selectedColor)
-              .attr("r", that.circleFocusR);
+              .attr("r", that.circleFocusR)
+              .style("cursor", "pointer");
           }
         })
         .on("mouseout", function (event, d) {
@@ -1461,7 +1498,7 @@ export default {
             circle
               .attr("r", diagonal)
               .attr("fill", "transparent")
-              .attr("stroke", "#ccc");
+              .attr("stroke", "#555");
             that.drawVegaLite(g);
           } else {
             that.deleteVegaLite(g);
@@ -1480,7 +1517,6 @@ export default {
       // containerGroup.datum(null);
       // nodeGroup.data(nodes);
       containerGroup.append("g").attr("class", "vega-lite-container");
-
       /* -------------------------------------------------------------------------- */
       const defaultBaseConfig = this.defaultBaseConfig;
       const defaultForceConfig = this.defaultForceConfig;
@@ -1547,6 +1583,7 @@ export default {
           .on("drag", dragged)
           .on("end", dragended)
       );
+
       // 拖动开始时，重新加热迭代过程，并且修正被拖动点的fx,fy
       function dragstarted(event) {
         if (!event.active)
