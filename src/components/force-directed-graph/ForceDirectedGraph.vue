@@ -617,7 +617,7 @@ export default {
       diagonal: null,
       axisOffsetX: 39,
       axisOffsetY: 36,
-      showIndex: [],
+      showIndex: new Set(),
 
       simulation: null,
       ticks: 0,
@@ -1233,6 +1233,9 @@ export default {
       const links = data.links.map((d) => ({ ...d }));
       const nodes = data.nodes.map((d) => ({ ...d }));
 
+      this.showIndex.forEach((index) => {
+        nodes[index].showDetail = true;
+      });
       // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
 
       const nodeG = d3
@@ -1511,10 +1514,11 @@ export default {
               .attr("fill", (d) => color(d.group));
           }
         })
-        .on("click", function () {
+        .on("click", function (event, d) {
           // 获取选择circle对应的container - g元素
           const g = d3.select(this.parentNode);
           const circle = d3.select(this);
+
           // circle.style("display", "none");
           const showDetail = !g.datum().showDetail;
           //console.log(showDetail);
@@ -1528,12 +1532,15 @@ export default {
               .attr("fill", "transparent")
               .attr("stroke", "#555");
             that.drawVegaLite(g);
+            // 记录显示vega-lite图的index
+            that.showIndex.add(d.index);
           } else {
             that.deleteVegaLite(g);
             circle
               .attr("r", that.circleR)
               .attr("stroke", "#fff")
               .attr("fill", (d) => color(d.group));
+            that.showIndex.delete(d.index);
           }
         });
 
