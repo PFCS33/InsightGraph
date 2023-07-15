@@ -594,6 +594,7 @@ import {
   Operation,
   Warning,
 } from "@element-plus/icons-vue";
+import { timeThursday } from "d3";
 
 export default {
   components: {
@@ -1313,6 +1314,7 @@ export default {
           },
         };
       } else {
+        // 数据里没有vega-lite数据的画，直接用官方数据例子中的一个
         {
           var yourVlSpec = {
             $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1350,6 +1352,9 @@ export default {
       // select container by id
       // const id = "g-" + g.datum().id.replace(".", "");
       // const container = d3.select("#" + id);
+      const circle = g.selectChild("circle");
+      const cx = circle.attr("cx");
+      const cy = circle.attr("cy");
 
       const container = g.select(".vega-lite-container");
       // create vega-lite svg
@@ -1450,7 +1455,7 @@ export default {
         // link的value值映射到粗细
         .attr("stroke-width", (d) => Math.sqrt(d.value));
       //画nodes
-      svg
+      const circleGroup = svg
         .append("g")
         .attr("class", "node-group")
         .selectAll("g")
@@ -1569,14 +1574,21 @@ export default {
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
 
-        // nodeGroup.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-        containerGroup.style("transform", (d) => {
-          return `translate(${d.x}px,${d.y}px)`;
-        });
+        // containerGroup.style("transform", (d) => {
+        //   return `translate(${d.x}px,${d.y}px)`;
+        // });
+
+        circleGroup
+          .attr("cx", function () {
+            return d3.select(this.parentNode).datum().x;
+          })
+          .attr("cy", function () {
+            return d3.select(this.parentNode).datum().y;
+          });
       }
 
       // 设置结点拖动行为
-      containerGroup.call(
+      circleGroup.call(
         d3
           .drag()
           .on("start", dragstarted)
@@ -1593,12 +1605,21 @@ export default {
             )
             .restart();
         // console.log(+that.alphaTarget + 0.3 > 1 ? 1 : +that.alphaTarget + 0.3);
+        // const g = d3.select(event.sourceEvent.target.parentNode);
+
+        // g.datum().fx = g.datum().x;
+        // g.datum().fy = g.datum().y;
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
       }
 
       // 拖动时，让点跟着鼠标走
       function dragged(event) {
+        // const g = d3.select(event.sourceEvent.target.parentNode);
+        // console.log(g);
+        // g.datum().fx = g.datum().x;
+        // g.datum().fy = g.datum().y;
+        console.log(event);
         event.subject.fx = event.x;
         event.subject.fy = event.y;
       }
@@ -1606,6 +1627,9 @@ export default {
       // 拖动结束，降温
       function dragended(event) {
         if (!event.active) simulation.alphaTarget(that.alphaTarget);
+        // const g = d3.select(event.sourceEvent.target.parentNode);
+        // g.datum().fx = null;
+        // g.datum().fy = null;
         event.subject.fx = null;
         event.subject.fy = null;
       }
