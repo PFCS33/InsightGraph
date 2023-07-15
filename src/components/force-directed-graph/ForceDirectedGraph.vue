@@ -1076,7 +1076,12 @@ export default {
           .data();
         this.simulation.force(
           "link",
-          d3.forceLink(links).id((d) => d.id)
+          d3
+            .forceLink(links)
+            .id((d) => d.id)
+            .distance(this.linkDistance)
+            .strength(this.linkStrength)
+            .iterations(this.linkIterations)
         );
       } else {
         this.simulation.force("link", null);
@@ -1134,13 +1139,16 @@ export default {
       if (newVal) {
         this.simulation.force(
           "collide",
-          d3.forceCollide((d) => {
-            if (d.showDetail) {
-              return that.diagonal;
-            } else {
-              return that.circleR;
-            }
-          })
+          d3
+            .forceCollide((d) => {
+              if (d.showDetail) {
+                return that.diagonal;
+              } else {
+                return that.circleR;
+              }
+            })
+            .strength(this.collideStrength)
+            .iterations(this.collideIterations)
         );
       } else {
         this.simulation.force("collide", null);
