@@ -1605,33 +1605,33 @@ export default {
             )
             .restart();
         // console.log(+that.alphaTarget + 0.3 > 1 ? 1 : +that.alphaTarget + 0.3);
-        // const g = d3.select(event.sourceEvent.target.parentNode);
+        const g = d3.select(event.sourceEvent.target.parentNode);
 
-        // g.datum().fx = g.datum().x;
-        // g.datum().fy = g.datum().y;
-        event.subject.fx = event.subject.x;
-        event.subject.fy = event.subject.y;
+        g.datum().fx = g.datum().x;
+        g.datum().fy = g.datum().y;
+        // event.subject.fx = event.subject.x;
+        // event.subject.fy = event.subject.y;
       }
 
       // 拖动时，让点跟着鼠标走
       function dragged(event) {
-        // const g = d3.select(event.sourceEvent.target.parentNode);
-        // console.log(g);
-        // g.datum().fx = g.datum().x;
-        // g.datum().fy = g.datum().y;
-        console.log(event);
-        event.subject.fx = event.x;
-        event.subject.fy = event.y;
+        const g = d3.select(event.sourceEvent.target.parentNode);
+
+        g.datum().fx = event.x;
+        g.datum().fy = event.y;
+        // console.log(event);
+        // event.subject.fx = event.x;
+        // event.subject.fy = event.y;
       }
 
       // 拖动结束，降温
       function dragended(event) {
         if (!event.active) simulation.alphaTarget(that.alphaTarget);
-        // const g = d3.select(event.sourceEvent.target.parentNode);
-        // g.datum().fx = null;
-        // g.datum().fy = null;
-        event.subject.fx = null;
-        event.subject.fy = null;
+        const g = d3.select(event.sourceEvent.target.parentNode);
+        g.datum().fx = null;
+        g.datum().fy = null;
+        // event.subject.fx = null;
+        // event.subject.fy = null;
       }
 
       // 设置整体zoom行为,只选择最顶层的2个g即可
