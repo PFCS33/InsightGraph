@@ -1364,12 +1364,12 @@ export default {
       vegaEmbed(container.node(), yourVlSpec).then(() => {
         // 提出svg元素，并去掉多余的div和details
         const svg = container
-          .style(
-            "transform",
-            `translate(${-that.vegaLiteWidth / 2 - that.axisOffsetX}px,${
-              -that.vegaLiteHeight / 2 - that.axisOffsetY / 2
-            }px)`
-          )
+          // .style(
+          //   "transform",
+          //   `translate(${-that.vegaLiteWidth / 2 - that.axisOffsetX}px,${
+          //     -that.vegaLiteHeight / 2 - that.axisOffsetY / 2
+          //   }px)`
+          // )
           .select("svg")
           .attr("class", "vega-lite-graph");
         //console.log(container.attr("width"));
@@ -1525,7 +1525,9 @@ export default {
         .selectAll("g");
       // containerGroup.datum(null);
       // nodeGroup.data(nodes);
-      containerGroup.append("g").attr("class", "vega-lite-container");
+      const vegaLiteContainerGroup = containerGroup
+        .append("g")
+        .attr("class", "vega-lite-container");
       /* -------------------------------------------------------------------------- */
       const defaultBaseConfig = this.defaultBaseConfig;
       const defaultForceConfig = this.defaultForceConfig;
@@ -1564,13 +1566,9 @@ export default {
         .alphaDecay(defaultBaseConfig.alphaDecay)
         .velocityDecay(defaultBaseConfig.velocityDecay)
         .on("tick", ticked);
-      // console.log("1", simulation.force("charge").strength());
+
       // 每次迭代回调函数，更新结点位置
       function ticked() {
-        //console.log("ticked");
-        //console.log("alpha", simulation.alpha());
-        //console.log("link:", linkGroup);
-
         that.ticks++;
         linkGroup
           .attr("x1", (d) => d.source.x)
@@ -1582,6 +1580,13 @@ export default {
         //   return `translate(${d.x}px,${d.y}px)`;
         // });
 
+        vegaLiteContainerGroup.style("transform", (d) => {
+          return `translate(${
+            d.x - that.vegaLiteWidth / 2 - that.axisOffsetX
+          }px,${d.y - that.vegaLiteHeight / 2 - that.axisOffsetY / 2}px)`;
+        });
+
+        // 更新圆的位置，但是数据是挂在父节点g上的
         circleGroup
           .attr("cx", function () {
             return d3.select(this.parentNode).datum().x;
@@ -1591,8 +1596,8 @@ export default {
           });
       }
 
-      // 设置结点拖动行为
-      containerGroup.call(
+      // 设置结点拖动行为，也是只在圆上设置，避免与vega-lite图的鼠标事件冲突
+      circleGroup.call(
         d3
           .drag()
           .on("start", dragstarted)
@@ -1608,9 +1613,7 @@ export default {
               +that.alphaTarget + 0.3 > 1 ? 1 : +that.alphaTarget + 0.3
             )
             .restart();
-        // console.log(+that.alphaTarget + 0.3 > 1 ? 1 : +that.alphaTarget + 0.3);
-        const g = d3.select(event.sourceEvent.target.parentNode);
-
+        const g = d3.select(this.parentNode);
         g.datum().fx = g.datum().x;
         g.datum().fy = g.datum().y;
         // event.subject.fx = event.subject.x;
@@ -1619,11 +1622,12 @@ export default {
 
       // 拖动时，让点跟着鼠标走
       function dragged(event) {
-        const g = d3.select(event.sourceEvent.target.parentNode);
-
-        g.datum().fx = event.x;
-        g.datum().fy = event.y;
-        // console.log(event);
+        // 这里必须select this，不能通过 event 访问父节点。event可以选中其他东西
+        if (event) {
+          const g = d3.select(this.parentNode);
+          g.datum().fx = event.x;
+          g.datum().fy = event.y;
+        }
         // event.subject.fx = event.x;
         // event.subject.fy = event.y;
       }
@@ -1631,7 +1635,7 @@ export default {
       // 拖动结束，降温
       function dragended(event) {
         if (!event.active) simulation.alphaTarget(that.alphaTarget);
-        const g = d3.select(event.sourceEvent.target.parentNode);
+        const g = d3.select(this.parentNode);
         g.datum().fx = null;
         g.datum().fy = null;
         // event.subject.fx = null;
