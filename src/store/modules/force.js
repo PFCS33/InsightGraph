@@ -14,6 +14,7 @@ export default {
         { a: "H", b: 87 },
         { a: "I", b: 52 },
       ],
+      carsData: [],
     };
   },
   getters: {
@@ -23,10 +24,16 @@ export default {
     vegaLiteData(state) {
       return state.vegaLiteData;
     },
+    carsData(state) {
+      return state.carsData;
+    },
   },
   mutations: {
     setDrawData(state, payload) {
       state.drawData = payload;
+    },
+    setCarsData(state, payload) {
+      state.carsData = payload;
     },
   },
   actions: {
@@ -36,6 +43,13 @@ export default {
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
         context.commit("setDrawData", data);
+      });
+    },
+    loadCarsData(context, _payload) {
+      const file = "test_data/test_data_cars.json";
+      const path = `data/${file}`;
+      d3.json(path).then(function (data) {
+        context.commit("setCarsData", data);
       });
     },
   },

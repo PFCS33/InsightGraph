@@ -724,6 +724,9 @@ export default {
     vegaLiteData() {
       return this.$store.getters["force/vegaLiteData"];
     },
+    carsData() {
+      return this.$store.getters["force/carsData"];
+    },
   },
   watch: {
     drawData(newVal) {
@@ -1176,6 +1179,7 @@ export default {
     // 载入nodes和links数据
     loadData() {
       this.$store.dispatch("force/loadData");
+      this.$store.dispatch("force/loadCarsData");
     },
 
     /* -------------------------------------------------------------------------- */
@@ -1292,12 +1296,12 @@ export default {
     /* -------------------------------------------------------------------------- */
     drawVegaLite(g) {
       const that = this;
+
       // 获取data
       const data = g.datum()["vega-lite"];
       if (data) {
         // vega-lite config
         var yourVlSpec = {
-          $schema: "https://vega.github.io/schema/vega-lite/v5.json",
           description: "A simple bar chart with embedded data.",
           // render as svg
           usermeta: { embedOptions: { renderer: "svg" } },
@@ -1317,13 +1321,12 @@ export default {
         // 数据里没有vega-lite数据的画，直接用官方数据例子中的一个
         {
           var yourVlSpec = {
-            $schema: "https://vega.github.io/schema/vega-lite/v5.json",
             description: "Drag out a rectangular brush to highlight points.",
             usermeta: { embedOptions: { renderer: "svg" } },
             width: this.vegaLiteWidth,
             height: this.vegaLiteHeight,
             data: {
-              url: "https://vega.github.io/vega-datasets/data/cars.json",
+              values: this.carsData,
             },
             params: [
               {
@@ -1455,6 +1458,7 @@ export default {
         // link的value值映射到粗细
         .attr("stroke-width", (d) => Math.sqrt(d.value));
       //画nodes
+
       const circleGroup = svg
         .append("g")
         .attr("class", "node-group")
@@ -1588,7 +1592,7 @@ export default {
       }
 
       // 设置结点拖动行为
-      circleGroup.call(
+      containerGroup.call(
         d3
           .drag()
           .on("start", dragstarted)
@@ -1647,7 +1651,7 @@ export default {
         ])
         .on("zoom", zoomed);
 
-      svg.call(zoom);
+      // svg.call(zoom);
       // 定义zoom的回调函数
       function zoomed(event) {
         const transform = event.transform;
