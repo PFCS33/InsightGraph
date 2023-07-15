@@ -617,6 +617,7 @@ export default {
       diagonal: null,
       axisOffsetX: 39,
       axisOffsetY: 36,
+      showIndex: [],
 
       simulation: null,
       ticks: 0,
@@ -1469,16 +1470,22 @@ export default {
         .selectAll("g")
         .data(nodes)
         .join("g")
-        // // for vega-lite vis
-        // .attr("showDetail", "1")
         // .attr("id", (d) => "g-" + d.id.replace(".", ""))
         .append("circle")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 1.5)
-
-        .attr("r", this.circleR)
+        .attr("stroke", function () {
+          const g = d3.select(this.parentNode);
+          return g.showDetail ? "#555" : "#fff";
+        })
+        .attr("r", function () {
+          const g = d3.select(this.parentNode);
+          return g.showDetail ? diagonal : that.circleR;
+        })
         // node 进行分类颜色映射
-        .attr("fill", (d) => color(d.group))
+        .attr("fill", function (d) {
+          const g = d3.select(this.parentNode);
+          return g.showDetail ? "transparent" : color(d.group);
+        })
+        .attr("stroke-width", 1.5)
         .style("transition", "r 0.2s")
         .on("mouseover", function (event, d) {
           if (!d.showDetail) {
@@ -1584,19 +1591,24 @@ export default {
         //   return `translate(${d.x}px,${d.y}px)`;
         // });
 
-        vegaLiteContainerGroup.style("transform", (d) => {
+        vegaLiteContainerGroup.style("transform", function () {
+          const x = d3.select(this.parentNode).datum().x;
+          const y = d3.select(this.parentNode).datum().y;
           return `translate(${
-            d.x - that.vegaLiteWidth / 2 - that.axisOffsetX
-          }px,${d.y - that.vegaLiteHeight / 2 - that.axisOffsetY / 2}px)`;
+            x - that.vegaLiteWidth / 2 - that.axisOffsetX
+          }px,${y - that.vegaLiteHeight / 2 - that.axisOffsetY / 2}px)`;
         });
 
         // 更新圆的位置，但是数据是挂在父节点g上的
         circleGroup
           .attr("cx", function () {
-            return d3.select(this.parentNode).datum().x;
+            const x = d3.select(this.parentNode).datum().x;
+
+            return x;
           })
           .attr("cy", function () {
-            return d3.select(this.parentNode).datum().y;
+            const y = d3.select(this.parentNode).datum().y;
+            return y;
           });
       }
 
@@ -1659,7 +1671,7 @@ export default {
         ])
         .on("zoom", zoomed);
 
-      // svg.call(zoom);
+      //svg.call(zoom);
       // 定义zoom的回调函数
       function zoomed(event) {
         const transform = event.transform;
