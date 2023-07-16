@@ -1371,17 +1371,21 @@ export default {
       // select container by id
       // const id = "g-" + g.datum().id.replace(".", "");
       // const container = d3.select("#" + id);
-      const circle = g.selectChild("circle");
-      const cx = circle.attr("cx");
-      const cy = circle.attr("cy");
-
       const container = g.select(".vega-lite-container");
+
       // create vega-lite svg
       vegaEmbed(container.node(), yourVlSpec).then(() => {
         // 提出svg元素，并去掉多余的div和details
         const svg = container.select("svg").attr("class", "vega-lite-graph");
+
         //console.log(container.attr("width"));
         container.node().appendChild(svg.node());
+        container.style(
+          "transform",
+          `translate(${-that.vegaLiteWidth / 2 - that.axisOffsetX}px,${
+            -that.vegaLiteHeight / 2 - that.axisOffsetY / 2
+          }px)`
+        );
         container.select("div").remove();
         container.select("details").remove();
         that.simulation.alpha(that.alpha);
@@ -1495,7 +1499,8 @@ export default {
         })
         .attr("stroke-width", 1.5)
         .style("transition", "r 0.2s")
-        .on("mouseover", function (event, d) {
+        .on("mouseover", function (event) {
+          const d = d3.select(this.parentNode).datum();
           if (!d.showDetail) {
             //颜色变，表示被选中
             d3.select(this)
@@ -1504,7 +1509,8 @@ export default {
               .style("cursor", "pointer");
           }
         })
-        .on("mouseout", function (event, d) {
+        .on("mouseout", function (event) {
+          const d = d3.select(this.parentNode).datum();
           if (!d.showDetail) {
             d3.select(this)
               .attr("r", that.circleR)
@@ -1597,36 +1603,40 @@ export default {
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
 
-        // containerGroup.style("transform", (d) => {
-        //   return `translate(${d.x}px,${d.y}px)`;
-        // });
-        // 更新圆的位置，但是数据是挂在父节点g上的
-        circleGroup
-          .attr("cx", function () {
-            return d3.select(this.parentNode).datum().x;
-          })
-          .attr("cy", function () {
-            return d3.select(this.parentNode).datum().y;
-          });
-
-        // 让挂载vega-lite图的容器g元素也跟着动
-        vegaLiteContainerGroup.style("transform", function () {
-          const x = d3.select(this.parentNode).datum().x;
-          const y = d3.select(this.parentNode).datum().y;
-          return `translate(${
-            x - that.vegaLiteWidth / 2 - that.axisOffsetX
-          }px,${y - that.vegaLiteHeight / 2 - that.axisOffsetY / 2}px)`;
+        // 只通过transform.translate 更新父元素g的位置
+        containerGroup.style("transform", (d) => {
+          return `translate(${d.x}px,${d.y}px)`;
         });
+        // // 更新圆的位置，但是数据是挂在父节点g上的
+        // circleGroup
+        //   .attr("cx", function () {
+        //     return d3.select(this.parentNode).datum().x;
+        //   })
+        //   .attr("cy", function () {
+        //     return d3.select(this.parentNode).datum().y;
+        //   });
+
+        // // 让挂载vega-lite图的容器g元素也跟着动
+        // vegaLiteContainerGroup.style("transform", function () {
+        //   const x = d3.select(this.parentNode).datum().x;
+        //   const y = d3.select(this.parentNode).datum().y;
+        //   return `translate(${
+        //     x - that.vegaLiteWidth / 2 - that.axisOffsetX
+        //   }px,${y - that.vegaLiteHeight / 2 - that.axisOffsetY / 2}px)`;
+        // });
       }
 
       // 设置结点拖动行为，也是只在圆上设置，避免与vega-lite图的鼠标事件冲突
       circleGroup.call(
         d3
           .drag()
-          .subject(function (event, d) {
+          .container(function () {
+            // set container to svg
+            return svg;
+          })
+          .subject(function (event) {
             // 将父元素 g 作为 subject 返回 (因为数据挂载在父元素g上)
-            // console.log(event.sourceEvent.target.parentNode);
-            return d3.select(event.sourceEvent.target.parentNode).datum();
+            return d3.select(this.parentNode).datum();
           })
           .on("start", dragstarted)
           .on("drag", dragged)
@@ -1645,6 +1655,7 @@ export default {
         // g.datum().fx = g.datum().x;
         // g.datum().fy = g.datum().y;
         // console.log("1", event);
+        //console.log(event);
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
       }
