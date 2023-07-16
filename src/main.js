@@ -11,7 +11,7 @@ import BaseButton from "./components/ui/BaseButton.vue";
 import * as d3 from "d3";
 import vegaEmbed from "vega-embed";
 
-// debug
+// 设置全局变量
 window.d3 = d3;
 window.vegaEmbed = vegaEmbed;
 

@@ -594,7 +594,6 @@ import {
   Operation,
   Warning,
 } from "@element-plus/icons-vue";
-import { timeThursday } from "d3";
 
 export default {
   components: {
@@ -617,7 +616,7 @@ export default {
       diagonal: null,
       axisOffsetX: 39,
       axisOffsetY: 36,
-      showIndex: new Set(),
+      showIndex: new Map(),
 
       simulation: null,
       ticks: 0,
@@ -1236,7 +1235,7 @@ export default {
       //  console.log(this.showIndex);
 
       if (this.showIndex.size)
-        this.showIndex.forEach((index) => {
+        this.showIndex.keys().forEach((index) => {
           nodes[index].showDetail = true;
         });
       // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
@@ -1310,7 +1309,7 @@ export default {
     /* -------------------------------------------------------------------------- */
     // vegaLite relative
     /* -------------------------------------------------------------------------- */
-    drawVegaLite(g) {
+    drawVegaLite(g, index) {
       const that = this;
 
       // 获取data
@@ -1374,10 +1373,12 @@ export default {
       const container = g.select(".vega-lite-container");
 
       // create vega-lite svg
-      vegaEmbed(container.node(), yourVlSpec).then(() => {
+      vegaEmbed(container.node(), yourVlSpec).then((resulte) => {
+        // 记录显示vega-lite图的index
+        //console.log(typeof index);
+        that.showIndex.set(index, resulte.view);
         // 提出svg元素，并去掉多余的div和details
         const svg = container.select("svg").attr("class", "vega-lite-graph");
-
         //console.log(container.attr("width"));
         container.node().appendChild(svg.node());
         container.style(
@@ -1392,8 +1393,10 @@ export default {
         that.simulation.restart();
       });
     },
-    deleteVegaLite(g) {
+    deleteVegaLite(g, index) {
+      this.showIndex.get(index).finalize();
       g.select(".vega-lite-graph").remove();
+      this.showIndex.delete(index);
       this.simulation.alpha(this.alpha);
       this.simulation.restart();
     },
@@ -1532,16 +1535,14 @@ export default {
               .attr("r", diagonal)
               .attr("fill", "transparent")
               .attr("stroke", "#555");
-            that.drawVegaLite(g);
-            // 记录显示vega-lite图的index
-            that.showIndex.add(d.index);
+            that.drawVegaLite(g, d.index);
           } else {
-            that.deleteVegaLite(g);
+            that.deleteVegaLite(g, d.index);
             circle
               .attr("r", that.circleR)
               .attr("stroke", "#fff")
               .attr("fill", (d) => color(d.group));
-            that.showIndex.delete(d.index);
+            //that.showIndex.delete(d.index);
           }
         });
 
