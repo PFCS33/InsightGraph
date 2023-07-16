@@ -1235,9 +1235,10 @@ export default {
       //  console.log(this.showIndex);
 
       if (this.showIndex.size)
-        this.showIndex.keys().forEach((index) => {
-          nodes[index].showDetail = true;
-        });
+        for (let key of this.showIndex.keys()) {
+          nodes[key].showDetail = true;
+        }
+
       // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
 
       const nodeG = d3
@@ -1314,6 +1315,18 @@ export default {
 
       // 获取data
       const data = g.datum()["vega-lite"];
+
+      // const data = [
+      //   { a: "A", b: 28 },
+      //   { a: "B", b: 55 },
+      //   { a: "C", b: 43 },
+      //   { a: "D", b: 91 },
+      //   { a: "E", b: 81 },
+      //   { a: "F", b: 53 },
+      //   { a: "G", b: 19 },
+      //   { a: "H", b: 87 },
+      //   { a: "I", b: 52 },
+      // ];
       if (data) {
         // vega-lite config
         var yourVlSpec = {
@@ -1391,6 +1404,7 @@ export default {
         container.select("details").remove();
         that.simulation.alpha(that.alpha);
         that.simulation.restart();
+        //   console.log(container.selectAll("*").size());
       });
     },
     deleteVegaLite(g, index) {
@@ -1546,11 +1560,7 @@ export default {
           }
         });
 
-      const containerGroup = d3
-        .select("#svg-container")
-        .select("svg")
-        .select("g.node-group")
-        .selectAll("g");
+      const containerGroup = svg.select("g.node-group").selectChildren("g");
       // containerGroup.datum(null);
       // nodeGroup.data(nodes);
       const vegaLiteContainerGroup = containerGroup
@@ -1608,6 +1618,7 @@ export default {
         containerGroup.style("transform", (d) => {
           return `translate(${d.x}px,${d.y}px)`;
         });
+        //console.log(containerGroup.size());
         // // 更新圆的位置，但是数据是挂在父节点g上的
         // circleGroup
         //   .attr("cx", function () {

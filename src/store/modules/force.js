@@ -50,6 +50,7 @@ export default {
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
         context.commit("setCarsData", data);
+        console.log(data.length);
       });
     },
   },

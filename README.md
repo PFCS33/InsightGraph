@@ -1,11 +1,15 @@
 # D3 force-directed-graph & vega-lite
 
+## 👻Play with Demo
+
+This project has been deployed to github pages, you can play it over there: [online demo](https://pfcs33.github.io/customed-force-directed-graph/)
+
 ## Run Project
 
 ### Step 1. Environment Requirement
 
-- install node.js: [Node.js (nodejs.org)](https://nodejs.org/en)
-- install Vite (the author uses npm): [Vite | 下一代的前端工具链 (vitejs.cn)](https://vitejs.cn/vite3-cn/)
+- Install node.js: [Node.js (nodejs.org)](https://nodejs.org/en)
+- Install Vite (the author uses npm): [Vite | 下一代的前端工具链 (vitejs.cn)](https://vitejs.cn/vite3-cn/)
 
 ### Step 2. Install Dependencies
 
@@ -13,13 +17,13 @@
 npm install
 ```
 
-### Step 3. Run in dev mode
+### Step 3. Run in Dev Mode
 
 ```
 npm run dev
 ```
 
-- then access the `local url` in prompt
+- Then access the `local url` in prompt
 
 ## Function Description
 
@@ -27,14 +31,14 @@ npm run dev
 
   - You can have a quick view of almost all the API of D3's directed force graph over there.
 
-    - Base on the official Documentation: https://d3js.org/d3-force
+    - Base on the Official Documentation: https://d3js.org/d3-force
 
-  - the params which can be set as a function is marked by \*
-
-- embed the **Vega-Lite graph** in the circle of D3 force directed graph
-  - you can click **circles** to toggle the display of Vega-Lite graphs
+  - The params which can be set as a function is marked by \*
+- Embed the **Vega-Lite graph** in the circle of D3 force directed graph
+  - You can click **circles** to toggle the display of Vega-Lite graphs
   - Note: add collision force will look better (which is not set by default config of project)
 
-## 👻Play with Demo
+## Problems
 
-This project has been deployed to github pages, you can play it over there: [online demo](https://pfcs33.github.io/customed-force-directed-graph/)
+- performance problem: If data size of a vega-lite graph is larger than 400, the browser will become slow, and can't give instant response
+  - I guess it is because there are too many dom elements in the brower
