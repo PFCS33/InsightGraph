@@ -9,7 +9,11 @@
   </svg>
 </template>
 <script>
+import { Remove } from "@element-plus/icons-vue";
 export default {
+  components: {
+    Remove,
+  },
   data() {
     return {
       graphNum: 1,

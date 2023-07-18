@@ -581,6 +581,26 @@
     </BaseButton>
     <BaseCard :inset="true" class="ticks-card"> {{ ticks }} </BaseCard>
     <div id="svg-container"></div>
+    <defs style="display: none">
+      <Remove
+        id="defs-remove"
+        :width="iconSize"
+        :height="iconSize"
+        class="vega-lite-icon"
+      />
+      <svg
+        id="defs-pin"
+        viewBox="0 0 1025 1024"
+        xmlns="http://www.w3.org/2000/svg"
+        :width="iconSize"
+        :height="iconSize"
+      >
+        <path
+          d="M320 839.68l-238.592 174.08c-8.704 6.656-19.456 9.728-29.696 9.728-12.8 0-26.112-5.12-35.84-14.848-17.92-17.92-20.48-46.08-5.12-66.56l212.992-288.256L56.32 487.424C39.936 471.04 36.864 445.44 48.128 425.472c8.192-12.8 76.8-112.64 229.376-75.264 2.56 0.512 5.12 0.512 8.192 1.024 6.144 0.512 13.312 1.024 20.992 2.56 32.256 5.12 89.6-20.48 139.264-62.976 47.616-40.448 78.336-87.552 78.336-120.32 0-7.68 0-15.872-0.512-23.552-1.024-30.72-3.072-77.824 31.744-112.64 41.472-41.472 107.52-45.056 153.088-7.68 1.024 0.512 1.536 1.536 2.56 2.56 24.576 24.064 276.48 275.968 279.04 278.528 21.504 21.504 33.792 50.688 33.792 81.408s-11.776 59.392-33.792 80.896c-34.816 34.816-82.432 33.28-113.664 31.744-7.168 0-15.36-0.512-23.04-0.512-30.72 0-67.584 21.504-103.936 60.928-50.688 55.296-81.92 126.464-79.36 158.72 1.024 10.24 3.072 28.16 3.584 30.72 36.864 149.504-62.976 217.6-74.752 225.28-20.48 12.288-46.592 9.216-62.976-7.168l-165.376-165.376-50.688 35.328z"
+          fill="#555"
+        ></path>
+      </svg>
+    </defs>
   </div>
 </template>
 
@@ -593,7 +613,7 @@ import {
   Setting,
   Operation,
   Warning,
-  Remove,
+  RemoveFilled,
 } from "@element-plus/icons-vue";
 
 export default {
@@ -605,6 +625,7 @@ export default {
     Share,
     Operation,
     Warning,
+    Remove: RemoveFilled,
   },
   data() {
     return {
@@ -615,6 +636,7 @@ export default {
       vegaLiteR: 110,
       vegaLiteHeight: 100,
       vegaLiteWidth: 100,
+      iconSize: 20,
 
       // axisOffsetX: 39,
       // axisOffsetY: 36,
@@ -1572,36 +1594,84 @@ export default {
         .on("click", function (event, d) {
           // 获取选择circle对应的container - g元素
           const g = d3.select(this.parentNode);
-          const circle = d3.select(this);
-          const showDetail = !g.datum().showDetail;
+          const showDetail = g.datum().showDetail;
           //console.log(showDetail);
-          g.datum().showDetail = showDetail;
           // reinitialize the collide force, if set
-          const collideForce = that.simulation.force("collide");
-          if (collideForce) collideForce.initialize(that.simulation.nodes());
-          if (showDetail) {
-            // g.datum().fx = g.datum().x;
-            // g.datum().fy = g.datum().y;
+          if (!showDetail) {
+            g.datum().showDetail = true;
+            const collideForce = that.simulation.force("collide");
+            if (collideForce) collideForce.initialize(that.simulation.nodes());
+
+            const circle = d3.select(this);
+            const remove = g
+              .append("use")
+              .attr("href", "#defs-remove")
+              .attr("class", "remove")
+              .attr("class", "vega-lite-icon")
+
+              .attr("cursor", "pointer")
+              .attr(
+                "transform",
+                `translate(${
+                  that.vegaLiteR - that.iconSize
+                },${-that.vegaLiteR})`
+              )
+              .on("click", function () {
+                g.datum().showDetail = false;
+                g.selectChildren(".vega-lite-icon").remove();
+                that.deleteVegaLite(g, d.index);
+                circle
+                  .attr("r", that.circleR)
+                  .attr("stroke", "#fff")
+                  .attr("fill", (d) => color(d.group));
+              });
+
+            const pin = g
+              .append("use")
+              .attr("href", "#defs-pin")
+              .attr("class", "pin")
+              .attr("class", "vega-lite-icon")
+              .attr("cursor", "pointer")
+              .attr(
+                "transform",
+                `translate(${
+                  that.vegaLiteR - 2 * that.iconSize
+                },${-that.vegaLiteR})`
+              );
+
             circle
               .attr("r", that.vegaLiteR)
               .attr("fill", "transparent")
               .attr("stroke", "#555");
             that.drawVegaLite(g, d.index);
-          } else {
-            // g.datum().fx = null;
-            // g.datum().fy = null;
-            that.deleteVegaLite(g, d.index);
-            circle
-              .attr("r", that.circleR)
-              .attr("stroke", "#fff")
-              .attr("fill", (d) => color(d.group));
-            //that.showIndex.delete(d.index);
-          }
+          } // else {
+
+          //   that.deleteVegaLite(g, d.index);
+          //   g.selectChildren(".vega-lite-icon").remove();
+
+          //   circle
+          //     .attr("r", that.circleR)
+          //     .attr("stroke", "#fff")
+          //     .attr("fill", (d) => color(d.group));
+          //   //that.showIndex.delete(d.index);
+          // }
         });
 
       const containerGroup = svg.select("g.node-group").selectChildren("g");
-      // containerGroup.datum(null);
-      // nodeGroup.data(nodes);
+
+      // const useRemove = document.createElementNS(
+      //   "http://www.w3.org/2000/svg",
+      //   "use"
+      // );
+      // useRemove.setAttribute("id", "defs-remove");
+
+      // const usePin = document.createElementNS(
+      //   "http://www.w3.org/2000/svg",
+      //   "use"
+      // );
+      // usePin.setAttribute("href", "#defs-pin");
+      // containerGroup.append(usePin);
+
       const vegaLiteContainerGroup = containerGroup
         .append("g")
         .attr("class", "vega-lite-container");
@@ -1918,6 +1988,7 @@ export default {
   margin-top: 10px;
 }
 </style>
+
 <style>
 .el-form-item__label {
   margin-bottom: 2px !important;
