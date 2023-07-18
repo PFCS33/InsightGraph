@@ -593,6 +593,7 @@ import {
   Setting,
   Operation,
   Warning,
+  Remove,
 } from "@element-plus/icons-vue";
 
 export default {
@@ -611,11 +612,12 @@ export default {
       height: null,
       circleR: 5,
       circleFocusR: 20,
+      vegaLiteR: 110,
       vegaLiteHeight: 100,
       vegaLiteWidth: 100,
-      diagonal: null,
-      axisOffsetX: 39,
-      axisOffsetY: 36,
+
+      // axisOffsetX: 39,
+      // axisOffsetY: 36,
       showIndex: new Map(),
 
       simulation: null,
@@ -1141,7 +1143,7 @@ export default {
           d3
             .forceCollide((d) => {
               if (d.showDetail) {
-                return that.diagonal;
+                return that.vegaLiteR;
               } else {
                 return that.circleR;
               }
@@ -1385,27 +1387,61 @@ export default {
       // const container = d3.select("#" + id);
       const container = g.select(".vega-lite-container");
 
-      // create vega-lite svg
-      vegaEmbed(container.node(), yourVlSpec).then((resulte) => {
-        // 记录显示vega-lite图的index
-        //console.log(typeof index);
-        that.showIndex.set(index, resulte.view);
-        // 提出svg元素，并去掉多余的div和details
-        const svg = container.select("svg").attr("class", "vega-lite-graph");
-        //console.log(container.attr("width"));
-        container.node().appendChild(svg.node());
-        container.style(
-          "transform",
-          `translate(${-that.vegaLiteWidth / 2 - that.axisOffsetX}px,${
-            -that.vegaLiteHeight / 2 - that.axisOffsetY / 2
-          }px)`
-        );
+      vegaEmbed(container.node(), yourVlSpec).then((result) => {
+        const view = result.view.background("transparent");
+        that.showIndex.set(index, view);
+        // // Export to SVG
+        // view.toSVG().then((svgString) => {
+        //   console.log(svgString);
+        // });
+        // Export to canvas, then transform to img
+        const svg = container.select("svg");
+        const width = svg.attr("width");
+        const height = svg.attr("height");
+
         container.select("div").remove();
         container.select("details").remove();
-        that.simulation.alpha(that.alpha);
-        that.simulation.restart();
-        //   console.log(container.selectAll("*").size());
+        view.toCanvas(5).then((canvas) => {
+          // Access the canvas element and export as an image
+          const image = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "image"
+          );
+          image.setAttribute("href", canvas.toDataURL("image/png", 1));
+          image.setAttribute("width", width);
+          image.setAttribute("height", height);
+          container.style(
+            "transform",
+            `translate(${-width / 2}px,${-height / 2}px)`
+          );
+          // console.log(view.height());
+          image.setAttribute("class", "vega-lite-graph");
+          container.node().appendChild(image);
+          that.simulation.alpha(that.alpha);
+          that.simulation.restart();
+        });
       });
+
+      /* -------------------------------------------------------------------------- */
+      // vegaEmbed(container.node(), yourVlSpec).then((resulte) => {
+      //   // 记录显示vega-lite图的index
+
+      //   that.showIndex.set(index, resulte.view);
+      //   // 提出svg元素，并去掉多余的div和details
+      //   const svg = container.select("svg").attr("class", "vega-lite-graph");
+
+      //   container.node().appendChild(svg.node());
+      //   container.style(
+      //     "transform",
+      //     `translate(${-that.vegaLiteWidth / 2 - that.axisOffsetX}px,${
+      //       -that.vegaLiteHeight / 2 - that.axisOffsetY / 2
+      //     }px)`
+      //   );
+      //   container.select("div").remove();
+      //   container.select("details").remove();
+      //   that.simulation.alpha(that.alpha);
+      //   that.simulation.restart();
+      // });
     },
     deleteVegaLite(g, index) {
       this.showIndex.get(index).finalize();
@@ -1462,11 +1498,10 @@ export default {
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
-      const vWidth = this.vegaLiteWidth + this.axisOffsetX;
-      const vHeight = this.vegaLiteHeight + this.axisOffsetY;
-      const diagonal =
-        Math.ceil(Math.sqrt(vWidth * vWidth + vHeight * vHeight)) / 2;
-      // console.log(diagonal);
+      // const vWidth = this.vegaLiteWidth + this.axisOffsetX;
+      // const vHeight = this.vegaLiteHeight + this.axisOffsetY;
+      // const diagonal =
+      //   Math.ceil(Math.sqrt(vWidth * vWidth + vHeight * vHeight)) / 2;
 
       // 先把svg图和nodes+links 元素画出来
       // 随便设置一个种类的颜色映射
@@ -1507,7 +1542,7 @@ export default {
         })
         .attr("r", function () {
           const gData = d3.select(this.parentNode).datum();
-          return gData.showDetail ? diagonal : that.circleR;
+          return gData.showDetail ? that.vegaLiteR : that.circleR;
         })
         // node 进行分类颜色映射
         .attr("fill", function (d) {
@@ -1545,12 +1580,16 @@ export default {
           const collideForce = that.simulation.force("collide");
           if (collideForce) collideForce.initialize(that.simulation.nodes());
           if (showDetail) {
+            // g.datum().fx = g.datum().x;
+            // g.datum().fy = g.datum().y;
             circle
-              .attr("r", diagonal)
+              .attr("r", that.vegaLiteR)
               .attr("fill", "transparent")
               .attr("stroke", "#555");
             that.drawVegaLite(g, d.index);
           } else {
+            // g.datum().fx = null;
+            // g.datum().fy = null;
             that.deleteVegaLite(g, d.index);
             circle
               .attr("r", that.circleR)
@@ -1609,17 +1648,20 @@ export default {
       function ticked() {
         that.ticks++;
         linkGroup
+
           .attr("x1", (d) => d.source.x)
           .attr("y1", (d) => d.source.y)
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
 
         // 只通过transform.translate 更新父元素g的位置
-        containerGroup.style("transform", (d) => {
-          return `translate(${d.x}px,${d.y}px)`;
-        });
+        containerGroup
+          // .filter((d) => !d.showDetail)
+          .style("transform", (d) => {
+            return `translate(${d.x}px,${d.y}px)`;
+          });
         //console.log(containerGroup.size());
-        // // 更新圆的位置，但是数据是挂在父节点g上的
+        // 更新圆的位置，但是数据是挂在父节点g上的
         // circleGroup
         //   .attr("cx", function () {
         //     return d3.select(this.parentNode).datum().x;
@@ -1691,6 +1733,9 @@ export default {
         // const g = d3.select(this.parentNode);
         // g.datum().fx = null;
         // g.datum().fy = null;
+
+        // event.subject.fx = event.x;
+        // event.subject.fy = event.y;
         event.subject.fx = null;
         event.subject.fy = null;
       }
@@ -1717,7 +1762,7 @@ export default {
       }
 
       // initialize the default data
-      this.diagonal = diagonal;
+      // this.diagonal = diagonal;
       this.simulation = simulation;
       this.centerX =
         this.defaultForceConfig.center.X =

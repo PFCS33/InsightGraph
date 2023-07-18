@@ -1,21 +1,18 @@
 <template>
-  <div class="container">
+  <svg class="container">
     <!-- <svg class="svg" :viewBox="[0, 0, 500, 500]"> -->
-    <circle class="circle"></circle>
+    <!-- <circle class="circle"></circle> -->
 
-    <g id="vis0"></g>
-    <g id="vis1"></g>
-    <g id="vis2"></g>
-    <g id="vis3"></g>
-    <g id="vis4"></g>
+    <g id="vis0" width="500" height="500"></g>
+
     <!-- </svg> -->
-  </div>
+  </svg>
 </template>
 <script>
 export default {
   data() {
     return {
-      graphNum: 5,
+      graphNum: 1,
     };
   },
   methods: {
@@ -51,12 +48,34 @@ export default {
       for (let i = 0; i < this.graphNum; i++) {
         const id = "#vis" + i;
         vegaEmbed(id, Myvis).then((result) => {
-          // 销毁图表实例
-          const container = d3.select(id);
-          const svg = container.select("svg").node();
-          container.node().appendChild(svg);
-          container.select("div").remove();
-          container.select("details").remove();
+          const view = result.view;
+          // // Export to SVG
+          // view.toSVG().then((svgString) => {
+          //   console.log(svgString);
+          // });
+          // Export to canvas, then transform to img
+          view.toCanvas().then((canvas) => {
+            const container = d3.select(id);
+            container.select("div").remove();
+            container.select("details").remove();
+            // Access the canvas element and export as an image
+            const image = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "image"
+            );
+
+            image.setAttribute("href", canvas.toDataURL());
+            image.setAttribute("width", view.width());
+            image.setAttribute("height", view.height());
+            container.node().appendChild(image);
+          });
+
+          // // 销毁图表实例
+          // const container = d3.select(id);
+          // const svg = container.select("svg").node();
+          // container.node().appendChild(svg);
+          // container.select("div").remove();
+          // // container.select("details").remove();
         });
       }
 
