@@ -1648,6 +1648,7 @@ export default {
               .on("click", function () {
                 g.datum().showDetail = false;
                 g.datum().pinned = false;
+                g.classed("pinned", false);
                 g.datum().fx = null;
                 g.datum().fy = null;
                 g.selectChildren(".vega-lite-icon").remove();
@@ -1675,12 +1676,14 @@ export default {
               .on("click", function () {
                 const pinned = !g.datum().pinned;
                 g.datum().pinned = pinned;
+                g.classed("pinned", true);
                 if (pinned) {
                   g.datum().fx = g.datum().x;
                   g.datum().fy = g.datum().y;
                   that.deleteVegaLite(g, d.index);
                   that.drawVegaLite(g, d.index, "svg");
                 } else {
+                  g.classed("pinned", false);
                   g.datum().fx = null;
                   g.datum().fy = null;
                   that.deleteVegaLite(g, d.index);
@@ -1766,6 +1769,7 @@ export default {
       // 每次迭代回调函数，更新结点位置
       function ticked() {
         that.ticks++;
+
         linkGroup
 
           .attr("x1", (d) => d.source.x)
@@ -1902,6 +1906,55 @@ export default {
           height / 2;
       this.defaultForceConfig.collide.Radius = this.collideRadius =
         this.circleR;
+
+      // svg
+      //   .append("g")
+      //   .selectAll("g")
+      //   .data([0, 1, 2, 3, 4])
+      //   .join("g")
+      //   .attr("class", (d) => `test-${d}`);
+      // for (let i = 0; i < 5; i++) {
+      //   var yourVlSpec = {
+      //     description: "Drag out a rectangular brush to highlight points.",
+      //     usermeta: { embedOptions: { renderer: "svg" } },
+      //     width: this.vegaLiteWidth,
+      //     height: this.vegaLiteHeight,
+      //     data: {
+      //       values: this.carsData,
+      //     },
+      //     params: [
+      //       {
+      //         name: "brush",
+      //         select: "interval",
+      //         value: { x: [55, 160], y: [13, 37] },
+      //       },
+      //     ],
+      //     mark: "point",
+      //     encoding: {
+      //       x: { field: "Horsepower", type: "quantitative" },
+      //       y: { field: "Miles_per_Gallon", type: "quantitative" },
+      //       color: {
+      //         condition: {
+      //           param: "brush",
+      //           field: "Cylinders",
+      //           type: "ordinal",
+      //         },
+      //         value: "grey",
+      //       },
+      //     },
+      //   };
+
+      //   vegaEmbed(`.test-${i}`, yourVlSpec).then(() => {
+      //     const container = d3.select(`.test-${i}`);
+      //     const svg = container.select("svg");
+
+      //     container.node().appendChild(svg.node());
+      //     container.attr("transform", `translate(${i * 200},0)`);
+
+      //     container.select("div").remove();
+      //     container.select("details").remove();
+      //   });
+      // }
     },
   },
 
@@ -2048,5 +2101,9 @@ export default {
 .el-tabs__content {
   display: flex;
   align-items: center;
+}
+
+.pinned {
+  will-change: transform;
 }
 </style>

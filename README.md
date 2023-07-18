@@ -41,4 +41,5 @@ npm run dev
 ## Problems
 
 - performance problem: If data size of a vega-lite graph is larger than 400, the browser will become slow, and can't give instant response
-  - I guess it is because there are too many dom elements in the brower
+  - Because there are too many dom element in a vega-lite svg, and in every tick browser will redraw/reflow all of them
+  - SOLVED: make complex svg graphs can only be moved by drag, and add 'will-change: transform',  then browser will avoid the redraw of static graph?
