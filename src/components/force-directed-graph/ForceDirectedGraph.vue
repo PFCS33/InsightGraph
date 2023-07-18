@@ -641,6 +641,7 @@ export default {
       // axisOffsetX: 39,
       // axisOffsetY: 36,
       showIndex: new Map(),
+      pinnedIndex: new Map(),
 
       simulation: null,
       ticks: 0,
@@ -1263,8 +1264,14 @@ export default {
       //  console.log(this.showIndex);
 
       if (this.showIndex.size)
-        for (let key of this.showIndex.keys()) {
+        for (const key of this.showIndex.keys()) {
           nodes[key].showDetail = true;
+        }
+
+      if (this.pinnedIndex.size)
+        for (const [index, g] of this.pinnedIndex) {
+          this.deleteVegaLite(g, index);
+          this.drawVegaLite(g, index, "img");
         }
 
       // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
@@ -1338,23 +1345,12 @@ export default {
     /* -------------------------------------------------------------------------- */
     // vegaLite relative
     /* -------------------------------------------------------------------------- */
-    drawVegaLite(g, index) {
+    drawVegaLite(g, index, mode) {
       const that = this;
 
       // 获取data
       const data = g.datum()["vega-lite"];
 
-      // const data = [
-      //   { a: "A", b: 28 },
-      //   { a: "B", b: 55 },
-      //   { a: "C", b: 43 },
-      //   { a: "D", b: 91 },
-      //   { a: "E", b: 81 },
-      //   { a: "F", b: 53 },
-      //   { a: "G", b: 19 },
-      //   { a: "H", b: 87 },
-      //   { a: "I", b: 52 },
-      // ];
       if (data) {
         // vega-lite config
         var yourVlSpec = {
@@ -1416,36 +1412,56 @@ export default {
       vegaEmbed(container.node(), yourVlSpec).then((result) => {
         const view = result.view.background("transparent");
         that.showIndex.set(index, view);
+        that.pinnedIndex.set(index, g);
+        const svg = container.select("svg");
+        const width = svg.attr("width");
+        const height = svg.attr("height");
+        switch (mode) {
+          case "svg":
+            svg.attr("class", "vega-lite-graph");
+
+            container.node().appendChild(svg.node());
+            container.style(
+              "transform",
+              `translate(${-that.vegaLiteWidth / 2 - that.axisOffsetX}px,${
+                -that.vegaLiteHeight / 2 - that.axisOffsetY / 2
+              }px)`
+            );
+            container.select("div").remove();
+            container.select("details").remove();
+            that.simulation.alpha(that.alpha);
+            that.simulation.restart();
+            break;
+          case "img":
+            container.select("div").remove();
+            container.select("details").remove();
+            view.toCanvas(5).then((canvas) => {
+              // Access the canvas element and export as an image
+              const image = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "image"
+              );
+              image.setAttribute("href", canvas.toDataURL("image/png", 1));
+              image.setAttribute("width", width);
+              image.setAttribute("height", height);
+              container.style(
+                "transform",
+                `translate(${-width / 2}px,${-height / 2}px)`
+              );
+              // console.log(view.height());
+              image.setAttribute("class", "vega-lite-graph");
+              container.node().appendChild(image);
+              that.simulation.alpha(that.alpha);
+              that.simulation.restart();
+            });
+
+            break;
+        }
         // // Export to SVG
         // view.toSVG().then((svgString) => {
         //   console.log(svgString);
         // });
         // Export to canvas, then transform to img
-        const svg = container.select("svg");
-        const width = svg.attr("width");
-        const height = svg.attr("height");
-
-        container.select("div").remove();
-        container.select("details").remove();
-        view.toCanvas(5).then((canvas) => {
-          // Access the canvas element and export as an image
-          const image = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "image"
-          );
-          image.setAttribute("href", canvas.toDataURL("image/png", 1));
-          image.setAttribute("width", width);
-          image.setAttribute("height", height);
-          container.style(
-            "transform",
-            `translate(${-width / 2}px,${-height / 2}px)`
-          );
-          // console.log(view.height());
-          image.setAttribute("class", "vega-lite-graph");
-          container.node().appendChild(image);
-          that.simulation.alpha(that.alpha);
-          that.simulation.restart();
-        });
       });
 
       /* -------------------------------------------------------------------------- */
@@ -1472,9 +1488,8 @@ export default {
     deleteVegaLite(g, index) {
       this.showIndex.get(index).finalize();
       g.select(".vega-lite-graph").remove();
+      this.pinnedIndex.delete(index);
       this.showIndex.delete(index);
-      this.simulation.alpha(this.alpha);
-      this.simulation.restart();
     },
     /* -------------------------------------------------------------------------- */
     // other
@@ -1641,6 +1656,8 @@ export default {
                   .attr("r", that.circleR)
                   .attr("stroke", "#fff")
                   .attr("fill", (d) => color(d.group));
+                that.simulation.alpha(that.alpha);
+                that.simulation.restart();
               });
 
             const pin = g
@@ -1661,9 +1678,13 @@ export default {
                 if (pinned) {
                   g.datum().fx = g.datum().x;
                   g.datum().fy = g.datum().y;
+                  that.deleteVegaLite(g, d.index);
+                  that.drawVegaLite(g, d.index, "svg");
                 } else {
                   g.datum().fx = null;
                   g.datum().fy = null;
+                  that.deleteVegaLite(g, d.index);
+                  that.drawVegaLite(g, d.index, "img");
                 }
               });
 
@@ -1671,7 +1692,7 @@ export default {
               .attr("r", that.vegaLiteR)
               .attr("fill", "transparent")
               .attr("stroke", "#555");
-            that.drawVegaLite(g, d.index);
+            that.drawVegaLite(g, d.index, "img");
           } // else {
 
           //   that.deleteVegaLite(g, d.index);
