@@ -1517,6 +1517,12 @@ export default {
       //console.log(data.links);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
+      const defs = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "defs"
+      );
+      svgContainer.node().appendChild(defs);
+
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
