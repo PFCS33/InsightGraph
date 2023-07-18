@@ -1254,7 +1254,11 @@ export default {
 
       // 创建原始数据的copy，因为 force simulation 会改变数组数据
       const links = data.links.map((d) => ({ ...d }));
-      const nodes = data.nodes.map((d) => ({ ...d, showDetail: false }));
+      const nodes = data.nodes.map((d) => ({
+        ...d,
+        showDetail: false,
+        pinned: false,
+      }));
 
       //  console.log(this.showIndex);
 
@@ -1513,7 +1517,11 @@ export default {
       // 创建原始数据的copy，因为 force simulation 会改变数组数据
       const links = data.links.map((d) => ({ ...d }));
       // 加入showDetail属性，控制vega-lite图的显示
-      const nodes = data.nodes.map((d) => ({ ...d, showDetail: false }));
+      const nodes = data.nodes.map((d) => ({
+        ...d,
+        showDetail: false,
+        pinned: false,
+      }));
       //console.log(data.links);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
@@ -1624,6 +1632,9 @@ export default {
               )
               .on("click", function () {
                 g.datum().showDetail = false;
+                g.datum().pinned = false;
+                g.datum().fx = null;
+                g.datum().fy = null;
                 g.selectChildren(".vega-lite-icon").remove();
                 that.deleteVegaLite(g, d.index);
                 circle
@@ -1643,7 +1654,18 @@ export default {
                 `translate(${
                   that.vegaLiteR - 2 * that.iconSize
                 },${-that.vegaLiteR})`
-              );
+              )
+              .on("click", function () {
+                const pinned = !g.datum().pinned;
+                g.datum().pinned = pinned;
+                if (pinned) {
+                  g.datum().fx = g.datum().x;
+                  g.datum().fy = g.datum().y;
+                } else {
+                  g.datum().fx = null;
+                  g.datum().fy = null;
+                }
+              });
 
             circle
               .attr("r", that.vegaLiteR)
@@ -1731,11 +1753,9 @@ export default {
           .attr("y2", (d) => d.target.y);
 
         // 只通过transform.translate 更新父元素g的位置
-        containerGroup
-          // .filter((d) => !d.showDetail)
-          .style("transform", (d) => {
-            return `translate(${d.x}px,${d.y}px)`;
-          });
+        containerGroup.style("transform", (d) => {
+          return `translate(${d.x}px,${d.y}px)`;
+        });
         //console.log(containerGroup.size());
         // 更新圆的位置，但是数据是挂在父节点g上的
         // circleGroup
@@ -1812,8 +1832,13 @@ export default {
 
         // event.subject.fx = event.x;
         // event.subject.fy = event.y;
-        event.subject.fx = null;
-        event.subject.fy = null;
+        if (event.subject.pinned) {
+          event.subject.fx = event.subject.x;
+          event.subject.fy = event.subject.y;
+        } else {
+          event.subject.fx = null;
+          event.subject.fy = null;
+        }
       }
 
       // 设置整体zoom行为,只选择最顶层的2个g即可
