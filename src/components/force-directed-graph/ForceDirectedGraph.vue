@@ -1388,12 +1388,24 @@ export default {
       // create vega-lite svg
       vegaEmbed(container.node(), yourVlSpec).then((resulte) => {
         // 记录显示vega-lite图的index
-        //console.log(typeof index);
         that.showIndex.set(index, resulte.view);
         // 提出svg元素，并去掉多余的div和details
         const svg = container.select("svg").attr("class", "vega-lite-graph");
-        //console.log(container.attr("width"));
-        container.node().appendChild(svg.node());
+
+        const defs = d3.select("#svg-container").select("defs").node();
+
+        svg.attr("id", `pattern-${index}`);
+
+        defs.appendChild(svg.node());
+
+        const uses = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "use"
+        );
+
+        uses.setAttribute("href", `#pattern-${index}`);
+
+        container.node().appendChild(uses);
         container.style(
           "transform",
           `translate(${-that.vegaLiteWidth / 2 - that.axisOffsetX}px,${
@@ -1459,6 +1471,12 @@ export default {
       //console.log(data.links);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
+      const defs = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "defs"
+      );
+      svgContainer.node().appendChild(defs);
+
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
