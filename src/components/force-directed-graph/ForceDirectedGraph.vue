@@ -766,24 +766,54 @@ export default {
         // get id array of neighbour
         const neighborSet = this.neighborMap.get(newVal);
         const oldNeighborSet = this.neighborMap.get(oldVal);
+        const nodeGroup = d3
+          .select("#svg-container")
+          .select(".node-group")
+          .selectChildren("g");
 
-        if (neighborSet)
-          d3.select("#svg-container")
-            .select(".node-group")
-            .selectChildren("g")
+        const linkGroup = d3
+          .select("#svg-container")
+          .select(".link-group")
+          .selectChildren("line");
+
+        console.log(linkGroup);
+        if (neighborSet) {
+          nodeGroup
             .filter((d) => neighborSet.includes(d.id.replace(".", "")))
             .selectChild("circle")
-            .attr("r", this.circleFocusR - 10)
-            .attr("stroke", "#b2f2bb");
+            .attr("stroke", "#96f2d7");
 
-        if (oldNeighborSet)
-          d3.select("#svg-container")
-            .select(".node-group")
-            .selectChildren("g")
+          linkGroup
+            .filter(
+              (d) =>
+                newVal === d.source.id.replace(".", "") ||
+                newVal === d.target.id.replace(".", "")
+            )
+            .attr("stroke", "#12b886");
+        }
+
+        if (oldNeighborSet) {
+          nodeGroup
             .filter((d) => oldNeighborSet.includes(d.id.replace(".", "")))
             .selectChild("circle")
-            .attr("r", this.circleR)
-            .attr("stroke", "#fff");
+
+            .attr("stroke", function () {
+              const showDetail = d3.select(this.parentNode).datum().showDetail;
+              if (showDetail) {
+                return "#000";
+              } else {
+                return "#fff";
+              }
+            });
+
+          linkGroup
+            .filter(
+              (d) =>
+                oldVal === d.source.id.replace(".", "") ||
+                oldVal === d.target.id.replace(".", "")
+            )
+            .attr("stroke", "#999999");
+        }
       }
     },
     /* -------------------------------------------------------------------------- */
@@ -1618,7 +1648,7 @@ export default {
       const linkGroup = svg
         .append("g")
         .attr("class", "link-group")
-        .attr("stroke", "#99999999")
+        .attr("stroke", "#999999")
         .attr("stroke-opacity", 0.6)
         .selectAll("line")
         .data(links)
