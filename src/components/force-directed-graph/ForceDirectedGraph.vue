@@ -582,22 +582,17 @@
     <BaseCard :inset="true" class="ticks-card"> {{ ticks }} </BaseCard>
     <div id="svg-container"></div>
     <defs style="display: none">
-      <Remove
-        id="defs-remove"
-        :width="iconSize"
-        :height="iconSize"
-        class="vega-lite-icon"
-      />
+      <Remove id="defs-remove" :width="iconSize" :height="iconSize" />
       <svg
         id="defs-pin"
         viewBox="0 0 1025 1024"
         xmlns="http://www.w3.org/2000/svg"
         :width="iconSize"
         :height="iconSize"
+        fill="#555"
       >
         <path
           d="M320 839.68l-238.592 174.08c-8.704 6.656-19.456 9.728-29.696 9.728-12.8 0-26.112-5.12-35.84-14.848-17.92-17.92-20.48-46.08-5.12-66.56l212.992-288.256L56.32 487.424C39.936 471.04 36.864 445.44 48.128 425.472c8.192-12.8 76.8-112.64 229.376-75.264 2.56 0.512 5.12 0.512 8.192 1.024 6.144 0.512 13.312 1.024 20.992 2.56 32.256 5.12 89.6-20.48 139.264-62.976 47.616-40.448 78.336-87.552 78.336-120.32 0-7.68 0-15.872-0.512-23.552-1.024-30.72-3.072-77.824 31.744-112.64 41.472-41.472 107.52-45.056 153.088-7.68 1.024 0.512 1.536 1.536 2.56 2.56 24.576 24.064 276.48 275.968 279.04 278.528 21.504 21.504 33.792 50.688 33.792 81.408s-11.776 59.392-33.792 80.896c-34.816 34.816-82.432 33.28-113.664 31.744-7.168 0-15.36-0.512-23.04-0.512-30.72 0-67.584 21.504-103.936 60.928-50.688 55.296-81.92 126.464-79.36 158.72 1.024 10.24 3.072 28.16 3.584 30.72 36.864 149.504-62.976 217.6-74.752 225.28-20.48 12.288-46.592 9.216-62.976-7.168l-165.376-165.376-50.688 35.328z"
-          fill="#555"
         ></path>
       </svg>
     </defs>
@@ -629,6 +624,7 @@ export default {
   },
   data() {
     return {
+      // graph set
       width: null,
       height: null,
       circleR: 5,
@@ -638,10 +634,12 @@ export default {
       vegaLiteWidth: 100,
       iconSize: 20,
 
-      // axisOffsetX: 39,
-      // axisOffsetY: 36,
+      // show conifg of vega-lite graph
       showIndex: new Map(),
       pinnedIndex: new Map(),
+      // neighbor info
+      neighborMap: new Map(),
+      selectedNode: null,
 
       simulation: null,
       ticks: 0,
@@ -756,10 +754,38 @@ export default {
   watch: {
     drawData(newVal) {
       if (newVal) {
+        //construct the neighbor info
+        this.getNeighbourInfo(newVal);
+        // draw force graph
         this.drawGraph();
       }
     },
 
+    selectedNode(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        // get id array of neighbour
+        const neighborSet = this.neighborMap.get(newVal);
+        const oldNeighborSet = this.neighborMap.get(oldVal);
+
+        if (neighborSet)
+          d3.select("#svg-container")
+            .select(".node-group")
+            .selectChildren("g")
+            .filter((d) => neighborSet.includes(d.id.replace(".", "")))
+            .selectChild("circle")
+            .attr("r", this.circleFocusR - 10)
+            .attr("stroke", "#b2f2bb");
+
+        if (oldNeighborSet)
+          d3.select("#svg-container")
+            .select(".node-group")
+            .selectChildren("g")
+            .filter((d) => oldNeighborSet.includes(d.id.replace(".", "")))
+            .selectChild("circle")
+            .attr("r", this.circleR)
+            .attr("stroke", "#fff");
+      }
+    },
     /* -------------------------------------------------------------------------- */
     // default config
     /* -------------------------------------------------------------------------- */
@@ -1215,6 +1241,26 @@ export default {
       this.$store.dispatch("force/loadCarsData");
     },
 
+    // 构造用于查询邻居的 neighborMap
+    getNeighbourInfo(data) {
+      const links = data.links;
+      links.forEach((link) => {
+        const sourceId = link.source.replace(".", "");
+        const targetId = link.target.replace(".", "");
+
+        if (this.neighborMap.has(sourceId)) {
+          this.neighborMap.get(sourceId).push(targetId);
+        } else {
+          this.neighborMap.set(sourceId, [targetId]);
+        }
+        if (this.neighborMap.has(targetId)) {
+          this.neighborMap.get(targetId).push(sourceId);
+        } else {
+          this.neighborMap.set(targetId, [sourceId]);
+        }
+      });
+    },
+
     /* -------------------------------------------------------------------------- */
     // base config
     /* -------------------------------------------------------------------------- */
@@ -1360,6 +1406,7 @@ export default {
           // 由于还有坐标轴，实际的svg大小还要大些(+50)
           width: this.vegaLiteWidth,
           height: this.vegaLiteHeight,
+          view: { fill: "#ffffffcc" },
           data: {
             values: data,
           },
@@ -1377,6 +1424,7 @@ export default {
             usermeta: { embedOptions: { renderer: "svg" } },
             width: this.vegaLiteWidth,
             height: this.vegaLiteHeight,
+            view: { fill: "#ffffffcc" },
             data: {
               values: this.carsData,
             },
@@ -1411,6 +1459,7 @@ export default {
 
       vegaEmbed(container.node(), yourVlSpec).then((result) => {
         const view = result.view.background("transparent");
+
         that.showIndex.set(index, view);
         that.pinnedIndex.set(index, g);
         const svg = container.select("svg");
@@ -1623,11 +1672,12 @@ export default {
         .on("click", function (event, d) {
           // 获取选择circle对应的container - g元素
           const g = d3.select(this.parentNode);
+          that.selectedNode = g.datum().id.replace(".", "");
           const showDetail = g.datum().showDetail;
           //console.log(showDetail);
-          // reinitialize the collide force, if set
           if (!showDetail) {
             g.datum().showDetail = true;
+            // reinitialize the collide force, if set
             const collideForce = that.simulation.force("collide");
             if (collideForce) collideForce.initialize(that.simulation.nodes());
 
@@ -1637,7 +1687,6 @@ export default {
               .attr("href", "#defs-remove")
               .attr("class", "remove")
               .attr("class", "vega-lite-icon")
-
               .attr("cursor", "pointer")
               .attr(
                 "transform",
@@ -1649,10 +1698,17 @@ export default {
                 g.datum().showDetail = false;
                 g.datum().pinned = false;
                 g.classed("pinned", false);
+
                 g.datum().fx = null;
                 g.datum().fy = null;
+
+                that.selectedNode = null;
                 g.selectChildren(".vega-lite-icon").remove();
                 that.deleteVegaLite(g, d.index);
+                const collideForce = that.simulation.force("collide");
+                if (collideForce)
+                  collideForce.initialize(that.simulation.nodes());
+
                 circle
                   .attr("r", that.circleR)
                   .attr("stroke", "#fff")
