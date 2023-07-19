@@ -1917,6 +1917,17 @@ export default {
         // g.datum().fy = g.datum().y;
         // console.log("1", event);
         //console.log(event);
+
+        // const transform = d3.zoomTransform(group.node());
+
+        // // 计算原始坐标系下的鼠标事件坐标
+        // const originalX = transform.invertX(event.subject.x);
+        // const originalY = transform.invertY(event.subject.y);
+
+        // // 更新节点位置
+        // event.subject.fx = originalX;
+        // event.subject.fy = originalY;
+
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
       }
@@ -1930,8 +1941,15 @@ export default {
         // g.datum().fy = event.y;
         // console.log("2", event);
 
-        event.subject.fx = event.x;
-        event.subject.fy = event.y;
+        // 获取鼠标事件相对于子元素的坐标
+        const [relativeX, relativeY] = d3.pointer(event, group.node());
+
+        // 更新节点位置
+        event.subject.fx = relativeX;
+        event.subject.fy = relativeY;
+
+        // event.subject.fx = event.x;
+        // event.subject.fy = event.y;
       }
 
       // 拖动结束，降温
@@ -1963,9 +1981,11 @@ export default {
           [0, 0],
           [width, height],
         ])
-        .on("zoom", zoomed);
+        .on("zoom", zoomed)
+        .filter((event) => event.target === svg.node());
 
-      //svg.call(zoom);
+      // 仅将缩放行为应用到顶层元素
+      svg.call(zoom);
       // 定义zoom的回调函数
       function zoomed(event) {
         const transform = event.transform;
