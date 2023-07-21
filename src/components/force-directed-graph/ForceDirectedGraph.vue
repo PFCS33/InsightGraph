@@ -629,7 +629,8 @@ export default {
       height: null,
       circleR: 5,
       circleFocusR: 20,
-      vegaLiteR: 110,
+      vegaLiteR: 125,
+      vegaLiteLink: 200,
       vegaLiteHeight: 100,
       vegaLiteWidth: 100,
       iconSize: 20,
@@ -691,12 +692,12 @@ export default {
 
       // link config
       setLink: true,
-      linkDistance: 30,
-      linkStrength: 0.1,
+      linkDistance: null,
+      linkStrength: null,
       linkIterations: 1,
 
       // collide config
-      setCollide: false,
+      setCollide: true,
       collideRadius: null,
       collideStrength: 1,
       collideIterations: 1,
@@ -728,8 +729,8 @@ export default {
           DistanceMax: 5000,
         },
         link: {
-          Distance: 30,
-          Strength: 0.1,
+          Distance: null,
+          Strength: null,
           Iterations: 1,
         },
         collide: {
@@ -776,7 +777,7 @@ export default {
           .select(".link-group")
           .selectChildren("line");
 
-        console.log(linkGroup);
+        //  console.log(linkGroup);
         if (neighborSet) {
           nodeGroup
             .filter((d) => neighborSet.includes(d.id.replace(".", "")))
@@ -1492,6 +1493,10 @@ export default {
 
         that.showIndex.set(index, view);
         that.pinnedIndex.set(index, g);
+
+        const linkForce = that.simulation.force("link");
+        if (linkForce) linkForce.initialize(that.simulation.nodes());
+
         const svg = container.select("svg");
         const width = svg.attr("width");
         const height = svg.attr("height");
@@ -1569,6 +1574,8 @@ export default {
       g.select(".vega-lite-graph").remove();
       this.pinnedIndex.delete(index);
       this.showIndex.delete(index);
+      const linkForce = this.simulation.force("link");
+      if (linkForce) linkForce.initialize(this.simulation.nodes());
     },
     /* -------------------------------------------------------------------------- */
     // other
@@ -1709,6 +1716,7 @@ export default {
             g.datum().showDetail = true;
             // reinitialize the collide force, if set
             const collideForce = that.simulation.force("collide");
+
             if (collideForce) collideForce.initialize(that.simulation.nodes());
 
             const circle = d3.select(this);
@@ -1736,6 +1744,7 @@ export default {
                 g.selectChildren(".vega-lite-icon").remove();
                 that.deleteVegaLite(g, d.index);
                 const collideForce = that.simulation.force("collide");
+
                 if (collideForce)
                   collideForce.initialize(that.simulation.nodes());
 
@@ -1826,7 +1835,19 @@ export default {
           d3
             .forceLink(links)
             .id((d) => d.id)
-            .distance(defaultForceConfig.link.Distance)
+            // .distance(defaultForceConfig.link.Distance)
+            .distance(function (d) {
+              if (that.showIndex.size > 0) {
+                if (
+                  that.showIndex.has(d.source.index) ||
+                  that.showIndex.has(d.target.index)
+                ) {
+                  return that.vegaLiteLink;
+                }
+              }
+
+              return 30;
+            })
             .iterations(defaultForceConfig.link.Iterations)
           // .strength(defaultForceConfig.link.Strength)
         )
@@ -1844,6 +1865,19 @@ export default {
           d3
             .forceCenter(width / 2, height / 2)
             .strength(defaultForceConfig.center.Strength)
+        )
+        .force(
+          "collide",
+          d3
+            .forceCollide((d) => {
+              if (d.showDetail) {
+                return that.vegaLiteR;
+              } else {
+                return that.circleR;
+              }
+            })
+            .strength(defaultForceConfig.collide.Strength)
+            .iterations(defaultForceConfig.collide.Iterations)
         )
         .alpha(defaultBaseConfig.alpha)
         .alphaMin(defaultBaseConfig.alphaMin)
