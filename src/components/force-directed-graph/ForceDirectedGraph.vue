@@ -1921,13 +1921,15 @@ export default {
         // });
       }
 
+      const nodeG = svg.selectChild(".node-group");
+
       // 设置结点拖动行为，也是只在圆上设置，避免与vega-lite图的鼠标事件冲突
       circleGroup.call(
         d3
           .drag()
           .container(function () {
-            // set container to svg
-            return svg;
+            // 选择顶层nodeGy元素作为容器，影响 event.x和event.y
+            return nodeG.node();
           })
           .subject(function (event) {
             // 将父元素 g 作为 subject 返回 (因为数据挂载在父元素g上)
@@ -1962,6 +1964,11 @@ export default {
         // event.subject.fx = originalX;
         // event.subject.fy = originalY;
 
+        // let position = [event.subject.x, event.subject.y];
+        // let positionUpdate = that.transform.apply(position);
+        // event.subject.fx = positionUpdate[0];
+        // event.subject.fy = positionUpdate[1];
+
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
       }
@@ -1969,21 +1976,29 @@ export default {
       // 拖动时，让点跟着鼠标走
       function dragged(event) {
         // 这里必须select this，不能通过 event 访问父节点。event可以选中其他东西
-
         // const g = d3.select(this.parentNode);
         // g.datum().fx = event.x;
         // g.datum().fy = event.y;
         // console.log("2", event);
 
-        // 获取鼠标事件相对于子元素的坐标
-        const [relativeX, relativeY] = d3.pointer(event, group.node());
+        // event.subject.fx = transform.invertX(event.x);
+        // event.subject.fy = transform.invertY(event.y);
 
         // 更新节点位置
-        event.subject.fx = relativeX;
-        event.subject.fy = relativeY;
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
 
-        // event.subject.fx = event.x;
-        // event.subject.fy = event.y;
+        // event.subject.fx = relativeX;
+        // event.subject.fy = relativeY;
+
+        // console.log(that.transform);
+        // let position = [event.x, event.y];
+        // let positionUpdate = that.transform.apply(position);
+        // event.subject.fx = positionUpdate[0];
+        // event.subject.fy = positionUpdate[1];
+
+        // console.log("update", positionUpdate);
+        // console.log("position", position);
       }
 
       // 拖动结束，降温
@@ -2006,6 +2021,7 @@ export default {
 
       // 设置整体zoom行为,只选择最顶层的2个g即可
       const group = svg.selectChildren("g");
+
       //console.log(group);
       // 创建缩放函数
       const zoom = d3
@@ -2016,6 +2032,7 @@ export default {
           [width, height],
         ])
         .on("zoom", zoomed)
+        // .on("end", zoomEnd)
         .filter((event) => event.target === svg.node());
 
       // 仅将缩放行为应用到顶层元素
@@ -2023,6 +2040,7 @@ export default {
       // 定义zoom的回调函数
       function zoomed(event) {
         const transform = event.transform;
+        //console.log(that.transform);
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
       }
