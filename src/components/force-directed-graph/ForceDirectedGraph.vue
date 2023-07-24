@@ -1336,6 +1336,8 @@ export default {
         ...d,
         showDetail: false,
         pinned: false,
+        view: null,
+        img: null,
       }));
 
       //  console.log(this.showIndex);
@@ -1424,129 +1426,142 @@ export default {
     /* -------------------------------------------------------------------------- */
     drawVegaLite(g, index, mode) {
       const that = this;
-
-      // 获取data
-      const data = g.datum()["vega-lite"];
-
-      if (data) {
-        // vega-lite config
-        var yourVlSpec = {
-          description: "A simple bar chart with embedded data.",
-          // render as svg
-          usermeta: { embedOptions: { renderer: "svg" } },
-          // 由于还有坐标轴，实际的svg大小还要大些(+50)
-          width: this.vegaLiteWidth,
-          height: this.vegaLiteHeight,
-          view: { fill: "#ffffffcc" },
-          data: {
-            values: data,
-          },
-          mark: { type: "bar", tooltip: true },
-          encoding: {
-            x: { field: "a", type: "ordinal" },
-            y: { field: "b", type: "quantitative" },
-          },
-        };
-      } else {
-        // 数据里没有vega-lite数据的画，直接用官方数据例子中的一个
-        {
-          var yourVlSpec = {
-            description: "Drag out a rectangular brush to highlight points.",
-            usermeta: { embedOptions: { renderer: "svg" } },
-            width: this.vegaLiteWidth,
-            height: this.vegaLiteHeight,
-            view: { fill: "#ffffffcc" },
-            data: {
-              values: this.carsData,
-            },
-            params: [
-              {
-                name: "brush",
-                select: "interval",
-                value: { x: [55, 160], y: [13, 37] },
-              },
-            ],
-            mark: "point",
-            encoding: {
-              x: { field: "Horsepower", type: "quantitative" },
-              y: { field: "Miles_per_Gallon", type: "quantitative" },
-              color: {
-                condition: {
-                  param: "brush",
-                  field: "Cylinders",
-                  type: "ordinal",
-                },
-                value: "grey",
-              },
-            },
-          };
-        }
-      }
-
-      // select container by id
-      // const id = "g-" + g.datum().id.replace(".", "");
-      // const container = d3.select("#" + id);
       const container = g.select(".vega-lite-container");
 
-      vegaEmbed(container.node(), yourVlSpec).then((result) => {
-        const view = result.view.background("transparent");
+      const preView = g.datum().view;
+      if (preView) {
+        // reset the view
+        const svg = container.selectChild("svg");
 
-        that.showIndex.set(index, view);
-        that.pinnedIndex.set(index, g);
-
-        const linkForce = that.simulation.force("link");
-        if (linkForce) linkForce.initialize(that.simulation.nodes());
-
-        const svg = container.select("svg");
-        const width = svg.attr("width");
-        const height = svg.attr("height");
         switch (mode) {
-          case "svg":
-            svg.attr("class", "vega-lite-graph");
-
-            container.node().appendChild(svg.node());
-            container.style(
-              "transform",
-              `translate(${-that.vegaLiteWidth / 2 - that.axisOffsetX}px,${
-                -that.vegaLiteHeight / 2 - that.axisOffsetY / 2
-              }px)`
-            );
-            container.select("div").remove();
-            container.select("details").remove();
-            that.simulation.alpha(that.alpha);
-            that.simulation.restart();
-            break;
           case "img":
-            container.select("div").remove();
-            container.select("details").remove();
-            view.toCanvas(5).then((canvas) => {
+            // 创建反应新状态的img
+            svg.classed("not-show", true);
+            const imgInfo = g.datum().img;
+            preView.toCanvas(5).then((canvas) => {
               // Access the canvas element and export as an image
               const image = document.createElementNS(
                 "http://www.w3.org/2000/svg",
                 "image"
               );
               image.setAttribute("href", canvas.toDataURL("image/png", 1));
-              image.setAttribute("width", width);
-              image.setAttribute("height", height);
-              container.style(
-                "transform",
-                `translate(${-width / 2}px,${-height / 2}px)`
-              );
-              // console.log(view.height());
+              image.setAttribute("width", imgInfo.width);
+              image.setAttribute("height", imgInfo.height);
               image.setAttribute("class", "vega-lite-graph");
               container.node().appendChild(image);
-              that.simulation.alpha(that.alpha);
-              that.simulation.restart();
             });
 
             break;
+          case "svg":
+            container.selectChild("image").remove();
+            svg.classed("not-show", false);
+
+            break;
         }
-        // // Export to SVG
-        // view.toSVG().then((svgString) => {
-        //   console.log(svgString);
-        // });
-        // Export to canvas, then transform to img
-      });
+      } else {
+        // 获取data
+        const data = g.datum()["vega-lite"];
+        // set vega-lite object
+        if (data) {
+          // vega-lite config
+          var yourVlSpec = {
+            description: "A simple bar chart with embedded data.",
+            // render as svg
+            usermeta: { embedOptions: { renderer: "svg" } },
+            // 由于还有坐标轴，实际的svg大小还要大些(+50)
+            width: this.vegaLiteWidth,
+            height: this.vegaLiteHeight,
+            view: { fill: "#ffffffcc" },
+            data: {
+              values: data,
+            },
+            mark: { type: "bar", tooltip: true },
+            encoding: {
+              x: { field: "a", type: "ordinal" },
+              y: { field: "b", type: "quantitative" },
+            },
+          };
+        } else {
+          // 数据里没有vega-lite数据的画，直接用官方数据例子中的一个
+          {
+            var yourVlSpec = {
+              description: "Drag out a rectangular brush to highlight points.",
+              usermeta: { embedOptions: { renderer: "svg" } },
+              width: this.vegaLiteWidth,
+              height: this.vegaLiteHeight,
+              view: { fill: "#ffffffcc" },
+              data: {
+                values: this.carsData,
+              },
+              params: [
+                {
+                  name: "brush",
+                  select: "interval",
+                  value: { x: [55, 160], y: [13, 37] },
+                },
+              ],
+              mark: "point",
+              encoding: {
+                x: { field: "Horsepower", type: "quantitative" },
+                y: { field: "Miles_per_Gallon", type: "quantitative" },
+                color: {
+                  condition: {
+                    param: "brush",
+                    field: "Cylinders",
+                    type: "ordinal",
+                  },
+                  value: "grey",
+                },
+              },
+            };
+          }
+        }
+        // initialization
+        vegaEmbed(container.node(), yourVlSpec).then((result) => {
+          const view = result.view.background("transparent");
+          // record the view
+          g.datum().view = view;
+          that.showIndex.set(index, view);
+          that.pinnedIndex.set(index, g);
+
+          const linkForce = that.simulation.force("link");
+          if (linkForce) linkForce.initialize(that.simulation.nodes());
+
+          const svg = container.select("svg");
+          const width = svg.attr("width");
+          const height = svg.attr("height");
+          container.select("div").remove();
+          container.select("details").remove();
+          container.node().appendChild(svg.node());
+          svg.classed("not-show", true);
+          view.toCanvas(5).then((canvas) => {
+            // Access the canvas element and export as an image
+            const image = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "image"
+            );
+
+            image.setAttribute("href", canvas.toDataURL("image/png", 1));
+            image.setAttribute("width", width);
+            image.setAttribute("height", height);
+            image.setAttribute("class", "vega-lite-graph");
+
+            container.node().appendChild(image);
+            // record the img info
+            g.datum().img = {
+              width: width,
+              height: height,
+            };
+          });
+
+          container.style(
+            "transform",
+            `translate(${-width / 2}px,${-height / 2}px)`
+          );
+        });
+      }
+      that.simulation.alpha(that.alpha);
+      that.simulation.restart();
 
       /* -------------------------------------------------------------------------- */
       // vegaEmbed(container.node(), yourVlSpec).then((resulte) => {
@@ -1617,11 +1632,13 @@ export default {
       const data = this.drawData;
       // 创建原始数据的copy，因为 force simulation 会改变数组数据
       const links = data.links.map((d) => ({ ...d }));
-      // 加入showDetail属性，控制vega-lite图的显示
+      // 加入更多属性，控制vega-lite图的显示
       const nodes = data.nodes.map((d) => ({
         ...d,
         showDetail: false,
         pinned: false,
+        view: null,
+        img: null,
       }));
       //console.log(data.links);
       // 选择svg container
@@ -1684,7 +1701,7 @@ export default {
         // node 进行分类颜色映射
         .attr("fill", function (d) {
           const gData = d3.select(this.parentNode).datum();
-          return gData.showDetail ? "transparent" : color(d.group);
+          return gData.showDetail ? "#fff" : color(d.group);
         })
         .attr("stroke-width", 1.5)
         .style("transition", "r 0.2s")
@@ -1716,10 +1733,17 @@ export default {
             g.datum().showDetail = true;
             // reinitialize the collide force, if set
             const collideForce = that.simulation.force("collide");
-
             if (collideForce) collideForce.initialize(that.simulation.nodes());
 
             const circle = d3.select(this);
+            circle
+              .attr("r", that.vegaLiteR)
+              .attr("fill", "#fff")
+              .attr("stroke", "#555");
+
+            //console.log(g.select(".vega-lite-container").datum());
+            that.drawVegaLite(g, d.index, "img");
+
             const remove = g
               .append("use")
               .attr("href", "#defs-remove")
@@ -1775,22 +1799,16 @@ export default {
                 if (pinned) {
                   g.datum().fx = g.datum().x;
                   g.datum().fy = g.datum().y;
-                  that.deleteVegaLite(g, d.index);
+                  // that.deleteVegaLite(g, d.index);
                   that.drawVegaLite(g, d.index, "svg");
                 } else {
                   g.classed("pinned", false);
                   g.datum().fx = null;
                   g.datum().fy = null;
-                  that.deleteVegaLite(g, d.index);
+                  // that.deleteVegaLite(g, d.index);
                   that.drawVegaLite(g, d.index, "img");
                 }
               });
-
-            circle
-              .attr("r", that.vegaLiteR)
-              .attr("fill", "transparent")
-              .attr("stroke", "#555");
-            that.drawVegaLite(g, d.index, "img");
           } // else {
 
           //   that.deleteVegaLite(g, d.index);
@@ -1822,6 +1840,7 @@ export default {
       const vegaLiteContainerGroup = containerGroup
         .append("g")
         .attr("class", "vega-lite-container");
+
       /* -------------------------------------------------------------------------- */
       const defaultBaseConfig = this.defaultBaseConfig;
       const defaultForceConfig = this.defaultForceConfig;
@@ -1981,24 +2000,9 @@ export default {
         // g.datum().fy = event.y;
         // console.log("2", event);
 
-        // event.subject.fx = transform.invertX(event.x);
-        // event.subject.fy = transform.invertY(event.y);
-
         // 更新节点位置
         event.subject.fx = event.x;
         event.subject.fy = event.y;
-
-        // event.subject.fx = relativeX;
-        // event.subject.fy = relativeY;
-
-        // console.log(that.transform);
-        // let position = [event.x, event.y];
-        // let positionUpdate = that.transform.apply(position);
-        // event.subject.fx = positionUpdate[0];
-        // event.subject.fy = positionUpdate[1];
-
-        // console.log("update", positionUpdate);
-        // console.log("position", position);
       }
 
       // 拖动结束，降温
@@ -2263,5 +2267,8 @@ export default {
 
 .pinned {
   will-change: transform;
+}
+.not-show {
+  display: none;
 }
 </style>
