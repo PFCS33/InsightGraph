@@ -646,6 +646,7 @@ export default {
       vegaLiteR: 125,
 
       vegaLiteLink: 200,
+      vegaLiteLongLink: 300,
       vegaLiteHeight: 100,
       vegaLiteWidth: 100,
       iconSize: 20,
@@ -797,8 +798,8 @@ export default {
         if (neighborSet) {
           nodeGroup
             .filter((d) => neighborSet.includes(d.id.replace(".", "")))
-            .selectChild("circle")
-            .attr("stroke", "#96f2d7");
+            .selectChildren("circle, rect")
+            .attr("stroke", "#15aabf");
 
           linkGroup
             .filter(
@@ -806,15 +807,19 @@ export default {
                 newVal === d.source.id.replace(".", "") ||
                 newVal === d.target.id.replace(".", "")
             )
-            .attr("stroke", "#12b886");
+            .attr("stroke", "#0c8599");
         }
 
         if (oldNeighborSet) {
           nodeGroup
             .filter((d) => oldNeighborSet.includes(d.id.replace(".", "")))
-            .selectChild("circle")
+            .selectChildren("circle, rect")
 
             .attr("stroke", function () {
+              if (this instanceof SVGRectElement) {
+                return "#000";
+              }
+
               const showDetail = d3.select(this.parentNode).datum().showDetail;
               if (showDetail) {
                 return "#000";
@@ -1576,8 +1581,8 @@ export default {
           container.select("div").remove();
           container.select("details").remove();
           container.node().appendChild(svg.node());
-          svg.classed("not-show", true);
           svg.attr("class", "vega-lite-graph");
+          svg.classed("not-show", true);
           view.toCanvas(5).then((canvas) => {
             // Access the canvas element and export as an image
             const image = document.createElementNS(
@@ -1766,102 +1771,88 @@ export default {
               .attr("fill", (d) => color(d.group));
           }
         })
-        .on(
-          "click",
-          function (event, d) {
-            // 获取选择circle对应的container - g元素
-            const circle = d3.select(this);
-            const g = d3.select(this.parentNode);
-            const rect = g.selectChild(".rect");
-            that.selectedNode = g.datum().id.replace(".", "");
-            // const showDetail = g.datum().showDetail;
-            g.datum().showDetail = true;
-            //console.log(showDetail);
+        .on("click", function (event, d) {
+          // 获取选择circle对应的container - g元素
+          const circle = d3.select(this);
+          const g = d3.select(this.parentNode);
+          const rect = g.selectChild(".rect");
+          that.selectedNode = g.datum().id.replace(".", "");
+          // const showDetail = g.datum().showDetail;
+          g.datum().showDetail = true;
+          //console.log(showDetail);
+          // reinitialize the collide force, if set
+          const collideForce = that.simulation.force("collide");
+          if (collideForce) collideForce.initialize(that.simulation.nodes());
 
-            g.datum().showDetail = true;
-            // reinitialize the collide force, if set
-            const collideForce = that.simulation.force("collide");
-            if (collideForce) collideForce.initialize(that.simulation.nodes());
+          rect.classed("not-show", false);
+          circle.classed("not-show", true);
+          // circle
+          //   .attr("r", that.vegaLiteR)
+          //   .attr("fill", "#fff")
+          //   .attr("stroke", "#555");
 
-            rect.classed("not-show", false);
-            circle.classed("not-show", true);
-            // circle
-            //   .attr("r", that.vegaLiteR)
-            //   .attr("fill", "#fff")
-            //   .attr("stroke", "#555");
+          //console.log(g.select(".vega-lite-container").datum());
+          const remove = g
+            .append("use")
+            .attr("href", "#defs-remove")
+            .attr("class", "remove vega-lite-icon")
+            .attr("cursor", "pointer")
 
-            //console.log(g.select(".vega-lite-container").datum());
-            const remove = g
-              .append("use")
-              .attr("href", "#defs-remove")
-              .attr("class", "remove vega-lite-icon")
-              .attr("cursor", "pointer")
+            .on("click", function () {
+              g.datum().showDetail = false;
+              g.datum().pinned = false;
+              g.classed("pinned", false);
+              g.datum().fx = null;
+              g.datum().fy = null;
+              that.selectedNode = null;
+              g.selectChildren(".vega-lite-icon").remove();
+              that.deleteVegaLite(g, d.index);
+              const collideForce = that.simulation.force("collide");
 
-              .on("click", function () {
-                g.datum().showDetail = false;
-                g.datum().pinned = false;
+              if (collideForce)
+                collideForce.initialize(that.simulation.nodes());
+
+              rect.classed("not-show", true);
+              circle
+                .classed("not-show", false)
+                .attr("r", that.circleR)
+                .attr("stroke", "#fff")
+                .attr("fill", (d) => color(d.group));
+              // circle
+              //   .attr("r", that.circleR)
+              //   .attr("stroke", "#fff")
+              //   .attr("fill", (d) => color(d.group));
+              that.simulation.alpha(that.alpha);
+              that.simulation.restart();
+            });
+
+          const pin = g
+            .append("use")
+            .attr("href", "#defs-pin")
+            .attr("class", "pin vega-lite-icon")
+            .attr("cursor", "pointer")
+            .on("click", function () {
+              const pinned = !g.datum().pinned;
+              g.datum().pinned = pinned;
+              g.classed("pinned", true);
+              if (pinned) {
+                g.datum().fx = g.datum().x;
+                g.datum().fy = g.datum().y;
+                g.select(".pin").classed("icon-pinned", true);
+                // that.deleteVegaLite(g, d.index);
+                that.drawVegaLite(g, d.index, "svg");
+              } else {
                 g.classed("pinned", false);
+                g.select(".pin").classed("icon-pinned", false);
                 g.datum().fx = null;
                 g.datum().fy = null;
-                that.selectedNode = null;
-                g.selectChildren(".vega-lite-icon").remove();
-                that.deleteVegaLite(g, d.index);
-                const collideForce = that.simulation.force("collide");
 
-                if (collideForce)
-                  collideForce.initialize(that.simulation.nodes());
-
-                rect.classed("not-show", true);
-                circle
-                  .classed("not-show", false)
-                  .attr("r", that.circleR)
-                  .attr("fill", (d) => color(d.group));
-                // circle
-                //   .attr("r", that.circleR)
-                //   .attr("stroke", "#fff")
-                //   .attr("fill", (d) => color(d.group));
-                that.simulation.alpha(that.alpha);
-                that.simulation.restart();
-              });
-
-            const pin = g
-              .append("use")
-              .attr("href", "#defs-pin")
-              .attr("class", "pin vega-lite-icon")
-              .attr("cursor", "pointer")
-              .on("click", function () {
-                const pinned = !g.datum().pinned;
-                g.datum().pinned = pinned;
-                g.classed("pinned", true);
-                if (pinned) {
-                  g.datum().fx = g.datum().x;
-                  g.datum().fy = g.datum().y;
-                  g.select(".pin").classed("icon-pinned", true);
-                  // that.deleteVegaLite(g, d.index);
-                  that.drawVegaLite(g, d.index, "svg");
-                } else {
-                  g.classed("pinned", false);
-                  g.select(".pin").classed("icon-pinned", false);
-                  g.datum().fx = null;
-                  g.datum().fy = null;
-
-                  // that.deleteVegaLite(g, d.index);
-                  that.drawVegaLite(g, d.index, "img");
-                }
-              });
-            that.drawVegaLite(g, d.index, "img");
-          } // else {
-
-          //   that.deleteVegaLite(g, d.index);
-          //   g.selectChildren(".vega-lite-icon").remove();
-
-          //   circle
-          //     .attr("r", that.circleR)
-          //     .attr("stroke", "#fff")
-          //     .attr("fill", (d) => color(d.group));
-          //   //that.showIndex.delete(d.index);
-          // }
-        );
+                // that.deleteVegaLite(g, d.index);
+                that.drawVegaLite(g, d.index, "img");
+              }
+            });
+          that.drawVegaLite(g, d.index, "img");
+        });
 
       const containerGroup = svg.select("g.node-group").selectChildren("g");
       const rectGroup = containerGroup
@@ -1875,7 +1866,14 @@ export default {
 
         .attr("fill", "#fff")
         .attr("stroke", "#000")
-        .attr("cursor", "pointer");
+        .attr("cursor", "pointer")
+        .on("click", function () {
+          // 获取对应的container - g元素
+          const g = d3.select(this.parentNode);
+
+          that.selectedNode = g.datum().id.replace(".", "");
+        });
+
       const vegaLiteContainerGroup = containerGroup
         .append("g")
         .attr("class", "vega-lite-container");
@@ -1896,14 +1894,16 @@ export default {
             // .distance(defaultForceConfig.link.Distance)
             .distance(function (d) {
               if (that.showIndex.size > 0) {
-                if (
-                  that.showIndex.has(d.source.index) ||
-                  that.showIndex.has(d.target.index)
-                ) {
-                  return that.vegaLiteLink;
+                const show1 = that.showIndex.has(d.source.index);
+                const show2 = that.showIndex.has(d.target.index);
+                if (show1 || show2) {
+                  if (show1 && show2) {
+                    return that.vegaLiteLongLink;
+                  } else {
+                    return that.vegaLiteLink;
+                  }
                 }
               }
-
               return 30;
             })
             .iterations(defaultForceConfig.link.Iterations)
