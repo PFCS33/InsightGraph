@@ -3,6 +3,8 @@
     <!-- <svg class="svg" :viewBox="[0, 0, 500, 500]"> -->
     <!-- <circle class="circle"></circle> -->
 
+    <circle r="100" cx="100" cy="500" fill="transparent" stroke="#000"></circle>
+    <circle r="10" cx="100" cy="500" fill="transparent" stroke="#000"></circle>
     <g id="vis0" width="500" height="500"></g>
 
     <!-- </svg> -->

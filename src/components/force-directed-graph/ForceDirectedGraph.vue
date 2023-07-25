@@ -582,14 +582,23 @@
     <BaseCard :inset="true" class="ticks-card"> {{ ticks }} </BaseCard>
     <div id="svg-container"></div>
     <defs style="display: none">
-      <Remove id="defs-remove" :width="iconSize" :height="iconSize" />
+      <svg
+        viewBox="0 0 1024 1024"
+        xmlns="http://www.w3.org/2000/svg"
+        id="defs-remove"
+        :width="iconSize"
+        :height="iconSize"
+      >
+        <path
+          d="M512 64q190.016 4.992 316.512 131.488T960 512q-4.992 190.016-131.488 316.512T512 960q-190.016-4.992-316.512-131.488T64 512q4.992-190.016 131.488-316.512T512 64zM288 512q0 16 11.008 27.008t27.008 11.008h372q16 0 27.008-11.008t11.008-27.008-11.008-27.008-27.008-11.008H326.016q-16 0-27.008 11.008T288 512z"
+        ></path>
+      </svg>
       <svg
         id="defs-pin"
         viewBox="0 0 1025 1024"
         xmlns="http://www.w3.org/2000/svg"
         :width="iconSize"
         :height="iconSize"
-        fill="#555"
       >
         <path
           d="M320 839.68l-238.592 174.08c-8.704 6.656-19.456 9.728-29.696 9.728-12.8 0-26.112-5.12-35.84-14.848-17.92-17.92-20.48-46.08-5.12-66.56l212.992-288.256L56.32 487.424C39.936 471.04 36.864 445.44 48.128 425.472c8.192-12.8 76.8-112.64 229.376-75.264 2.56 0.512 5.12 0.512 8.192 1.024 6.144 0.512 13.312 1.024 20.992 2.56 32.256 5.12 89.6-20.48 139.264-62.976 47.616-40.448 78.336-87.552 78.336-120.32 0-7.68 0-15.872-0.512-23.552-1.024-30.72-3.072-77.824 31.744-112.64 41.472-41.472 107.52-45.056 153.088-7.68 1.024 0.512 1.536 1.536 2.56 2.56 24.576 24.064 276.48 275.968 279.04 278.528 21.504 21.504 33.792 50.688 33.792 81.408s-11.776 59.392-33.792 80.896c-34.816 34.816-82.432 33.28-113.664 31.744-7.168 0-15.36-0.512-23.04-0.512-30.72 0-67.584 21.504-103.936 60.928-50.688 55.296-81.92 126.464-79.36 158.72 1.024 10.24 3.072 28.16 3.584 30.72 36.864 149.504-62.976 217.6-74.752 225.28-20.48 12.288-46.592 9.216-62.976-7.168l-165.376-165.376-50.688 35.328z"
@@ -1534,6 +1543,7 @@ export default {
           container.select("details").remove();
           container.node().appendChild(svg.node());
           svg.classed("not-show", true);
+          svg.attr("class", "vega-lite-graph");
           view.toCanvas(5).then((canvas) => {
             // Access the canvas element and export as an image
             const image = document.createElementNS(
@@ -1586,7 +1596,9 @@ export default {
     },
     deleteVegaLite(g, index) {
       this.showIndex.get(index).finalize();
-      g.select(".vega-lite-graph").remove();
+      g.selectAll(".vega-lite-graph").remove();
+      g.datum().view = null;
+      g.datum().img = null;
       this.pinnedIndex.delete(index);
       this.showIndex.delete(index);
       const linkForce = this.simulation.force("link");
@@ -1747,8 +1759,7 @@ export default {
             const remove = g
               .append("use")
               .attr("href", "#defs-remove")
-              .attr("class", "remove")
-              .attr("class", "vega-lite-icon")
+              .attr("class", "remove vega-lite-icon")
               .attr("cursor", "pointer")
               .attr(
                 "transform",
@@ -1783,8 +1794,7 @@ export default {
             const pin = g
               .append("use")
               .attr("href", "#defs-pin")
-              .attr("class", "pin")
-              .attr("class", "vega-lite-icon")
+              .attr("class", "pin vega-lite-icon")
               .attr("cursor", "pointer")
               .attr(
                 "transform",
@@ -1799,12 +1809,15 @@ export default {
                 if (pinned) {
                   g.datum().fx = g.datum().x;
                   g.datum().fy = g.datum().y;
+                  g.select(".pin").classed("icon-pinned", true);
                   // that.deleteVegaLite(g, d.index);
                   that.drawVegaLite(g, d.index, "svg");
                 } else {
                   g.classed("pinned", false);
+                  g.select(".pin").classed("icon-pinned", false);
                   g.datum().fx = null;
                   g.datum().fy = null;
+
                   // that.deleteVegaLite(g, d.index);
                   that.drawVegaLite(g, d.index, "img");
                 }
@@ -2256,6 +2269,7 @@ export default {
 }
 </style>
 
+<!-- global style -->
 <style>
 .el-form-item__label {
   margin-bottom: 2px !important;
@@ -2268,7 +2282,19 @@ export default {
 .pinned {
   will-change: transform;
 }
+
 .not-show {
   display: none;
+}
+
+.vega-lite-icon {
+  fill: #555;
+}
+.vega-lite-icon:hover,
+.vega-lite-icon:active {
+  fill: #22b8cf;
+}
+.icon-pinned {
+  fill: #1098ad;
 }
 </style>
