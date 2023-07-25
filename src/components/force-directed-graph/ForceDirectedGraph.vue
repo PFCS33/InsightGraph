@@ -637,6 +637,10 @@ export default {
       // graph set
       width: null,
       height: null,
+
+      leftCornerCoord: null,
+      rightCornerCoord: null,
+
       circleR: 5,
       circleFocusR: 20,
       // rectWH: 125 * 0.7 + 20,
@@ -1169,6 +1173,7 @@ export default {
     /* -------------------------------------------------------------------------- */
     setLink(newVal) {
       if (newVal) {
+        const that = this;
         // get links data
         const links = d3
           .select("#svg-container")
@@ -1181,7 +1186,20 @@ export default {
           d3
             .forceLink(links)
             .id((d) => d.id)
-            .distance(this.linkDistance)
+            .distance(function (d) {
+              if (that.showIndex.size > 0) {
+                const show1 = that.showIndex.has(d.source.index);
+                const show2 = that.showIndex.has(d.target.index);
+                if (show1 || show2) {
+                  if (show1 && show2) {
+                    return that.vegaLiteLongLink;
+                  } else {
+                    return that.vegaLiteLink;
+                  }
+                }
+              }
+              return 30;
+            })
             .strength(this.linkStrength)
             .iterations(this.linkIterations)
         );
@@ -1682,11 +1700,8 @@ export default {
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
-      // const vWidth = this.vegaLiteWidth + this.axisOffsetX;
-      // const vHeight = this.vegaLiteHeight + this.axisOffsetY;
-      // const diagonal =
-      //   Math.ceil(Math.sqrt(vWidth * vWidth + vHeight * vHeight)) / 2;
-
+      this.leftCornerCoord = [0, 0];
+      this.rightCornerCoord = [width, height];
       // 先把svg图和nodes+links 元素画出来
       // 随便设置一个种类的颜色映射
       const color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -1948,17 +1963,45 @@ export default {
       function ticked() {
         that.ticks++;
 
-        linkGroup
+        // 只通过transform.translate 更新父元素g的位置
+        containerGroup.style("transform", (d) => {
+          let offsetWidth = 0;
+          let offsetHeight = 0;
 
+          if (d.showDetail) {
+            offsetWidth =
+              d.img.width / 2 + that.rectWidthOffset + that.iconOffset;
+            offsetHeight =
+              d.img.height / 2 +
+              ((that.rectHeightOffset + that.iconOffset) * 5) / 4;
+          } else {
+            offsetWidth = offsetHeight = that.circleR;
+          }
+          const x = d.x;
+          const y = d.y;
+          if (x - offsetWidth < that.leftCornerCoord[0]) {
+            d.vx = Math.abs(d.vx);
+            d.x = that.leftCornerCoord[0] + offsetWidth;
+          } else if (x + offsetWidth > that.rightCornerCoord[0]) {
+            d.vx = -Math.abs(d.vx);
+            d.x = that.rightCornerCoord[0] - offsetWidth;
+          }
+
+          if (y - offsetHeight < that.leftCornerCoord[1]) {
+            d.vy = Math.abs(d.vy);
+            d.y = that.leftCornerCoord[1] + offsetHeight;
+          } else if (y + offsetHeight > that.rightCornerCoord[1]) {
+            d.vy = -Math.abs(d.vy);
+            d.y = that.rightCornerCoord[1] - offsetHeight;
+          }
+          return `translate(${d.x}px,${d.y}px)`;
+        });
+
+        linkGroup
           .attr("x1", (d) => d.source.x)
           .attr("y1", (d) => d.source.y)
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
-
-        // 只通过transform.translate 更新父元素g的位置
-        containerGroup.style("transform", (d) => {
-          return `translate(${d.x}px,${d.y}px)`;
-        });
       }
 
       const nodeG = svg.selectChild(".node-group");
@@ -2037,6 +2080,11 @@ export default {
         //console.log(that.transform);
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
+        console.log(transform);
+        if (transform.k < 1) {
+          that.leftCornerCoord = transform.invert([0, 0]);
+          that.rightCornerCoord = transform.invert([width, height]);
+        }
       }
 
       // initialize the default data
