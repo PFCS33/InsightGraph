@@ -797,22 +797,6 @@ export default {
           .select(".link-group")
           .selectChildren("line");
 
-        //  console.log(linkGroup);
-        if (neighborSet) {
-          nodeGroup
-            .filter((d) => neighborSet.includes(d.id.replace(".", "")))
-            .selectChildren("circle, rect")
-            .attr("stroke", "#15aabf");
-
-          linkGroup
-            .filter(
-              (d) =>
-                newVal === d.source.id.replace(".", "") ||
-                newVal === d.target.id.replace(".", "")
-            )
-            .attr("stroke", "#0c8599");
-        }
-
         if (oldNeighborSet) {
           nodeGroup
             .filter((d) => oldNeighborSet.includes(d.id.replace(".", "")))
@@ -838,6 +822,22 @@ export default {
                 oldVal === d.target.id.replace(".", "")
             )
             .attr("stroke", "#999999");
+        }
+        //  console.log(linkGroup);
+        if (neighborSet) {
+          nodeGroup
+            .filter((d) => neighborSet.includes(d.id.replace(".", "")))
+            .selectChildren("circle, rect")
+            // .classed("hover-highlight", true);
+            .attr("stroke", "#15aabf");
+
+          linkGroup
+            .filter(
+              (d) =>
+                newVal === d.source.id.replace(".", "") ||
+                newVal === d.target.id.replace(".", "")
+            )
+            .attr("stroke", "#0c8599");
         }
       }
     },
@@ -2005,18 +2005,18 @@ export default {
           const x = d.x;
           const y = d.y;
           if (x - offsetWidth < that.leftCornerCoord[0]) {
-            d.vx = Math.abs(d.vx);
+            // d.vx = Math.abs(d.vx);
             d.x = that.leftCornerCoord[0] + offsetWidth;
           } else if (x + offsetWidth > that.rightCornerCoord[0]) {
-            d.vx = -Math.abs(d.vx);
+            //d.vx = -Math.abs(d.vx);
             d.x = that.rightCornerCoord[0] - offsetWidth;
           }
 
           if (y - offsetHeight < that.leftCornerCoord[1]) {
-            d.vy = Math.abs(d.vy);
+            // d.vy = Math.abs(d.vy);
             d.y = that.leftCornerCoord[1] + offsetHeight;
           } else if (y + offsetHeight > that.rightCornerCoord[1]) {
-            d.vy = -Math.abs(d.vy);
+            //  d.vy = -Math.abs(d.vy);
             d.y = that.rightCornerCoord[1] - offsetHeight;
           }
           return `translate(${d.x}px,${d.y}px)`;
@@ -2310,7 +2310,7 @@ export default {
 }
 </style>
 
-<style scoped>
+<style lang="less" scoped>
 .el-slider {
   width: 100%;
 }
@@ -2320,7 +2320,14 @@ export default {
 </style>
 
 <!-- global style -->
-<style>
+<style lang="less">
+.circle {
+  &.hover-highlight {
+    stroke: steelblue;
+    stroke-width: 3px;
+  }
+}
+
 .el-form-item__label {
   margin-bottom: 2px !important;
 }
