@@ -378,7 +378,7 @@
             </el-form-item>
             <el-form-item label="Strength *" class="form-item-control">
               <el-input
-                :disabled="!setManyBody"
+                disabled
                 type="number"
                 id="manyBodyStrength"
                 v-model.number="manyBodyStrength"
@@ -388,7 +388,7 @@
                 class="input-control"
               />
               <el-slider
-                :disabled="!setManyBody"
+                disabled
                 v-model="manyBodyStrength"
                 :min="-500"
                 :max="500"
@@ -519,7 +519,7 @@
             </el-form-item>
             <el-form-item label="Distance *" class="form-item-control">
               <el-input
-                :disabled="!setLink"
+                disabled
                 type="number"
                 id="linkDistance"
                 v-model.number="linkDistance"
@@ -528,12 +528,7 @@
                 max="300"
                 class="input-control"
               />
-              <el-slider
-                :disabled="!setLink"
-                v-model="linkDistance"
-                :min="0"
-                :max="300"
-              />
+              <el-slider disabled v-model="linkDistance" :min="0" :max="300" />
             </el-form-item>
             <el-form-item label="Strength *" class="form-item-control">
               <el-input
@@ -619,7 +614,6 @@ import {
   Warning,
   RemoveFilled,
 } from "@element-plus/icons-vue";
-import { fcumsum } from "d3";
 
 export default {
   components: {
@@ -637,7 +631,6 @@ export default {
       // graph set
       width: null,
       height: null,
-
       leftCornerCoord: null,
       rightCornerCoord: null,
 
@@ -648,11 +641,16 @@ export default {
       rectHeightOffset: 25,
       rectR: 10,
       vegaLiteR: 125,
-
-      vegaLiteLink: 200,
-      vegaLiteLongLink: 300,
       vegaLiteHeight: 100,
       vegaLiteWidth: 100,
+
+      circleLink: 30,
+      vegaLiteLink: 200,
+      vegaLiteLongLink: 300,
+
+      circleStrength: -30,
+      vegaLiteStrength: -1000,
+
       iconSize: 20,
       iconOffset: 5,
 
@@ -670,6 +668,7 @@ export default {
       // element plus
       forceXMode: "number",
 
+      /* -------------------------------------------------------------------------- */
       // Base Config
       alpha: 1,
       alphaMin: 0.001,
@@ -706,7 +705,7 @@ export default {
       radialStrength: 0.1,
       // nbody config
       setManyBody: true,
-      manyBodyStrength: -30,
+      manyBodyStrength: null,
       manyBodyTheta: 0.9,
       manyBodyDistanceMin: 1,
       manyBodyDistanceMax: 5000,
@@ -744,7 +743,7 @@ export default {
           Strength: 1,
         },
         manyBody: {
-          Strength: -30,
+          Strength: null,
           Theta: 0.9,
           DistanceMin: 1,
           DistanceMax: 5000,
@@ -1100,12 +1099,19 @@ export default {
     // nbody force config
     /* -------------------------------------------------------------------------- */
     setManyBody(newVal) {
+      const that = this;
       if (newVal) {
         this.simulation.force(
           "charge",
           d3
             .forceManyBody()
-            .strength(this.manyBodyStrength)
+            .strength(function (d) {
+              if (d.showDetail) {
+                return that.vegaLiteStrength;
+              } else {
+                return that.circleStrength;
+              }
+            })
             .theta(this.manyBodyTheta)
             .distanceMin(this.manyBodyDistanceMin)
             .distanceMax(this.manyBodyDistanceMax)
@@ -1198,7 +1204,7 @@ export default {
                   }
                 }
               }
-              return 30;
+              return that.circleLink;
             })
             .strength(this.linkStrength)
             .iterations(this.linkIterations)
@@ -1788,85 +1794,97 @@ export default {
         })
         .on("click", function (event, d) {
           // 获取选择circle对应的container - g元素
-          const circle = d3.select(this);
           const g = d3.select(this.parentNode);
-          const rect = g.selectChild(".rect");
           that.selectedNode = g.datum().id.replace(".", "");
-          // const showDetail = g.datum().showDetail;
-          g.datum().showDetail = true;
-          //console.log(showDetail);
-          // reinitialize the collide force, if set
-          const collideForce = that.simulation.force("collide");
-          if (collideForce) collideForce.initialize(that.simulation.nodes());
 
-          rect.classed("not-show", false);
-          circle.classed("not-show", true);
-          // circle
-          //   .attr("r", that.vegaLiteR)
-          //   .attr("fill", "#fff")
-          //   .attr("stroke", "#555");
+          if (!g.datum().showDetail) {
+            g.datum().showDetail = true;
+            const circle = d3.select(this);
+            const rect = g.selectChild(".rect");
+            // const showDetail = g.datum().showDetail;
+            //console.log(showDetail);
+            // reinitialize the collide force, if set
+            const collideForce = that.simulation.force("collide");
+            if (collideForce) collideForce.initialize(that.simulation.nodes());
+            const bodyForce = that.simulation.force("charge");
+            if (bodyForce) {
+              that.simulation.force("charge", null);
+              that.simulation.force("charge", bodyForce);
+            }
 
-          //console.log(g.select(".vega-lite-container").datum());
-          const remove = g
-            .append("use")
-            .attr("href", "#defs-remove")
-            .attr("class", "remove vega-lite-icon")
-            .attr("cursor", "pointer")
+            rect.classed("not-show", false);
+            circle.classed("not-show", true);
+            // circle
+            //   .attr("r", that.vegaLiteR)
+            //   .attr("fill", "#fff")
+            //   .attr("stroke", "#555");
 
-            .on("click", function () {
-              g.datum().showDetail = false;
-              g.datum().pinned = false;
-              g.classed("pinned", false);
-              g.datum().fx = null;
-              g.datum().fy = null;
-              that.selectedNode = null;
-              g.selectChildren(".vega-lite-icon").remove();
-              that.deleteVegaLite(g, d.index);
-              const collideForce = that.simulation.force("collide");
+            //console.log(g.select(".vega-lite-container").datum());
+            const remove = g
+              .append("use")
+              .attr("href", "#defs-remove")
+              .attr("class", "remove vega-lite-icon")
+              .attr("cursor", "pointer")
 
-              if (collideForce)
-                collideForce.initialize(that.simulation.nodes());
-
-              rect.classed("not-show", true);
-              circle
-                .classed("not-show", false)
-                .attr("r", that.circleR)
-                .attr("stroke", "#fff")
-                .attr("fill", (d) => color(d.group));
-              // circle
-              //   .attr("r", that.circleR)
-              //   .attr("stroke", "#fff")
-              //   .attr("fill", (d) => color(d.group));
-              that.simulation.alpha(that.alpha);
-              that.simulation.restart();
-            });
-
-          const pin = g
-            .append("use")
-            .attr("href", "#defs-pin")
-            .attr("class", "pin vega-lite-icon")
-            .attr("cursor", "pointer")
-            .on("click", function () {
-              const pinned = !g.datum().pinned;
-              g.datum().pinned = pinned;
-              g.classed("pinned", true);
-              if (pinned) {
-                g.datum().fx = g.datum().x;
-                g.datum().fy = g.datum().y;
-                g.select(".pin").classed("icon-pinned", true);
-                // that.deleteVegaLite(g, d.index);
-                that.drawVegaLite(g, d.index, "svg");
-              } else {
+              .on("click", function () {
+                g.datum().showDetail = false;
+                g.datum().pinned = false;
                 g.classed("pinned", false);
-                g.select(".pin").classed("icon-pinned", false);
                 g.datum().fx = null;
                 g.datum().fy = null;
+                that.selectedNode = null;
+                g.selectChildren(".vega-lite-icon").remove();
+                that.deleteVegaLite(g, d.index);
+                const collideForce = that.simulation.force("collide");
+                const bodyForce = that.simulation.force("charge");
+                if (collideForce)
+                  collideForce.initialize(that.simulation.nodes());
 
-                // that.deleteVegaLite(g, d.index);
-                that.drawVegaLite(g, d.index, "img");
-              }
-            });
-          that.drawVegaLite(g, d.index, "img");
+                if (bodyForce) {
+                  that.simulation.force("charge", null);
+                  that.simulation.force("charge", bodyForce);
+                }
+                rect.classed("not-show", true);
+                circle
+                  .classed("not-show", false)
+                  .attr("r", that.circleR)
+                  .attr("stroke", "#fff")
+                  .attr("fill", (d) => color(d.group));
+                // circle
+                //   .attr("r", that.circleR)
+                //   .attr("stroke", "#fff")
+                //   .attr("fill", (d) => color(d.group));
+                that.simulation.alpha(that.alpha);
+                that.simulation.restart();
+              });
+
+            const pin = g
+              .append("use")
+              .attr("href", "#defs-pin")
+              .attr("class", "pin vega-lite-icon")
+              .attr("cursor", "pointer")
+              .on("click", function () {
+                const pinned = !g.datum().pinned;
+                g.datum().pinned = pinned;
+                g.classed("pinned", true);
+                if (pinned) {
+                  g.datum().fx = g.datum().x;
+                  g.datum().fy = g.datum().y;
+                  g.select(".pin").classed("icon-pinned", true);
+                  // that.deleteVegaLite(g, d.index);
+                  that.drawVegaLite(g, d.index, "svg");
+                } else {
+                  g.classed("pinned", false);
+                  g.select(".pin").classed("icon-pinned", false);
+                  g.datum().fx = null;
+                  g.datum().fy = null;
+
+                  // that.deleteVegaLite(g, d.index);
+                  that.drawVegaLite(g, d.index, "img");
+                }
+              });
+            that.drawVegaLite(g, d.index, "img");
+          }
         });
 
       const containerGroup = svg.select("g.node-group").selectChildren("g");
@@ -1919,7 +1937,7 @@ export default {
                   }
                 }
               }
-              return 30;
+              return that.circleLink;
             })
             .iterations(defaultForceConfig.link.Iterations)
           // .strength(defaultForceConfig.link.Strength)
@@ -1928,7 +1946,14 @@ export default {
           "charge",
           d3
             .forceManyBody()
-            .strength(defaultForceConfig.manyBody.Strength)
+            .strength(function (d) {
+              //console.log(d.showDetail);
+              let strength = that.circleStrength;
+              if (d.showDetail) {
+                strength = that.vegaLiteStrength;
+              }
+              return strength;
+            })
             .theta(defaultForceConfig.manyBody.Theta)
             .distanceMin(defaultForceConfig.manyBody.DistanceMin)
           // .distanceMax(defaultForceConfig.manyBody.DistanceMax)
