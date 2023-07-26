@@ -628,6 +628,11 @@ export default {
   },
   data() {
     return {
+      // color
+      defaultLinkColor: "#999",
+      defaultNodeColor: "#868e96",
+      circleHoveredColor: "#ff6b6b",
+
       // graph set
       width: null,
       height: null,
@@ -637,8 +642,9 @@ export default {
       circleR: 5,
       circleFocusR: 20,
       // rectWH: 125 * 0.7 + 20,
-      rectWidthOffset: 13,
-      rectHeightOffset: 25,
+      rectWidthOffset: 3,
+      rectHeightOffset: 13,
+      rectHeightBottomOffset: 3,
       rectR: 10,
       vegaLiteR: 125,
       vegaLiteHeight: 100,
@@ -651,7 +657,7 @@ export default {
       circleStrength: -30,
       vegaLiteStrength: -1000,
 
-      iconSize: 20,
+      iconSize: 15,
       iconOffset: 5,
 
       // show conifg of vega-lite graph
@@ -802,18 +808,7 @@ export default {
             .filter((d) => oldNeighborSet.includes(d.id.replace(".", "")))
             .selectChildren("circle, rect")
 
-            .attr("stroke", function () {
-              if (this instanceof SVGRectElement) {
-                return "#000";
-              }
-
-              const showDetail = d3.select(this.parentNode).datum().showDetail;
-              if (showDetail) {
-                return "#000";
-              } else {
-                return "#fff";
-              }
-            });
+            .classed("hover-highlight", false);
 
           linkGroup
             .filter(
@@ -821,15 +816,14 @@ export default {
                 oldVal === d.source.id.replace(".", "") ||
                 oldVal === d.target.id.replace(".", "")
             )
-            .attr("stroke", "#999999");
+            .classed("hover-highlight", false);
         }
         //  console.log(linkGroup);
         if (neighborSet) {
           nodeGroup
             .filter((d) => neighborSet.includes(d.id.replace(".", "")))
             .selectChildren("circle, rect")
-            // .classed("hover-highlight", true);
-            .attr("stroke", "#15aabf");
+            .classed("hover-highlight", true);
 
           linkGroup
             .filter(
@@ -837,7 +831,7 @@ export default {
                 newVal === d.source.id.replace(".", "") ||
                 newVal === d.target.id.replace(".", "")
             )
-            .attr("stroke", "#0c8599");
+            .classed("hover-highlight", true);
         }
       }
     },
@@ -1383,6 +1377,7 @@ export default {
         pinned: false,
         view: null,
         img: null,
+        rect: null,
       }));
 
       //  console.log(this.showIndex);
@@ -1573,20 +1568,36 @@ export default {
 
           const linkForce = that.simulation.force("link");
           if (linkForce) linkForce.initialize(that.simulation.nodes());
+          // reinitialize the collide force, if set
 
           const svg = container.select("svg");
           const width = svg.attr("width");
           const height = svg.attr("height");
 
+          // record the img info
+          g.datum().img = {
+            width: width,
+            height: height,
+          };
+
           const rectWidth = +width + that.rectWidthOffset * 2;
           const rectHeight = +height + that.rectHeightOffset * 2;
+
           const translateX = rectWidth / 2;
-          const translateY = (rectHeight + that.rectHeightOffset) / 2;
+          const translateY = rectHeight / 2;
+          g.datum().rect = {
+            r: Math.sqrt(Math.pow(translateX, 2) + Math.pow(translateY, 2)),
+          };
+          const collideForce = that.simulation.force("collide");
+          if (collideForce) collideForce.initialize(that.simulation.nodes());
           rect
-            .attr("width", rectWidth)
-            .attr("height", rectHeight)
             .attr("rx", that.rectR)
-            .attr("transform", `translate(${-translateX},${-translateY})`);
+            .transition()
+            .duration(150)
+            .attr("x", -translateX)
+            .attr("y", -translateY)
+            .attr("width", rectWidth)
+            .attr("height", rectHeight);
 
           removeIcon.attr(
             "transform",
@@ -1595,41 +1606,38 @@ export default {
             })`
           );
 
-          pinIcon.attr(
-            "transform",
-            `translate(${translateX - 2 * that.iconSize - that.iconOffset},${
-              -translateY + that.iconOffset
-            })`
-          );
+          pinIcon
+            .attr(
+              "transform",
+              `translate(${translateX - 2 * that.iconSize - that.iconOffset},${
+                -translateY + that.iconOffset
+              })`
+            )
+            .classed("icon-pinned", true);
+
+          g.datum().pinned = true;
+          g.classed("pinned", true);
+          // 初始就设置为 pinned 状态
+          g.datum().fx = g.datum().x;
+          g.datum().fy = g.datum().y;
 
           container.select("div").remove();
           container.select("details").remove();
           container.node().appendChild(svg.node());
-          svg.attr("class", "vega-lite-graph");
-          svg.classed("not-show", true);
-          view.toCanvas(5).then((canvas) => {
-            // Access the canvas element and export as an image
-            const image = document.createElementNS(
-              "http://www.w3.org/2000/svg",
-              "image"
-            );
-
-            image.setAttribute("href", canvas.toDataURL("image/png", 1));
-            image.setAttribute("width", width);
-            image.setAttribute("height", height);
-            image.setAttribute("class", "vega-lite-graph");
-
-            container.node().appendChild(image);
-            // record the img info
-            g.datum().img = {
-              width: width,
-              height: height,
-            };
-          });
+          svg
+            .attr("class", "vega-lite-graph")
+            .attr("fill-opacity", 0)
+            .attr("stroke-opacity", 0)
+            .transition()
+            .duration(175)
+            .attr("fill-opacity", 1)
+            .attr("stroke-opacity", 1);
 
           container.style(
             "transform",
-            `translate(${-width / 2}px,${-height / 2}px)`
+            `translate(${-width / 2}px,${
+              -height / 2 + that.rectHeightOffset - that.rectHeightBottomOffset
+            }px)`
           );
         });
       }
@@ -1693,6 +1701,7 @@ export default {
         pinned: false,
         view: null,
         img: null,
+        rect: null,
       }));
       //console.log(data.links);
       // 选择svg container
@@ -1711,7 +1720,7 @@ export default {
       // 先把svg图和nodes+links 元素画出来
       // 随便设置一个种类的颜色映射
       const color = d3.scaleOrdinal(d3.schemeCategory10);
-      const selectedColor = "#c92a2a";
+
       // 创建svg
       const svg = svgContainer
         .append("svg")
@@ -1723,11 +1732,12 @@ export default {
       const linkGroup = svg
         .append("g")
         .attr("class", "link-group")
-        .attr("stroke", "#999999")
+        .attr("stroke", this.defaultLinkColor)
         .attr("stroke-opacity", 0.6)
         .selectAll("line")
         .data(links)
         .join("line")
+        .attr("class", "network-line")
         // link的value值映射到粗细
         .attr("stroke-width", (d) => Math.sqrt(d.value));
       //画nodes
@@ -1765,7 +1775,9 @@ export default {
         // node 进行分类颜色映射
         .attr(
           "fill",
-          (d) => color(d.group)
+
+          this.defaultNodeColor
+          // (d) => color(d.group)
 
           // function (d) {
           //   const gData = d3.select(this.parentNode).datum();
@@ -1779,7 +1791,7 @@ export default {
           if (!d.showDetail) {
             //颜色变，表示被选中
             d3.select(this)
-              .attr("fill", selectedColor)
+              .attr("fill", that.circleHoveredColor)
               .attr("r", that.circleFocusR)
               .style("cursor", "pointer");
           }
@@ -1789,7 +1801,7 @@ export default {
           if (!d.showDetail) {
             d3.select(this)
               .attr("r", that.circleR)
-              .attr("fill", (d) => color(d.group));
+              .attr("fill", that.defaultNodeColor);
           }
         })
         .on("click", function (event, d) {
@@ -1799,13 +1811,10 @@ export default {
 
           if (!g.datum().showDetail) {
             g.datum().showDetail = true;
+
             const circle = d3.select(this);
             const rect = g.selectChild(".rect");
-            // const showDetail = g.datum().showDetail;
-            //console.log(showDetail);
-            // reinitialize the collide force, if set
-            const collideForce = that.simulation.force("collide");
-            if (collideForce) collideForce.initialize(that.simulation.nodes());
+
             const bodyForce = that.simulation.force("charge");
             if (bodyForce) {
               that.simulation.force("charge", null);
@@ -1814,12 +1823,6 @@ export default {
 
             rect.classed("not-show", false);
             circle.classed("not-show", true);
-            // circle
-            //   .attr("r", that.vegaLiteR)
-            //   .attr("fill", "#fff")
-            //   .attr("stroke", "#555");
-
-            //console.log(g.select(".vega-lite-container").datum());
             const remove = g
               .append("use")
               .attr("href", "#defs-remove")
@@ -1844,12 +1847,17 @@ export default {
                   that.simulation.force("charge", null);
                   that.simulation.force("charge", bodyForce);
                 }
-                rect.classed("not-show", true);
+                rect
+                  .classed("not-show", true)
+                  .attr("x", 0)
+                  .attr("y", 0)
+                  .attr("width", 0)
+                  .attr("height", 0);
                 circle
                   .classed("not-show", false)
                   .attr("r", that.circleR)
                   .attr("stroke", "#fff")
-                  .attr("fill", (d) => color(d.group));
+                  .attr("fill", that.defaultNodeColor);
                 // circle
                 //   .attr("r", that.circleR)
                 //   .attr("stroke", "#fff")
@@ -1883,6 +1891,7 @@ export default {
                   that.drawVegaLite(g, d.index, "img");
                 }
               });
+
             that.drawVegaLite(g, d.index, "img");
           }
         });
@@ -1896,7 +1905,6 @@ export default {
 
           return !gData.showDetail;
         })
-
         .attr("fill", "#fff")
         .attr("stroke", "#000")
         .attr("cursor", "pointer")
@@ -1969,7 +1977,9 @@ export default {
           d3
             .forceCollide((d) => {
               if (d.showDetail) {
-                return that.vegaLiteR;
+                console.log(d.rect.r);
+                return d.rect.r;
+                //return that.vegaLiteR;
               } else {
                 return that.circleR;
               }
@@ -2321,9 +2331,11 @@ export default {
 
 <!-- global style -->
 <style lang="less">
-.circle {
+.circle,
+.rect,
+.network-line {
   &.hover-highlight {
-    stroke: steelblue;
+    stroke: #66d9e8;
     stroke-width: 3px;
   }
 }
