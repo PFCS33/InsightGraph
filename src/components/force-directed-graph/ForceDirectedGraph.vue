@@ -1378,6 +1378,7 @@ export default {
         view: null,
         img: null,
         rect: null,
+        rect: null,
       }));
 
       //  console.log(this.showIndex);
@@ -1569,6 +1570,7 @@ export default {
           const linkForce = that.simulation.force("link");
           if (linkForce) linkForce.initialize(that.simulation.nodes());
           // reinitialize the collide force, if set
+          // reinitialize the collide force, if set
 
           const svg = container.select("svg");
           const width = svg.attr("width");
@@ -1580,10 +1582,22 @@ export default {
             height: height,
           };
 
+          // record the img info
+          g.datum().img = {
+            width: width,
+            height: height,
+          };
+
           const rectWidth = +width + that.rectWidthOffset * 2;
           const rectHeight = +height + that.rectHeightOffset * 2;
 
           const translateX = rectWidth / 2;
+          const translateY = rectHeight / 2;
+          g.datum().rect = {
+            r: Math.sqrt(Math.pow(translateX, 2) + Math.pow(translateY, 2)),
+          };
+          const collideForce = that.simulation.force("collide");
+          if (collideForce) collideForce.initialize(that.simulation.nodes());
           const translateY = rectHeight / 2;
           g.datum().rect = {
             r: Math.sqrt(Math.pow(translateX, 2) + Math.pow(translateY, 2)),
@@ -1606,6 +1620,20 @@ export default {
             })`
           );
 
+          pinIcon
+            .attr(
+              "transform",
+              `translate(${translateX - 2 * that.iconSize - that.iconOffset},${
+                -translateY + that.iconOffset
+              })`
+            )
+            .classed("icon-pinned", true);
+
+          g.datum().pinned = true;
+          g.classed("pinned", true);
+          // 初始就设置为 pinned 状态
+          g.datum().fx = g.datum().x;
+          g.datum().fy = g.datum().y;
           pinIcon
             .attr(
               "transform",
@@ -1701,6 +1729,7 @@ export default {
         pinned: false,
         view: null,
         img: null,
+        rect: null,
         rect: null,
       }));
       //console.log(data.links);
@@ -1853,6 +1882,12 @@ export default {
                   .attr("y", 0)
                   .attr("width", 0)
                   .attr("height", 0);
+                rect
+                  .classed("not-show", true)
+                  .attr("x", 0)
+                  .attr("y", 0)
+                  .attr("width", 0)
+                  .attr("height", 0);
                 circle
                   .classed("not-show", false)
                   .attr("r", that.circleR)
@@ -1977,6 +2012,9 @@ export default {
           d3
             .forceCollide((d) => {
               if (d.showDetail) {
+                console.log(d.rect.r);
+                return d.rect.r;
+                //return that.vegaLiteR;
                 console.log(d.rect.r);
                 return d.rect.r;
                 //return that.vegaLiteR;
