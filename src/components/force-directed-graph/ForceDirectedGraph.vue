@@ -599,38 +599,54 @@
           d="M320 839.68l-238.592 174.08c-8.704 6.656-19.456 9.728-29.696 9.728-12.8 0-26.112-5.12-35.84-14.848-17.92-17.92-20.48-46.08-5.12-66.56l212.992-288.256L56.32 487.424C39.936 471.04 36.864 445.44 48.128 425.472c8.192-12.8 76.8-112.64 229.376-75.264 2.56 0.512 5.12 0.512 8.192 1.024 6.144 0.512 13.312 1.024 20.992 2.56 32.256 5.12 89.6-20.48 139.264-62.976 47.616-40.448 78.336-87.552 78.336-120.32 0-7.68 0-15.872-0.512-23.552-1.024-30.72-3.072-77.824 31.744-112.64 41.472-41.472 107.52-45.056 153.088-7.68 1.024 0.512 1.536 1.536 2.56 2.56 24.576 24.064 276.48 275.968 279.04 278.528 21.504 21.504 33.792 50.688 33.792 81.408s-11.776 59.392-33.792 80.896c-34.816 34.816-82.432 33.28-113.664 31.744-7.168 0-15.36-0.512-23.04-0.512-30.72 0-67.584 21.504-103.936 60.928-50.688 55.296-81.92 126.464-79.36 158.72 1.024 10.24 3.072 28.16 3.584 30.72 36.864 149.504-62.976 217.6-74.752 225.28-20.48 12.288-46.592 9.216-62.976-7.168l-165.376-165.376-50.688 35.328z"
         ></path>
       </svg>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        id="defs-dominance"
-        :width="insightIconSize"
-        :height="insightIconSize"
-        fill="none"
-        viewBox="0 0 102 102"
-      >
-        <mask id="a" fill="#fff">
-          <path
-            d="M89.3022 18.8606A49.9999 49.9999 0 0 0 8.5976 24.504a50 50 0 0 0 84.8048 52.992L51 51l38.3022-32.1394Z"
-          />
-        </mask>
-        <path
-          fill="#AAA"
-          stroke="#555"
-          stroke-width="3"
-          d="M89.3022 18.8606A49.9999 49.9999 0 0 0 8.5976 24.504a50 50 0 0 0 84.8048 52.992L51 51l38.3022-32.1394Z"
-          mask="url(#a)"
-        />
-        <mask id="b" fill="#fff">
-          <path
-            d="M88.3017 67.119a30 30 0 0 0-2.7638-35.9191L63 51l25.3017 16.119Z"
-          />
-        </mask>
-        <path
-          fill="#D9D9D9"
-          stroke="#555"
-          stroke-width="3"
-          d="M88.3017 67.119a30 30 0 0 0-2.7638-35.9191L63 51l25.3017 16.119Z"
-          mask="url(#b)"
-        />
+      <svg id="defs-dominance" xmlns="http://www.w3.org/2000/svg">
+        <image
+          href="/pic/dominance.png"
+          :width="insightIconSize"
+          :height="insightIconSize"
+        ></image>
+      </svg>
+      <svg id="defs-outlier" xmlns="http://www.w3.org/2000/svg">
+        <image
+          href="/pic/outlier.png"
+          :width="insightIconSize"
+          :height="insightIconSize"
+        ></image>
+      </svg>
+      <svg id="defs-top2" xmlns="http://www.w3.org/2000/svg">
+        <image
+          href="/pic/top2.png"
+          :width="insightIconSize"
+          :height="insightIconSize"
+        ></image>
+      </svg>
+      <svg id="defs-evenness" xmlns="http://www.w3.org/2000/svg">
+        <image
+          href="/pic/evenness.png"
+          :width="insightIconSize"
+          :height="insightIconSize"
+        ></image>
+      </svg>
+      <svg id="defs-trend" xmlns="http://www.w3.org/2000/svg">
+        <image
+          href="/pic/trend.png"
+          :width="insightIconSize"
+          :height="insightIconSize"
+        ></image>
+      </svg>
+      <svg id="defs-skewness" xmlns="http://www.w3.org/2000/svg">
+        <image
+          href="/pic/skewness.png"
+          :width="insightIconSize"
+          :height="insightIconSize"
+        ></image>
+      </svg>
+      <svg id="defs-kurtosis" xmlns="http://www.w3.org/2000/svg">
+        <image
+          href="/pic/kurtosis.png"
+          :width="insightIconSize"
+          :height="insightIconSize"
+        ></image>
       </svg>
     </defs>
   </div>
@@ -664,7 +680,7 @@ export default {
       // color
       defaultLinkColor: "#999",
       defaultNodeColor: "#868e96",
-      circleHoveredColor: "#ff6b6b",
+      circleHoveredColor: "#e6fcf5",
 
       // graph set
       width: null,
@@ -672,8 +688,8 @@ export default {
       leftCornerCoord: null,
       rightCornerCoord: null,
 
-      circleR: 10,
-      circleFocusR: 20,
+      circleR: 12,
+      circleFocusR: 24,
       // rectWH: 125 * 0.7 + 20,
       rectWidthOffset: 3,
       rectHeightOffset: 13,
@@ -683,14 +699,15 @@ export default {
       vegaLiteHeight: 100,
       vegaLiteWidth: 100,
 
-      circleLink: 30,
+      circleLink: 50,
       vegaLiteLink: 200,
       vegaLiteLongLink: 300,
 
-      circleStrength: -30,
+      circleStrength: -50,
       vegaLiteStrength: -1000,
 
-      insightIconSize: 15,
+      insightNum: 7,
+      insightIconSize: 20,
       iconSize: 15,
       iconOffset: 5,
 
@@ -1626,6 +1643,10 @@ export default {
           if (collideForce) collideForce.initialize(that.simulation.nodes());
           rect
             .attr("rx", that.rectR)
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", 0)
+            .attr("height", 0)
             .transition()
             .duration(150)
             .attr("x", -translateX)
@@ -1773,7 +1794,11 @@ export default {
         .join("line")
         .attr("class", "network-line")
         // link的value值映射到粗细
-        .attr("stroke-width", (d) => Math.sqrt(d.value));
+        .attr(
+          "stroke-width",
+          1
+          // (d) => Math.sqrt(d.value)
+        );
       //画nodes
 
       const circleGroup = svg
@@ -1783,6 +1808,7 @@ export default {
         .data(nodes)
         .join("g")
         .append("circle")
+
         .attr("class", "circle")
         .classed("not-show", function () {
           const gData = d3.select(this.parentNode).datum();
@@ -1792,7 +1818,7 @@ export default {
         .attr("stroke", this.defaultNodeColor)
         // node 进行分类颜色映射
         .attr("fill", "#fff")
-        .attr("stroke-width", 1.5)
+        .attr("stroke-width", 1)
         .style("transition", "r 0.2s")
         .on("mouseover", function (event) {
           const d = d3.select(this.parentNode).datum();
@@ -1855,12 +1881,7 @@ export default {
                   that.simulation.force("charge", null);
                   that.simulation.force("charge", bodyForce);
                 }
-                rect
-                  .classed("not-show", true)
-                  .attr("x", 0)
-                  .attr("y", 0)
-                  .attr("width", 0)
-                  .attr("height", 0);
+                rect.classed("not-show", true);
                 circle
                   .classed("not-show", false)
                   .attr("r", that.circleR)
@@ -1908,12 +1929,39 @@ export default {
       const containerGroup = svg.select("g.node-group").selectChildren("g");
       const iconGroup = containerGroup
         .append("use")
-        .attr("href", "#defs-dominance")
+        .attr("href", function () {
+          const g = d3.select(this.parentNode);
+          const group = g.datum().group % that.insightNum;
+          let insightType = null;
+          switch (group) {
+            case 0:
+              insightType = "dominance";
+              break;
+            case 1:
+              insightType = "outlier";
+              break;
+            case 2:
+              insightType = "top2";
+              break;
+            case 3:
+              insightType = "evenness";
+              break;
+            case 4:
+              insightType = "trend";
+              break;
+            case 5:
+              insightType = "skewness";
+              break;
+            case 6:
+              insightType = "kurtosis";
+              break;
+          }
+          return "#defs-" + insightType;
+        })
         .attr("class", "insight-icon")
-        .attr(
-          "transform",
-          `translate(${-this.insightIconSize / 2},${-this.insightIconSize / 2})`
-        )
+        .attr("x", -this.insightIconSize / 2)
+        .attr("y", -this.insightIconSize / 2)
+
         .attr("pointer-events", "none");
       const rectGroup = containerGroup
         .append("rect")
@@ -2132,7 +2180,7 @@ export default {
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
         console.log(transform);
-        if (transform.k < 1) {
+        if (transform.k < 1.3) {
           that.leftCornerCoord = transform.invert([0, 0]);
           that.rightCornerCoord = transform.invert([width, height]);
         }
