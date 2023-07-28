@@ -1580,13 +1580,22 @@ export default {
           // record the view
           g.datum().view = view;
           that.showIndex.set(index, view);
-          that.pinnedIndex.set(index, g);
 
           const linkForce = that.simulation.force("link");
           if (linkForce) linkForce.initialize(that.simulation.nodes());
           // reinitialize the collide force, if set
 
           const svg = container.select("svg");
+
+          // add animation
+          svg
+            .attr("class", "vega-lite-graph")
+            .attr("fill-opacity", 0)
+            .attr("stroke-opacity", 0)
+            .transition()
+            .duration(175)
+            .attr("fill-opacity", 1)
+            .attr("stroke-opacity", 1);
           const width = svg.attr("width");
           const height = svg.attr("height");
 
@@ -1652,34 +1661,46 @@ export default {
             })`
           );
 
-          pinIcon
-            .attr(
-              "transform",
-              `translate(${translateX - 2 * that.iconSize - that.iconOffset},${
-                -translateY + that.iconOffset
-              })`
-            )
-            .classed("icon-pinned", true);
+          pinIcon.attr(
+            "transform",
+            `translate(${translateX - 2 * that.iconSize - that.iconOffset},${
+              -translateY + that.iconOffset
+            })`
+          );
 
-          g.datum().pinned = true;
-          g.classed("pinned", true);
-          // 初始就设置为 pinned 状态
-          g.datum().fx = g.datum().x;
-          g.datum().fy = g.datum().y;
+          switch (mode) {
+            case "img":
+              console.log("img");
+              // 创建反应新状态的img
+              svg.classed("not-show", true);
+              const imgInfo = g.datum().img;
+              view.toCanvas(5).then((canvas) => {
+                // Access the canvas element and export as an image
+                const image = document.createElementNS(
+                  "http://www.w3.org/2000/svg",
+                  "image"
+                );
+                image.setAttribute("href", canvas.toDataURL("image/png", 1));
+                image.setAttribute("width", imgInfo.width);
+                image.setAttribute("height", imgInfo.height);
+                image.setAttribute("class", "vega-lite-graph");
+                container.node().appendChild(image);
+              });
+              break;
+            case "svg":
+              // 初始就设置为 pinned 状态
+              pinIcon.classed("icon-pinned", true);
+              that.pinnedIndex.set(index, g);
+              g.datum().pinned = true;
+              g.classed("pinned", true);
+              g.datum().fx = g.datum().x;
+              g.datum().fy = g.datum().y;
+              container.node().appendChild(svg.node());
+              break;
+          }
 
           container.select("div").remove();
           container.select("details").remove();
-          container.node().appendChild(svg.node());
-
-          // add animation
-          svg
-            .attr("class", "vega-lite-graph")
-            .attr("fill-opacity", 0)
-            .attr("stroke-opacity", 0)
-            .transition()
-            .duration(175)
-            .attr("fill-opacity", 1)
-            .attr("stroke-opacity", 1);
 
           container.style(
             "transform",
@@ -1901,26 +1922,7 @@ export default {
               .attr("href", "#defs-pin")
               .attr("class", "pin vega-lite-icon")
               .attr("cursor", "pointer")
-              .on("click", function () {
-                const pinned = !g.datum().pinned;
-                g.datum().pinned = pinned;
-                g.classed("pinned", true);
-                if (pinned) {
-                  g.datum().fx = g.datum().x;
-                  g.datum().fy = g.datum().y;
-                  g.select(".pin").classed("icon-pinned", true);
-                  // that.deleteVegaLite(g, d.index);
-                  that.drawVegaLite(g, d.index, "svg");
-                } else {
-                  g.classed("pinned", false);
-                  g.select(".pin").classed("icon-pinned", false);
-                  g.datum().fx = null;
-                  g.datum().fy = null;
-
-                  // that.deleteVegaLite(g, d.index);
-                  that.drawVegaLite(g, d.index, "img");
-                }
-              });
+              .on("click", togglePin);
 
             that.drawVegaLite(g, d.index, "img");
           }
@@ -2007,7 +2009,8 @@ export default {
           const g = d3.select(this.parentNode);
           that.selectedNode = g.datum().id.replace(".", "");
           // d3.select(this).classed("center-highlight", true);
-        });
+        })
+        .on("dblclick", togglePin);
 
       const titleGroup = containerGroup
         .append("rect")
@@ -2029,7 +2032,8 @@ export default {
           return !gData.showDetail;
         })
         .attr("class", "title-text title-name")
-        .attr("pointer-events", "none");
+        .attr("pointer-events", "none")
+        .style("user-select", "none");
 
       const descriptionGroup = containerGroup
         .append("text")
@@ -2038,7 +2042,8 @@ export default {
           return !gData.showDetail;
         })
         .attr("class", "title-text title-description")
-        .attr("pointer-events", "none");
+        .attr("pointer-events", "none")
+        .style("user-select", "none");
       const vegaLiteContainerGroup = containerGroup
         .append("g")
         .attr("class", "vega-lite-container");
@@ -2280,54 +2285,27 @@ export default {
       this.defaultForceConfig.collide.Radius = this.collideRadius =
         this.circleR;
 
-      // svg
-      //   .append("g")
-      //   .selectAll("g")
-      //   .data([0, 1, 2, 3, 4])
-      //   .join("g")
-      //   .attr("class", (d) => `test-${d}`);
-      // for (let i = 0; i < 5; i++) {
-      //   var yourVlSpec = {
-      //     description: "Drag out a rectangular brush to highlight points.",
-      //     usermeta: { embedOptions: { renderer: "svg" } },
-      //     width: this.vegaLiteWidth,
-      //     height: this.vegaLiteHeight,
-      //     data: {
-      //       values: this.carsData,
-      //     },
-      //     params: [
-      //       {
-      //         name: "brush",
-      //         select: "interval",
-      //         value: { x: [55, 160], y: [13, 37] },
-      //       },
-      //     ],
-      //     mark: "point",
-      //     encoding: {
-      //       x: { field: "Horsepower", type: "quantitative" },
-      //       y: { field: "Miles_per_Gallon", type: "quantitative" },
-      //       color: {
-      //         condition: {
-      //           param: "brush",
-      //           field: "Cylinders",
-      //           type: "ordinal",
-      //         },
-      //         value: "grey",
-      //       },
-      //     },
-      //   };
+      function togglePin() {
+        const g = d3.select(this.parentNode);
+        const pinned = !g.datum().pinned;
+        g.datum().pinned = pinned;
+        g.classed("pinned", true);
+        if (pinned) {
+          g.datum().fx = g.datum().x;
+          g.datum().fy = g.datum().y;
+          g.select(".pin").classed("icon-pinned", true);
+          // that.deleteVegaLite(g, d.index);
+          that.drawVegaLite(g, d.index, "svg");
+        } else {
+          g.classed("pinned", false);
+          g.select(".pin").classed("icon-pinned", false);
+          g.datum().fx = null;
+          g.datum().fy = null;
 
-      //   vegaEmbed(`.test-${i}`, yourVlSpec).then(() => {
-      //     const container = d3.select(`.test-${i}`);
-      //     const svg = container.select("svg");
-
-      //     container.node().appendChild(svg.node());
-      //     container.attr("transform", `translate(${i * 200},0)`);
-
-      //     container.select("div").remove();
-      //     container.select("details").remove();
-      //   });
-      // }
+          // that.deleteVegaLite(g, d.index);
+          that.drawVegaLite(g, d.index, "img");
+        }
+      }
     },
   },
 
