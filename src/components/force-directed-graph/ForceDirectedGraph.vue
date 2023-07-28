@@ -703,8 +703,8 @@ export default {
       vegaLiteLink: 200,
       vegaLiteLongLink: 300,
 
-      circleStrength: -50,
-      vegaLiteStrength: -1000,
+      circleStrength: -100,
+      vegaLiteStrength: -5000,
 
       insightNum: 7,
       insightIconSize: 20,
@@ -1534,10 +1534,13 @@ export default {
       const removeIcon = g.selectChild(".remove");
       const pinIcon = g.selectChild(".pin");
       const preView = g.datum().view;
+      const rectTitle = g.select(".rect-title");
+      const rectTitleName = g.selectChild(".title-name");
+      const rectTitleDescription = g.selectChild(".title-description");
+
       if (preView) {
         // reset the view
         const svg = container.selectChild("svg");
-
         switch (mode) {
           case "img":
             // 创建反应新状态的img
@@ -1566,11 +1569,10 @@ export default {
         // let yourVlSpec =JSON.parse( g.datum()["vega-lite"]);
         let yourVlSpec = JSON.parse(g.datum()["vega-lite"][0]);
 
-        //console.log("test", test);
+        // add some options
         yourVlSpec["width"] = this.vegaLiteWidth;
         yourVlSpec["height"] = this.vegaLiteHeight;
         yourVlSpec["usermeta"] = { embedOptions: { renderer: "svg" } };
-        // test["encoding"]["color"]["legend"] = null;
 
         // initialization
         vegaEmbed(container.node(), yourVlSpec).then((result) => {
@@ -1594,8 +1596,9 @@ export default {
             height: height,
           };
 
+          const titleHeight = that.iconSize + 2 * that.iconOffset;
           const rectWidth = +width + that.rectWidthOffset * 2;
-          const rectHeight = +height + that.rectHeightOffset * 2;
+          const rectHeight = +height + that.rectHeightOffset * 2 + titleHeight;
 
           const translateX = rectWidth / 2;
           const translateY = rectHeight / 2;
@@ -1604,6 +1607,8 @@ export default {
           };
           const collideForce = that.simulation.force("collide");
           if (collideForce) collideForce.initialize(that.simulation.nodes());
+
+          // add ainmation
           rect
             .attr("rx", that.rectR)
             .attr("x", 0)
@@ -1617,6 +1622,29 @@ export default {
             .attr("width", rectWidth)
             .attr("height", rectHeight);
 
+          rectTitle
+            .attr("rx", that.rectR)
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", 0)
+            .attr("height", 0)
+            .transition()
+            .duration(150)
+            .attr("x", -translateX)
+            .attr("y", -translateY)
+            .attr("width", rectWidth)
+            .attr("height", titleHeight);
+
+          rectTitleName
+            .text("This is Name")
+            .attr("x", -translateX + that.iconOffset)
+            .attr("y", -translateY + that.iconSize + that.iconOffset / 2)
+            .attr("font-size", that.iconSize - 2);
+          rectTitleDescription
+            .text("x axis, y axis")
+            .attr("font-size", that.iconSize - 2)
+            .attr("x", -translateX + that.iconOffset)
+            .attr("y", -translateY + 2 * that.iconSize + 2 * that.iconOffset);
           removeIcon.attr(
             "transform",
             `translate(${translateX - that.iconSize - that.iconOffset},${
@@ -1642,6 +1670,8 @@ export default {
           container.select("div").remove();
           container.select("details").remove();
           container.node().appendChild(svg.node());
+
+          // add animation
           svg
             .attr("class", "vega-lite-graph")
             .attr("fill-opacity", 0)
@@ -1654,7 +1684,7 @@ export default {
           container.style(
             "transform",
             `translate(${-width / 2}px,${
-              -height / 2 + that.rectHeightOffset - that.rectHeightBottomOffset
+              -height / 2 + that.rectHeightOffset + titleHeight / 2
             }px)`
           );
         });
@@ -1771,7 +1801,6 @@ export default {
         .data(nodes)
         .join("g")
         .append("circle")
-
         .attr("class", "circle")
         .classed("not-show", function () {
           const gData = d3.select(this.parentNode).datum();
@@ -1817,6 +1846,8 @@ export default {
             const circle = d3.select(this);
             const rect = g.selectChild(".rect");
             const insightIcon = g.selectChild(".insight-icon");
+            const rectTitle = g.select(".rect-title");
+            const rectText = g.selectChildren(".title-text");
 
             const bodyForce = that.simulation.force("charge");
             if (bodyForce) {
@@ -1825,6 +1856,8 @@ export default {
             }
 
             rect.classed("not-show", false);
+            rectTitle.classed("not-show", false);
+            rectText.classed("not-show", false);
             circle.classed("not-show", true);
             insightIcon.classed("not-show", true);
             const remove = g
@@ -1832,7 +1865,6 @@ export default {
               .attr("href", "#defs-remove")
               .attr("class", "remove vega-lite-icon")
               .attr("cursor", "pointer")
-
               .on("click", function () {
                 g.datum().showDetail = false;
                 g.datum().pinned = false;
@@ -1852,10 +1884,11 @@ export default {
                   that.simulation.force("charge", bodyForce);
                 }
                 rect.classed("not-show", true);
+                rectTitle.classed("not-show", true);
+                rectText.classed("not-show", true);
                 circle
                   .classed("not-show", false)
                   .attr("r", that.circleR)
-
                   .attr("fill", "#FFF");
                 insightIcon.classed("not-show", false);
 
@@ -1948,19 +1981,25 @@ export default {
         .attr("cursor", "pointer")
         .on("mouseover", function (event) {
           //颜色变，表示被选中
-          // d3.select(this).attr("hover-highlight", true);
-          const id = d3.select(this.parentNode).datum().id.replace(".", "");
+          const rect = d3.select(this);
+          const parentNode = d3.select(this.parentNode);
+          const id = parentNode.datum().id.replace(".", "");
           const neighbor = that.neighborMap.get(id);
           that.neighborHighligt(id, neighbor, "hover", true);
-          d3.select(this).classed("center-highlight", true);
+          rect.classed("center-highlight", true);
+          console.log(parentNode.select(".rect-title"));
+          parentNode.select(".rect-title").classed("center-highlight", true);
         })
         .on("mouseout", function (event) {
-          const id = d3.select(this.parentNode).datum().id.replace(".", "");
+          const rect = d3.select(this);
+          const parentNode = d3.select(this.parentNode);
+          const id = parentNode.datum().id.replace(".", "");
           const neighbor = that.neighborMap.get(id);
           that.neighborHighligt(id, neighbor, "hover", false);
 
           if (id !== that.selectedNode) {
-            d3.select(this).classed("center-highlight", false);
+            rect.classed("center-highlight", false);
+            parentNode.select(".rect-title").classed("center-highlight", false);
           }
         })
         .on("click", function () {
@@ -1970,6 +2009,36 @@ export default {
           // d3.select(this).classed("center-highlight", true);
         });
 
+      const titleGroup = containerGroup
+        .append("rect")
+        .attr("class", "rect-title")
+        .classed("not-show", function () {
+          const gData = d3.select(this.parentNode).datum();
+
+          return !gData.showDetail;
+        })
+        .attr("fill", "#e9ecef")
+        .attr("stroke", "#ccc")
+        .attr("stroke-width", 1.5)
+        .attr("pointer-events", "none");
+
+      const nameGroup = containerGroup
+        .append("text")
+        .classed("not-show", function () {
+          const gData = d3.select(this.parentNode).datum();
+          return !gData.showDetail;
+        })
+        .attr("class", "title-text title-name")
+        .attr("pointer-events", "none");
+
+      const descriptionGroup = containerGroup
+        .append("text")
+        .classed("not-show", function () {
+          const gData = d3.select(this.parentNode).datum();
+          return !gData.showDetail;
+        })
+        .attr("class", "title-text title-description")
+        .attr("pointer-events", "none");
       const vegaLiteContainerGroup = containerGroup
         .append("g")
         .attr("class", "vega-lite-container");
@@ -2402,7 +2471,8 @@ export default {
 <style lang="less">
 .circle,
 .rect,
-.network-line {
+.network-line,
+.rect-title {
   &.hover-highlight {
     stroke: #b197fc;
     stroke-width: 3px;
