@@ -42,10 +42,24 @@
         </clipPath>
       </defs>
     </svg>
-    <circle
-      cx="50%"
-      cy="50%"
-      r="50"
+    <svg
+      width="200"
+      height="200"
+      viewBox="0 0 102 102"
+      fill="none"
+      x="300"
+      y="300"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="1" y="1" width="100" height="100" rx="8" fill="#D9D9D9" />
+      <rect x="1" y="1" width="100" height="15" rx="7.5" fill="#555555" />
+    </svg>
+
+    <rect
+      x="50%"
+      y="50%"
+      width="100"
+      height="100"
       fill="#f9f9f9"
       filter="url(#inset-shadow)"
     />

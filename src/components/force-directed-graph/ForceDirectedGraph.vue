@@ -844,45 +844,13 @@ export default {
         // get id array of neighbour
         const neighborSet = this.neighborMap.get(newVal);
         const oldNeighborSet = this.neighborMap.get(oldVal);
-        const nodeGroup = d3
-          .select("#svg-container")
-          .select(".node-group")
-          .selectChildren("g");
-
-        const linkGroup = d3
-          .select("#svg-container")
-          .select(".link-group")
-          .selectChildren("line");
 
         if (oldNeighborSet) {
-          nodeGroup
-            .filter((d) => oldNeighborSet.includes(d.id.replace(".", "")))
-            .selectChildren("circle, rect")
-
-            .classed("hover-highlight", false);
-
-          linkGroup
-            .filter(
-              (d) =>
-                oldVal === d.source.id.replace(".", "") ||
-                oldVal === d.target.id.replace(".", "")
-            )
-            .classed("hover-highlight", false);
+          this.neighborHighligt(oldVal, oldNeighborSet, "selected", false);
         }
         //  console.log(linkGroup);
         if (neighborSet) {
-          nodeGroup
-            .filter((d) => neighborSet.includes(d.id.replace(".", "")))
-            .selectChildren("circle, rect")
-            .classed("hover-highlight", true);
-
-          linkGroup
-            .filter(
-              (d) =>
-                newVal === d.source.id.replace(".", "") ||
-                newVal === d.target.id.replace(".", "")
-            )
-            .classed("hover-highlight", true);
+          this.neighborHighligt(newVal, neighborSet, "selected", true);
         }
       }
     },
@@ -1360,6 +1328,37 @@ export default {
     loadData() {
       this.$store.dispatch("force/loadData");
       this.$store.dispatch("force/loadCarsData");
+    },
+
+    neighborHighligt(id, neighbor, type, enable) {
+      const className = type + "-highlight";
+      const nodeGroup = d3
+        .select("#svg-container")
+        .select(".node-group")
+        .selectChildren("g");
+
+      const linkGroup = d3
+        .select("#svg-container")
+        .select(".link-group")
+        .selectChildren("line");
+      nodeGroup
+        .filter((d) => neighbor.includes(d.id.replace(".", "")))
+        .selectChildren("circle, rect")
+        .classed(className, enable);
+
+      if (type === "selected") {
+        nodeGroup
+          .filter((d) => d.id.replace(".", "") === id)
+          .selectChildren("circle, rect")
+          .classed("center-highlight", enable);
+      }
+      linkGroup
+        .filter(
+          (d) =>
+            id === d.source.id.replace(".", "") ||
+            id === d.target.id.replace(".", "")
+        )
+        .classed(className, enable);
     },
 
     // 构造用于查询邻居的 neighborMap
@@ -1888,10 +1887,7 @@ export default {
 
                   .attr("fill", "#FFF");
                 insightIcon.classed("not-show", false);
-                // circle
-                //   .attr("r", that.circleR)
-                //   .attr("stroke", "#fff")
-                //   .attr("fill", (d) => color(d.group));
+
                 that.simulation.alpha(that.alpha);
                 that.simulation.restart();
               });
@@ -1974,11 +1970,30 @@ export default {
         .attr("fill", "#fff")
         .attr("stroke", "#000")
         .attr("cursor", "pointer")
+        .on("mouseover", function (event) {
+          //颜色变，表示被选中
+          // d3.select(this).attr("hover-highlight", true);
+          const id = d3.select(this.parentNode).datum().id.replace(".", "");
+          const neighbor = that.neighborMap.get(id);
+          that.neighborHighligt(id, neighbor, "hover", true);
+          d3.select(this).classed("center-highlight", true);
+        })
+        .on("mouseout", function (event) {
+          //  d3.select(this).attr("hover-highlight", false);
+          const id = d3.select(this.parentNode).datum().id.replace(".", "");
+          const neighbor = that.neighborMap.get(id);
+          that.neighborHighligt(id, neighbor, "hover", false);
+
+          if (id !== that.selectedNode) {
+            //   console.log("cancle");
+            d3.select(this).classed("center-highlight", false);
+          }
+        })
         .on("click", function () {
           // 获取对应的container - g元素
           const g = d3.select(this.parentNode);
-
           that.selectedNode = g.datum().id.replace(".", "");
+          // d3.select(this).classed("center-highlight", true);
         });
 
       const vegaLiteContainerGroup = containerGroup
@@ -2399,7 +2414,15 @@ export default {
 .rect,
 .network-line {
   &.hover-highlight {
-    stroke: #66d9e8;
+    stroke: #b197fc;
+    stroke-width: 3px;
+  }
+  &.selected-highlight {
+    stroke: #22b8cf;
+    stroke-width: 3px;
+  }
+  &.center-highlight {
+    stroke: #0c8599;
     stroke-width: 3px;
   }
 }
