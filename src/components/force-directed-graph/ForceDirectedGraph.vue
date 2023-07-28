@@ -1326,8 +1326,9 @@ export default {
   methods: {
     // 载入nodes和links数据
     loadData() {
-      this.$store.dispatch("force/loadData");
-      this.$store.dispatch("force/loadCarsData");
+      // this.$store.dispatch("force/loadData");
+      // this.$store.dispatch("force/loadCarsData");
+      this.$store.dispatch("force/loadResultData");
     },
 
     neighborHighligt(id, neighbor, type, enable) {
@@ -1419,6 +1420,8 @@ export default {
       // 获取原始绘画数据
       const data = this.drawData;
 
+      //const= d3.select('.node-group')
+
       // 创建原始数据的copy，因为 force simulation 会改变数组数据
       const links = data.links.map((d) => ({ ...d }));
       const nodes = data.nodes.map((d) => ({
@@ -1439,7 +1442,7 @@ export default {
 
       if (this.pinnedIndex.size)
         for (const [index, g] of this.pinnedIndex) {
-          this.deleteVegaLite(g, index);
+          // this.deleteVegaLite(g, index);
           this.drawVegaLite(g, index, "img");
         }
 
@@ -1542,7 +1545,6 @@ export default {
               image.setAttribute("class", "vega-lite-graph");
               container.node().appendChild(image);
             });
-
             break;
           case "svg":
             container.selectChild("image").remove();
@@ -1551,63 +1553,15 @@ export default {
             break;
         }
       } else {
-        // 获取data
-        const data = g.datum()["vega-lite"];
-        // set vega-lite object
-        if (data) {
-          // vega-lite config
-          var yourVlSpec = {
-            description: "A simple bar chart with embedded data.",
-            // render as svg
-            usermeta: { embedOptions: { renderer: "svg" } },
-            // 由于还有坐标轴，实际的svg大小还要大些(+50)
-            width: this.vegaLiteWidth,
-            height: this.vegaLiteHeight,
-            view: { fill: "#ffffffcc" },
-            data: {
-              values: data,
-            },
-            mark: { type: "bar", tooltip: true },
-            encoding: {
-              x: { field: "a", type: "ordinal" },
-              y: { field: "b", type: "quantitative" },
-            },
-          };
-        } else {
-          // 数据里没有vega-lite数据的画，直接用官方数据例子中的一个
-          {
-            var yourVlSpec = {
-              description: "Drag out a rectangular brush to highlight points.",
-              usermeta: { embedOptions: { renderer: "svg" } },
-              width: this.vegaLiteWidth,
-              height: this.vegaLiteHeight,
-              view: { fill: "#ffffffcc" },
-              data: {
-                values: this.carsData,
-              },
-              params: [
-                {
-                  name: "brush",
-                  select: "interval",
-                  value: { x: [55, 160], y: [13, 37] },
-                },
-              ],
-              mark: "point",
-              encoding: {
-                x: { field: "Horsepower", type: "quantitative" },
-                y: { field: "Miles_per_Gallon", type: "quantitative" },
-                color: {
-                  condition: {
-                    param: "brush",
-                    field: "Cylinders",
-                    type: "ordinal",
-                  },
-                  value: "grey",
-                },
-              },
-            };
-          }
-        }
+        // let yourVlSpec =JSON.parse( g.datum()["vega-lite"]);
+        let yourVlSpec = JSON.parse(g.datum()["vega-lite"][0]);
+
+        //console.log("test", test);
+        yourVlSpec["width"] = this.vegaLiteWidth;
+        yourVlSpec["height"] = this.vegaLiteHeight;
+        yourVlSpec["usermeta"] = { embedOptions: { renderer: "svg" } };
+        // test["encoding"]["color"]["legend"] = null;
+
         // initialization
         vegaEmbed(container.node(), yourVlSpec).then((result) => {
           const view = result.view.background("transparent");
@@ -1757,7 +1711,7 @@ export default {
         img: null,
         rect: null,
       }));
-      //console.log(data.links);
+      console.log(data.links);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
       const defs = document.createElementNS(
@@ -1923,11 +1877,14 @@ export default {
         });
 
       const containerGroup = svg.select("g.node-group").selectChildren("g");
+      let groupTmp = 0;
       const iconGroup = containerGroup
         .append("use")
         .attr("href", function () {
           const g = d3.select(this.parentNode);
-          const group = g.datum().group % that.insightNum;
+          //const group = g.datum().group % that.insightNum;
+          const group = groupTmp % that.insightNum;
+          groupTmp += 1;
           let insightType = null;
           switch (group) {
             case 0:
@@ -2047,11 +2004,27 @@ export default {
             .distanceMin(defaultForceConfig.manyBody.DistanceMin)
           // .distanceMax(defaultForceConfig.manyBody.DistanceMax)
         )
+        // .force(
+        //   "center",
+        //   d3
+        //     .forceCenter(width / 2, height / 2)
+        //     .strength(defaultForceConfig.center.Strength)
+        // )
         .force(
-          "center",
+          "x",
+
           d3
-            .forceCenter(width / 2, height / 2)
-            .strength(defaultForceConfig.center.Strength)
+            .forceX()
+            .x(width / 2)
+            .strength(defaultForceConfig.x.Strength)
+        )
+        .force(
+          "y",
+
+          d3
+            .forceY()
+            .y(height / 2)
+            .strength(defaultForceConfig.y.Strength)
         )
         .force(
           "collide",

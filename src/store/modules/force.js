@@ -15,6 +15,7 @@ export default {
         { a: "I", b: 52 },
       ],
       carsData: [],
+      resultData: [],
     };
   },
   getters: {
@@ -27,6 +28,9 @@ export default {
     carsData(state) {
       return state.carsData;
     },
+    resultData(state) {
+      return state.resultData;
+    },
   },
   mutations: {
     setDrawData(state, payload) {
@@ -34,6 +38,9 @@ export default {
     },
     setCarsData(state, payload) {
       state.carsData = payload;
+    },
+    setResultData(state, payload) {
+      state.resultData = payload;
     },
   },
   actions: {
@@ -51,6 +58,15 @@ export default {
       d3.json(path).then(function (data) {
         context.commit("setCarsData", data);
         console.log(data.length);
+      });
+    },
+    loadResultData(context, _payload) {
+      const file = "test_data/result.json";
+      const path = `data/${file}`;
+      d3.json(path).then(function (data) {
+        context.commit("setResultData", data);
+        context.commit("setDrawData", data);
+        console.log(data);
       });
     },
   },
