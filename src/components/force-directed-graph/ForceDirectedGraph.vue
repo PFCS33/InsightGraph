@@ -845,13 +845,11 @@ export default {
         const neighborSet = this.neighborMap.get(newVal);
         const oldNeighborSet = this.neighborMap.get(oldVal);
 
-        if (oldNeighborSet) {
-          this.neighborHighligt(oldVal, oldNeighborSet, "selected", false);
-        }
+        this.neighborHighligt(oldVal, oldNeighborSet, "selected", false);
+
         //  console.log(linkGroup);
-        if (neighborSet) {
-          this.neighborHighligt(newVal, neighborSet, "selected", true);
-        }
+
+        this.neighborHighligt(newVal, neighborSet, "selected", true);
       }
     },
     /* -------------------------------------------------------------------------- */
@@ -1342,24 +1340,25 @@ export default {
         .select("#svg-container")
         .select(".link-group")
         .selectChildren("line");
-      nodeGroup
-        .filter((d) => neighbor.includes(d.id.replace(".", "")))
-        .selectChildren("circle, rect")
-        .classed(className, enable);
-
+      if (neighbor) {
+        nodeGroup
+          .filter((d) => neighbor.includes(d.id.replace(".", "")))
+          .selectChildren("circle, rect")
+          .classed(className, enable);
+        linkGroup
+          .filter(
+            (d) =>
+              id === d.source.id.replace(".", "") ||
+              id === d.target.id.replace(".", "")
+          )
+          .classed(className, enable);
+      }
       if (type === "selected") {
         nodeGroup
           .filter((d) => d.id.replace(".", "") === id)
           .selectChildren("circle, rect")
           .classed("center-highlight", enable);
       }
-      linkGroup
-        .filter(
-          (d) =>
-            id === d.source.id.replace(".", "") ||
-            id === d.target.id.replace(".", "")
-        )
-        .classed(className, enable);
     },
 
     // 构造用于查询邻居的 neighborMap
@@ -1422,16 +1421,27 @@ export default {
 
       //const= d3.select('.node-group')
 
+      const preNodes = this.simulation.nodes();
       // 创建原始数据的copy，因为 force simulation 会改变数组数据
       const links = data.links.map((d) => ({ ...d }));
-      const nodes = data.nodes.map((d) => ({
-        ...d,
-        showDetail: false,
-        pinned: false,
-        view: null,
-        img: null,
-        rect: null,
-      }));
+      const nodes = preNodes.map(function (d) {
+        delete d.x;
+        delete d.y;
+        delete d.vx;
+        delete d.vy;
+
+        return d;
+      });
+
+      // const nodes = data.nodes.map(function (d, index) {
+      //   //console.log(preNodes[index].showDetail);
+      //   d["showDetail"] = preNodes[index].showDetail;
+      //   d["pinned"] = preNodes[index].pinned;
+      //   d["view"] = preNodes[index].view;
+      //   d["img "] = preNodes[index].img;
+      //   d["rect"] = preNodes[index].rect;
+      //   return d;
+      // });
 
       //  console.log(this.showIndex);
 
@@ -1443,7 +1453,7 @@ export default {
       if (this.pinnedIndex.size)
         for (const [index, g] of this.pinnedIndex) {
           // this.deleteVegaLite(g, index);
-          this.drawVegaLite(g, index, "img");
+          this.drawVegaLite(g, index, "svg");
         }
 
       // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
@@ -1781,6 +1791,10 @@ export default {
               .attr("fill", that.circleHoveredColor)
               .attr("r", that.circleFocusR)
               .style("cursor", "pointer");
+
+            d3.select(this.parentNode)
+              .select(".insight-icon")
+              .attr("transform", "scale(2)");
           }
         })
         .on("mouseout", function (event) {
@@ -1788,6 +1802,9 @@ export default {
           if (!d.showDetail) {
             d3.select(this).attr("r", that.circleR).attr("fill", "#FFF");
           }
+          d3.select(this.parentNode)
+            .select(".insight-icon")
+            .attr("transform", "scale(1)");
         })
         .on("click", function (event, d) {
           // 获取选择circle对应的container - g元素
@@ -1914,8 +1931,9 @@ export default {
         .attr("class", "insight-icon")
         .attr("x", -this.insightIconSize / 2)
         .attr("y", -this.insightIconSize / 2)
+        .attr("pointer-events", "none")
+        .style("transition", "transform 0.2s");
 
-        .attr("pointer-events", "none");
       const rectGroup = containerGroup
         .append("rect")
         .attr("class", "rect")
@@ -1925,7 +1943,8 @@ export default {
           return !gData.showDetail;
         })
         .attr("fill", "#fff")
-        .attr("stroke", "#000")
+        .attr("stroke", "#ccc")
+        .attr("stroke-width", 1.5)
         .attr("cursor", "pointer")
         .on("mouseover", function (event) {
           //颜色变，表示被选中
@@ -1936,13 +1955,11 @@ export default {
           d3.select(this).classed("center-highlight", true);
         })
         .on("mouseout", function (event) {
-          //  d3.select(this).attr("hover-highlight", false);
           const id = d3.select(this.parentNode).datum().id.replace(".", "");
           const neighbor = that.neighborMap.get(id);
           that.neighborHighligt(id, neighbor, "hover", false);
 
           if (id !== that.selectedNode) {
-            //   console.log("cancle");
             d3.select(this).classed("center-highlight", false);
           }
         })
@@ -2004,12 +2021,12 @@ export default {
             .distanceMin(defaultForceConfig.manyBody.DistanceMin)
           // .distanceMax(defaultForceConfig.manyBody.DistanceMax)
         )
-        // .force(
-        //   "center",
-        //   d3
-        //     .forceCenter(width / 2, height / 2)
-        //     .strength(defaultForceConfig.center.Strength)
-        // )
+        .force(
+          "center",
+          d3
+            .forceCenter(width / 2, height / 2)
+            .strength(defaultForceConfig.center.Strength)
+        )
         .force(
           "x",
 
