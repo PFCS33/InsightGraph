@@ -700,6 +700,7 @@ export default {
       vegaLiteWidth: 100,
 
       circleLink: 50,
+      circleNeighborLink: 100,
       vegaLiteLink: 200,
       vegaLiteLongLink: 300,
 
@@ -712,9 +713,12 @@ export default {
       iconOffset: 5,
 
       // show conifg of vega-lite graph
+      // (index,view)
       showIndex: new Map(),
+      // (index, g)
       pinnedIndex: new Map(),
       // neighbor info
+      // (id, [...idn])
       neighborMap: new Map(),
       selectedNode: null,
 
@@ -1670,7 +1674,7 @@ export default {
 
           switch (mode) {
             case "img":
-              console.log("img");
+              //  console.log("img");
               // 创建反应新状态的img
               svg.classed("not-show", true);
               const imgInfo = g.datum().img;
@@ -1684,6 +1688,7 @@ export default {
                 image.setAttribute("width", imgInfo.width);
                 image.setAttribute("height", imgInfo.height);
                 image.setAttribute("class", "vega-lite-graph");
+                container.node().appendChild(svg.node());
                 container.node().appendChild(image);
               });
               break;
@@ -1772,7 +1777,7 @@ export default {
         img: null,
         rect: null,
       }));
-      console.log(data.links);
+      //  console.log(data.links);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
       const defs = document.createElementNS(
@@ -1974,7 +1979,6 @@ export default {
         .attr("class", "rect")
         .classed("not-show", function () {
           const gData = d3.select(this.parentNode).datum();
-
           return !gData.showDetail;
         })
         .attr("fill", "#fff")
@@ -1989,7 +1993,7 @@ export default {
           const neighbor = that.neighborMap.get(id);
           that.neighborHighligt(id, neighbor, "hover", true);
           rect.classed("center-highlight", true);
-          console.log(parentNode.select(".rect-title"));
+          //  console.log(parentNode.select(".rect-title"));
           parentNode.select(".rect-title").classed("center-highlight", true);
         })
         .on("mouseout", function (event) {
@@ -2008,6 +2012,7 @@ export default {
           // 获取对应的container - g元素
           const g = d3.select(this.parentNode);
           that.selectedNode = g.datum().id.replace(".", "");
+          console.log("trueId", g.datum().id);
           // d3.select(this).classed("center-highlight", true);
         })
         .on("dblclick", togglePin);
@@ -2063,6 +2068,7 @@ export default {
             .id((d) => d.id)
             // .distance(defaultForceConfig.link.Distance)
             .distance(function (d) {
+              let distance = that.circleLink;
               if (that.showIndex.size > 0) {
                 const show1 = that.showIndex.has(d.source.index);
                 const show2 = that.showIndex.has(d.target.index);
@@ -2073,8 +2079,33 @@ export default {
                     return that.vegaLiteLink;
                   }
                 }
+
+                const sourceId = d.source.id.replace(".", "");
+                const targetId = d.target.id.replace(".", "");
+                // const sourceNeighbor = that.neighborMap.get(sourceId);
+                // const targetNeighbor = that.neighborMap.get(targetId);
+
+                that.showIndex.forEach((value, index) => {
+                  const id = nodes[index].id.replace(".", "");
+                  //console.log(id);
+                  const directNeighbor = that.neighborMap.get(id);
+                  //  console.log("directedNeighbor", directNeighbor);
+                  if (directNeighbor) {
+                    directNeighbor.forEach((neighbor) => {
+                      const secondNeighbor = that.neighborMap.get(neighbor);
+                      if (
+                        (targetId === neighbor &&
+                          secondNeighbor.includes(sourceId)) ||
+                        (sourceId === neighbor &&
+                          secondNeighbor.includes(targetId))
+                      ) {
+                        distance = that.circleNeighborLink;
+                      }
+                    });
+                  }
+                });
               }
-              return that.circleLink;
+              return distance;
             })
             .iterations(defaultForceConfig.link.Iterations)
           // .strength(defaultForceConfig.link.Strength)
@@ -2258,7 +2289,7 @@ export default {
         //console.log(that.transform);
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
-        console.log(transform);
+        //    console.log(transform);
         if (transform.k < 1.3) {
           that.leftCornerCoord = transform.invert([0, 0]);
           that.rightCornerCoord = transform.invert([width, height]);
@@ -2285,7 +2316,7 @@ export default {
       this.defaultForceConfig.collide.Radius = this.collideRadius =
         this.circleR;
 
-      function togglePin() {
+      function togglePin(event, d) {
         const g = d3.select(this.parentNode);
         const pinned = !g.datum().pinned;
         g.datum().pinned = pinned;
@@ -2294,7 +2325,7 @@ export default {
           g.datum().fx = g.datum().x;
           g.datum().fy = g.datum().y;
           g.select(".pin").classed("icon-pinned", true);
-          // that.deleteVegaLite(g, d.index);
+
           that.drawVegaLite(g, d.index, "svg");
         } else {
           g.classed("pinned", false);
@@ -2302,7 +2333,6 @@ export default {
           g.datum().fx = null;
           g.datum().fy = null;
 
-          // that.deleteVegaLite(g, d.index);
           that.drawVegaLite(g, d.index, "img");
         }
       }
