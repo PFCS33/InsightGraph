@@ -84,6 +84,13 @@
           :height="insightIconSize"
         ></image>
       </svg>
+      <svg id="defs-correlation" xmlns="http://www.w3.org/2000/svg">
+        <image
+          href="/pic/correlation.png"
+          :width="insightIconSize"
+          :height="insightIconSize"
+        ></image>
+      </svg>
     </defs>
   </div>
 </template>
@@ -133,16 +140,16 @@ export default {
       rectR: 10,
       vegaLiteR: 125,
       vegaLiteHeight: 100,
-      vegaLiteWidth: 100,
+      vegaLiteWidth: 150,
 
       circleLink: 75,
       circleNeighborLink: 100,
-      vegaLiteLink: 150,
-      vegaLiteLongLink: 300,
+      vegaLiteLink: 200,
+      vegaLiteLongLink: 350,
 
       circleStrength: -100,
       circleNeighborStrength: -300,
-      vegaLiteStrength: -5000,
+      vegaLiteStrength: -3000,
 
       insightNum: 7,
       insightIconSize: 20,
@@ -272,7 +279,7 @@ export default {
       const linkGroup = d3
         .select("#svg-container")
         .select(".link-group")
-        .selectChildren("line");
+        .selectChildren("g");
       if (neighbor) {
         nodeGroup
           .filter((d) => neighbor.includes(d.id.replace(".", "")))
@@ -284,6 +291,7 @@ export default {
               id === d.source.id.replace(".", "") ||
               id === d.target.id.replace(".", "")
           )
+          .selectChildren("line")
           .classed(className, enable);
       }
       if (type === "selected") {
@@ -469,8 +477,7 @@ export default {
             break;
         }
       } else {
-        // let yourVlSpec =JSON.parse( g.datum()["vega-lite"]);
-        let yourVlSpec = JSON.parse(g.datum()["vega-lite"][0]);
+        let yourVlSpec = JSON.parse(g.datum()["vega-lite"]);
 
         // add some options
         yourVlSpec["width"] = this.vegaLiteWidth;
@@ -514,7 +521,8 @@ export default {
 
           const titleHeight = that.iconSize + 2 * that.iconOffset;
           const rectWidth = +width + that.rectWidthOffset * 2;
-          const rectHeight = +height + that.rectHeightOffset * 2 + titleHeight;
+          const rectHeight =
+            +height + that.rectHeightOffset * 2 + titleHeight + that.iconSize;
 
           const translateX = rectWidth / 2;
           const translateY = rectHeight / 2;
@@ -552,15 +560,29 @@ export default {
             .attr("height", titleHeight);
 
           rectTitleName
-            .text("This is Name")
+            .text(function () {
+              return g.datum()["insight-type"];
+            })
             .attr("x", -translateX + that.iconOffset)
             .attr("y", -translateY + that.iconSize + that.iconOffset / 2)
             .attr("font-size", that.iconSize - 2);
           rectTitleDescription
-            .text("x axis, y axis")
-            .attr("font-size", that.iconSize - 2)
+            .text(function () {
+              const rowName = g.datum().row;
+              const colName = g.datum().col;
+              return `row: ${rowName}`;
+            })
+            .attr("font-size", "10px")
             .attr("x", -translateX + that.iconOffset)
-            .attr("y", -translateY + 2 * that.iconSize + 2 * that.iconOffset);
+            .attr("y", -translateY + that.iconSize + titleHeight)
+            .append("tspan")
+            .attr("x", -translateX + that.iconOffset)
+            .attr("dy", "1.2em")
+            .style("text-align", "left")
+            .text(function () {
+              const colName = g.datum().col;
+              return `col: ${colName}`;
+            });
           removeIcon.attr(
             "transform",
             `translate(${translateX - that.iconSize - that.iconOffset},${
@@ -728,14 +750,15 @@ export default {
       const linkTextGroup = linkContainerGroup
         .attr("class", "link-label")
         .append("text")
-        .text((d) => d.relationship)
+        .text((d) => d.type)
         .attr("dy", ".35em")
         .attr("fill", "#555")
         .style("opacity", 0.5)
-        .style("user-select", "none");
+        .style("user-select", "none")
+        .attr("font-size", "8px");
 
       const typeColor = d3.scaleOrdinal(
-        ["shape", "point", "correlation"],
+        ["shape", "point", "compound"],
         //     d3.schemePaired
         ["#fcc2d7", "#bac8ff", "#b992d3"]
       );
@@ -755,7 +778,7 @@ export default {
         .attr("r", that.circleR)
         .attr("stroke", function () {
           const gData = d3.select(this.parentNode).datum();
-          return typeColor(gData.type);
+          return typeColor(gData["insight-category"]);
         })
         // node 进行分类颜色映射
         .attr("fill", "#fff")
@@ -852,36 +875,40 @@ export default {
         });
 
       const containerGroup = svg.select("g.node-group").selectChildren("g");
-      let groupTmp = 0;
+
       const iconGroup = containerGroup
         .append("use")
         .attr("href", function () {
           const g = d3.select(this.parentNode);
           //const group = g.datum().group % that.insightNum;
-          const group = groupTmp % that.insightNum;
-          groupTmp += 1;
+          const group = g.datum()["insight-type"];
+          console.log(group);
           let insightType = null;
           switch (group) {
-            case 0:
+            case "dominance":
               insightType = "dominance";
               break;
-            case 1:
+            case "outlier":
               insightType = "outlier";
               break;
-            case 2:
+            case "top2":
               insightType = "top2";
               break;
-            case 3:
+            case "evenness":
               insightType = "evenness";
               break;
-            case 4:
+            case "trend":
               insightType = "trend";
               break;
-            case 5:
+            case "skewness":
               insightType = "skewness";
               break;
-            case 6:
+            case "kurtosis":
               insightType = "kurtosis";
+              break;
+            case "correlation":
+            case "correlation-temporal":
+              insightType = "correlation";
               break;
           }
           return "#defs-" + insightType;
