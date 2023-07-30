@@ -701,10 +701,11 @@ export default {
 
       circleLink: 50,
       circleNeighborLink: 100,
-      vegaLiteLink: 200,
+      vegaLiteLink: 150,
       vegaLiteLongLink: 300,
 
       circleStrength: -100,
+      circleNeighborStrength: -300,
       vegaLiteStrength: -5000,
 
       insightNum: 7,
@@ -1587,7 +1588,11 @@ export default {
 
           const linkForce = that.simulation.force("link");
           if (linkForce) linkForce.initialize(that.simulation.nodes());
-          // reinitialize the collide force, if set
+          const bodyForce = that.simulation.force("charge");
+          if (bodyForce) {
+            that.simulation.force("charge", null);
+            that.simulation.force("charge", bodyForce);
+          }
 
           const svg = container.select("svg");
 
@@ -1725,8 +1730,6 @@ export default {
       g.datum().img = null;
       this.pinnedIndex.delete(index);
       this.showIndex.delete(index);
-      const linkForce = this.simulation.force("link");
-      if (linkForce) linkForce.initialize(this.simulation.nodes());
     },
     /* -------------------------------------------------------------------------- */
     // other
@@ -1875,12 +1878,6 @@ export default {
             const rectTitle = g.select(".rect-title");
             const rectText = g.selectChildren(".title-text");
 
-            const bodyForce = that.simulation.force("charge");
-            if (bodyForce) {
-              that.simulation.force("charge", null);
-              that.simulation.force("charge", bodyForce);
-            }
-
             rect.classed("not-show", false);
             rectTitle.classed("not-show", false);
             rectText.classed("not-show", false);
@@ -1902,9 +1899,10 @@ export default {
                 that.deleteVegaLite(g, d.index);
                 const collideForce = that.simulation.force("collide");
                 const bodyForce = that.simulation.force("charge");
+                const linkForce = that.simulation.force("link");
                 if (collideForce)
                   collideForce.initialize(that.simulation.nodes());
-
+                if (linkForce) linkForce.initialize(that.simulation.nodes());
                 if (bodyForce) {
                   that.simulation.force("charge", null);
                   that.simulation.force("charge", bodyForce);
@@ -2038,7 +2036,9 @@ export default {
         })
         .attr("class", "title-text title-name")
         .attr("pointer-events", "none")
-        .style("user-select", "none");
+        .style("user-select", "none")
+        .attr("fill", "#555")
+        .attr("font-weight", 600);
 
       const descriptionGroup = containerGroup
         .append("text")
@@ -2048,7 +2048,9 @@ export default {
         })
         .attr("class", "title-text title-description")
         .attr("pointer-events", "none")
+        .attr("fill", "#555")
         .style("user-select", "none");
+
       const vegaLiteContainerGroup = containerGroup
         .append("g")
         .attr("class", "vega-lite-container");
@@ -2068,7 +2070,6 @@ export default {
             .id((d) => d.id)
             // .distance(defaultForceConfig.link.Distance)
             .distance(function (d) {
-              let distance = that.circleLink;
               if (that.showIndex.size > 0) {
                 const show1 = that.showIndex.has(d.source.index);
                 const show2 = that.showIndex.has(d.target.index);
@@ -2085,13 +2086,12 @@ export default {
                 // const sourceNeighbor = that.neighborMap.get(sourceId);
                 // const targetNeighbor = that.neighborMap.get(targetId);
 
-                that.showIndex.forEach((value, index) => {
+                for (const index of that.showIndex.keys()) {
                   const id = nodes[index].id.replace(".", "");
                   //console.log(id);
                   const directNeighbor = that.neighborMap.get(id);
-                  //  console.log("directedNeighbor", directNeighbor);
                   if (directNeighbor) {
-                    directNeighbor.forEach((neighbor) => {
+                    for (const neighbor of directNeighbor) {
                       const secondNeighbor = that.neighborMap.get(neighbor);
                       if (
                         (targetId === neighbor &&
@@ -2099,13 +2099,13 @@ export default {
                         (sourceId === neighbor &&
                           secondNeighbor.includes(targetId))
                       ) {
-                        distance = that.circleNeighborLink;
+                        return that.circleNeighborLink;
                       }
-                    });
+                    }
                   }
-                });
+                }
               }
-              return distance;
+              return that.circleLink;
             })
             .iterations(defaultForceConfig.link.Iterations)
           // .strength(defaultForceConfig.link.Strength)
@@ -2119,7 +2119,24 @@ export default {
               let strength = that.circleStrength;
               if (d.showDetail) {
                 strength = that.vegaLiteStrength;
+              } else {
+                if (that.showIndex.size > 0) {
+                  const id = d.id.replace(".", "");
+                  for (const index of that.showIndex.keys()) {
+                    const showId = nodes[index].id.replace(".", "");
+                    const directNeighbor = that.neighborMap.get(showId);
+                    if (directNeighbor) {
+                      for (const neighbor of directNeighbor) {
+                        const secondNeighbor = that.neighborMap.get(neighbor);
+                        if (secondNeighbor.includes(id)) {
+                          return that.circleNeighborStrength;
+                        }
+                      }
+                    }
+                  }
+                }
               }
+
               return strength;
             })
             .theta(defaultForceConfig.manyBody.Theta)
