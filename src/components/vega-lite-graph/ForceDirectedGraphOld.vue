@@ -1,6 +1,570 @@
 <template>
   <div class="container" ref="1">
     <!-- <transition name="slide"> -->
+    <el-menu default-active="1" class="edit-panel" :collapse="!editMode">
+      <el-sub-menu index="1">
+        <template #title>
+          <el-icon><operation /></el-icon>
+          <span>Base Config</span>
+        </template>
+        <el-form
+          label-position="top"
+          label-width="100px"
+          style="max-width: 460px"
+          @submit.prevent
+          size="small"
+          class="form"
+          novalidate
+        >
+          <el-form-item class="form-item-control">
+            <div class="form-btn-control">
+              <BaseButton @click="simRestart" class="config-btn btn"
+                >Default</BaseButton
+              >
+              <BaseButton @click="simStop" class="config-btn btn"
+                >Stop</BaseButton
+              >
+            </div>
+          </el-form-item>
+          <el-form-item label="Alpha" class="form-item-control">
+            <el-input
+              type="number"
+              id="alpha"
+              v-model="alpha"
+              step="0.01"
+              min="0"
+              max="1"
+              @blur="handleBaseBlur('alpha')"
+              class="input-control"
+            />
+          </el-form-item>
+          <el-form-item label="AlphaMin" class="form-item-control">
+            <el-input
+              type="number"
+              id="alphaMin"
+              v-model="alphaMin"
+              step="0.001"
+              min="0"
+              max="1"
+              @blur="handleBaseBlur('alphaMin')"
+              class="input-control"
+            />
+          </el-form-item>
+          <el-form-item label="AlphaDecay" class="form-item-control">
+            <el-input
+              type="number"
+              id="alphaDecay"
+              v-model="alphaDecay"
+              step="0.001"
+              min="0"
+              max="1"
+              @blur="handleBaseBlur('alphaDecay')"
+              class="input-control"
+            />
+          </el-form-item>
+          <el-form-item label="AlphaTarget" class="form-item-control">
+            <el-input
+              type="number"
+              id="alphaTarget"
+              v-model="alphaTarget"
+              step="0.001"
+              min="0"
+              max="1"
+              @blur="handleBaseBlur('alphaTarget')"
+              class="input-control"
+            />
+          </el-form-item>
+          <el-form-item label="VelocityDecay" class="form-item-control">
+            <el-input
+              type="number"
+              id="velocityDecay"
+              v-model="velocityDecay"
+              step="0.01"
+              min="0"
+              max="1"
+              @blur="handleBaseBlur('velocityDecay')"
+              class="input-control"
+            />
+          </el-form-item>
+        </el-form>
+      </el-sub-menu>
+      <el-sub-menu index="2">
+        <template #title>
+          <el-icon><setting /></el-icon>
+          <span>Force Config</span>
+        </template>
+        <el-sub-menu index="2-1">
+          <template #title>
+            <el-icon><Location /></el-icon>
+            <span>Center Force</span>
+          </template>
+          <el-form
+            label-position="top"
+            label-width="100px"
+            style="max-width: 460px"
+            @submit.prevent
+            size="small"
+            class="form"
+            novalidate
+          >
+            <el-form-item>
+              <div class="btn-label" style="width: 100%">
+                <span>Set</span>
+                <el-switch
+                  v-model="setCenter"
+                  size="default"
+                  :disabled="false"
+                />
+              </div>
+            </el-form-item>
+            <el-form-item>
+              <div class="form-btn-control">
+                <BaseButton
+                  @click="forceDefaultSet('center')"
+                  class="config-btn btn"
+                  :disabled="!setCenter"
+                  >Default</BaseButton
+                >
+              </div>
+            </el-form-item>
+            <el-form-item label="CenterX" class="form-item-control">
+              <el-input
+                :disabled="!setCenter"
+                type="number"
+                id="centerX"
+                v-model.number="centerX"
+                step="1"
+                min="0"
+                :max="defaultForceConfig.center.X * 2"
+                class="input-control"
+                @blur="handleCenterBlur('X')"
+              />
+              <el-slider
+                :disabled="!setCenter"
+                v-model="centerX"
+                :min="0"
+                :max="defaultForceConfig.center.X * 2"
+              />
+            </el-form-item>
+            <el-form-item label="CenterY" class="form-item-control">
+              <el-input
+                :disabled="!setCenter"
+                type="number"
+                id="centerY"
+                v-model.number="centerY"
+                step="1"
+                min="0"
+                :max="defaultForceConfig.center.Y * 2"
+                class="input-control"
+                @blur="handleCenterBlur('Y')"
+              />
+              <el-slider
+                :disabled="!setCenter"
+                v-model="centerY"
+                :min="0"
+                :max="defaultForceConfig.center.Y * 2"
+              />
+            </el-form-item>
+            <el-form-item label="CenterStrength" class="form-item-control">
+              <el-input
+                :disabled="!setCenter"
+                type="number"
+                id="centerStrength"
+                v-model.number="centerStrength"
+                step="0.1"
+                min="-1"
+                class="input-control"
+                @blur="handleCenterBlur('Strength')"
+              />
+            </el-form-item>
+          </el-form>
+        </el-sub-menu>
+        <el-sub-menu index="2-2">
+          <template #title>
+            <el-icon><Location /></el-icon>
+            <span> Position Force </span>
+          </template>
+
+          <el-collapse style="width: 90%; margin-left: auto">
+            <el-collapse-item name="1">
+              <template #title>
+                <div class="btn-label">
+                  <span> ForceX </span>
+                  <el-switch v-model="setX" size="default" @click.stop />
+                </div>
+              </template>
+              <el-form
+                label-position="top"
+                label-width="100px"
+                style="max-width: 460px; padding-left: 0"
+                @submit.prevent
+                size="small"
+                class="form"
+                novalidate
+                :disabled="!setX"
+              >
+                <el-form-item label="X *" class="form-item-control">
+                  <el-tabs v-model="forceXMode" @tab-click="handleTabClick">
+                    <el-tab-pane
+                      label="Number"
+                      name="number"
+                      style="margin-bottom: 10px"
+                    >
+                      <el-input
+                        type="number"
+                        id="xX"
+                        v-model.number="xX"
+                        step="1"
+                        min="0"
+                        class="input-control"
+                      />
+                      <el-slider
+                        v-model="xX"
+                        :min="0"
+                        :max="defaultForceConfig.x.X * 2"
+                      />
+                    </el-tab-pane>
+                    <el-tab-pane label="Aggregate" name="aggregate">
+                    </el-tab-pane>
+                  </el-tabs>
+                </el-form-item>
+                <el-form-item label="Strength *" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="xStrength"
+                    v-model.number="xStrength"
+                    step="0.1"
+                    min="-1"
+                    class="input-control"
+                  />
+                </el-form-item>
+              </el-form>
+            </el-collapse-item>
+            <el-collapse-item name="2">
+              <template #title>
+                <div class="btn-label">
+                  <span> ForceY </span>
+                  <el-switch v-model="setY" size="default" />
+                </div>
+              </template>
+              <el-form
+                label-position="top"
+                label-width="100px"
+                style="max-width: 460px; padding-left: 0"
+                @submit.prevent
+                size="small"
+                class="form"
+                novalidate
+                :disabled="!setY"
+              >
+                <el-form-item label="Y *" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="yY"
+                    v-model.number="yY"
+                    step="1"
+                    min="0"
+                    class="input-control"
+                  />
+                  <el-slider
+                    v-model="yY"
+                    :min="0"
+                    :max="defaultForceConfig.y.Y * 2"
+                  />
+                </el-form-item>
+                <el-form-item label="Strength *" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="yStrength"
+                    v-model.number="yStrength"
+                    step="0.1"
+                    min="-1"
+                    class="input-control"
+                  />
+                </el-form-item>
+              </el-form>
+            </el-collapse-item>
+            <el-collapse-item name="3">
+              <template #title>
+                <div class="btn-label">
+                  <span> ForceR </span>
+                  <el-switch v-model="setRadicial" size="default" />
+                </div>
+              </template>
+              <el-form
+                label-position="top"
+                label-width="100px"
+                style="max-width: 460px; padding-left: 0"
+                @submit.prevent
+                size="small"
+                class="form"
+                novalidate
+                :disabled="!setRadicial"
+              >
+                <el-form-item label="X" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="radialX"
+                    v-model.number="radialX"
+                    step="1"
+                    min="0"
+                    class="input-control"
+                  />
+                  <el-slider
+                    v-model="radialX"
+                    :min="0"
+                    :max="defaultForceConfig.radial.X * 2"
+                  />
+                </el-form-item>
+                <el-form-item label="Y" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="radialY"
+                    v-model.number="radialY"
+                    step="1"
+                    min="0"
+                    class="input-control"
+                  />
+                  <el-slider
+                    v-model="radialY"
+                    :min="0"
+                    :max="defaultForceConfig.radial.Y * 2"
+                  />
+                </el-form-item>
+                <el-form-item label="R *" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="radialR"
+                    v-model.number="radialR"
+                    step="1"
+                    min="0"
+                    class="input-control"
+                  />
+                  <el-slider v-model="radialR" :min="0" :max="1000" />
+                </el-form-item>
+                <el-form-item label="Strength *" class="form-item-control">
+                  <el-input
+                    type="number"
+                    id="radialStrength"
+                    v-model.number="radialStrength"
+                    step="0.1"
+                    min="-1"
+                    class="input-control"
+                  />
+                </el-form-item>
+              </el-form>
+            </el-collapse-item>
+          </el-collapse>
+        </el-sub-menu>
+        <el-sub-menu index="2-3">
+          <template #title>
+            <el-icon><IconMenu /></el-icon>
+            <span> NBody Force </span>
+          </template>
+          <el-form
+            label-position="top"
+            label-width="100px"
+            style="max-width: 460px"
+            @submit.prevent
+            size="small"
+            class="form"
+            novalidate
+          >
+            <el-form-item>
+              <div class="btn-label" style="width: 100%">
+                <span>Set</span>
+                <el-switch v-model="setManyBody" size="default" />
+              </div>
+            </el-form-item>
+            <el-form-item label="Strength *" class="form-item-control">
+              <el-input
+                disabled
+                type="number"
+                id="manyBodyStrength"
+                v-model.number="manyBodyStrength"
+                step="1"
+                min="-500"
+                max="500"
+                class="input-control"
+              />
+              <el-slider
+                disabled
+                v-model="manyBodyStrength"
+                :min="-500"
+                :max="500"
+              />
+            </el-form-item>
+            <el-form-item label="Theta" class="form-item-control">
+              <el-input
+                type="number"
+                id="manyBodyTheta"
+                v-model.number="manyBodyTheta"
+                step="0.1"
+                min="0"
+                class="input-control"
+              />
+            </el-form-item>
+            <el-form-item label="DistanceMin" class="form-item-control">
+              <el-input
+                :disabled="!setManyBody"
+                type="number"
+                id="distanceMin"
+                v-model.number="manyBodyDistanceMin"
+                step="0.1"
+                min="0"
+                max="1000"
+                class="input-control"
+              />
+              <el-slider
+                :disabled="!setManyBody"
+                v-model="manyBodyDistanceMin"
+                :step="0.1"
+                :min="0"
+                :max="1000"
+              />
+            </el-form-item>
+            <el-form-item label="DistanceMax" class="form-item-control">
+              <el-input
+                :disabled="!setManyBody"
+                type="number"
+                id="manyBodyDistanceMax"
+                v-model.number="manyBodyDistanceMax"
+                step="0.1"
+                min="0"
+                max="5000"
+                class="input-control"
+              />
+              <el-slider
+                :disabled="!setManyBody"
+                v-model="manyBodyDistanceMax"
+                :step="0.1"
+                :min="0"
+                :max="5000"
+              />
+            </el-form-item>
+          </el-form>
+        </el-sub-menu>
+        <el-sub-menu index="2-4">
+          <template #title>
+            <el-icon><Warning /></el-icon>
+            <span> Collide Force </span>
+          </template>
+          <el-form
+            label-position="top"
+            label-width="100px"
+            style="max-width: 460px"
+            @submit.prevent
+            size="small"
+            class="form"
+            novalidate
+          >
+            <el-form-item>
+              <div class="btn-label" style="width: 100%">
+                <span>Set</span>
+                <el-switch v-model="setCollide" size="default" />
+              </div>
+            </el-form-item>
+            <el-form-item label="Radius *"> </el-form-item>
+            <el-form-item label="Strength" class="form-item-control">
+              <el-input
+                :disabled="!setCollide"
+                type="number"
+                id="collideStrength"
+                v-model.number="collideStrength"
+                step="0.1"
+                min="0"
+                max="1"
+                class="input-control"
+              />
+            </el-form-item>
+            <el-form-item label="Iterations" class="form-item-control">
+              <el-input
+                :disabled="!setCollide"
+                type="number"
+                id="collideIterations"
+                v-model.number="collideIterations"
+                step="1"
+                min="0"
+                max="500"
+                class="input-control"
+              />
+              <el-slider
+                :disabled="!setCollide"
+                v-model="collideIterations"
+                :min="0"
+                :max="500"
+              />
+            </el-form-item>
+          </el-form>
+        </el-sub-menu>
+        <el-sub-menu index="2-5">
+          <template #title>
+            <el-icon><Share /></el-icon>
+            <span> Link Force </span>
+          </template>
+          <el-form
+            label-position="top"
+            label-width="100px"
+            style="max-width: 460px"
+            @submit.prevent
+            size="small"
+            class="form"
+            novalidate
+          >
+            <el-form-item>
+              <div class="btn-label" style="width: 100%">
+                <span>Set</span>
+                <el-switch v-model="setLink" size="default" />
+              </div>
+            </el-form-item>
+            <el-form-item label="Distance *" class="form-item-control">
+              <el-input
+                disabled
+                type="number"
+                id="linkDistance"
+                v-model.number="linkDistance"
+                step="1"
+                min="0"
+                max="300"
+                class="input-control"
+              />
+              <el-slider disabled v-model="linkDistance" :min="0" :max="300" />
+            </el-form-item>
+            <el-form-item label="Strength *" class="form-item-control">
+              <el-input
+                :disabled="!setLink"
+                type="number"
+                id="linkStrength"
+                v-model.number="linkStrength"
+                step="0.1"
+                min="0"
+                max="1"
+                class="input-control"
+              />
+            </el-form-item>
+            <el-form-item label="Iterations" class="form-item-control">
+              <el-input
+                :disabled="!setLink"
+                type="number"
+                id="linkIterations"
+                v-model.number="linkIterations"
+                step="1"
+                min="0"
+                max="500"
+                class="input-control"
+              />
+              <el-slider
+                :disabled="!setLink"
+                v-model="linkIterations"
+                :min="0"
+                :max="500"
+              />
+            </el-form-item>
+          </el-form>
+        </el-sub-menu>
+      </el-sub-menu>
+    </el-menu>
+
     <BaseButton
       @click="toggleEditMode"
       class="edit-btn btn"
@@ -135,7 +699,7 @@ export default {
       vegaLiteHeight: 100,
       vegaLiteWidth: 100,
 
-      circleLink: 75,
+      circleLink: 50,
       circleNeighborLink: 100,
       vegaLiteLink: 150,
       vegaLiteLongLink: 300,
@@ -167,8 +731,12 @@ export default {
       forceXMode: "number",
 
       /* -------------------------------------------------------------------------- */
-      // force Config
-
+      // Base Config
+      alpha: 1,
+      alphaMin: 0.001,
+      alphaDecay: 1 - Math.pow(0.001, 1 / 300),
+      alphaTarget: 0,
+      velocityDecay: 0.4,
       defaultBaseConfig: {
         alpha: 1,
         alphaMin: 0.001,
@@ -176,6 +744,45 @@ export default {
         alphaTarget: 0,
         velocityDecay: 0.4,
       },
+
+      // Force Config
+      // center config
+      setCenter: true,
+      centerX: null,
+      centerY: null,
+      centerStrength: 1,
+      // position config
+      setX: false,
+      xX: null,
+      xStrength: 0.1,
+
+      setY: false,
+      yY: null,
+      yStrength: 0.1,
+
+      setRadicial: false,
+      radialX: null,
+      radialY: null,
+      radialR: 100,
+      radialStrength: 0.1,
+      // nbody config
+      setManyBody: true,
+      manyBodyStrength: null,
+      manyBodyTheta: 0.9,
+      manyBodyDistanceMin: 1,
+      manyBodyDistanceMax: 5000,
+
+      // link config
+      setLink: true,
+      linkDistance: null,
+      linkStrength: null,
+      linkIterations: 1,
+
+      // collide config
+      setCollide: true,
+      collideRadius: null,
+      collideStrength: 1,
+      collideIterations: 1,
 
       defaultForceConfig: {
         center: {
@@ -253,6 +860,471 @@ export default {
     /* -------------------------------------------------------------------------- */
     // default config
     /* -------------------------------------------------------------------------- */
+    alpha(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal > 1) {
+          this.alpha = 1;
+        } else if (newVal < 0) {
+          this.alpha = 0;
+        } else {
+          this.baseConfigSet("alpha", newVal);
+        }
+      }
+    },
+    alphaMin(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal > 1) {
+          this.alphaMin = 1;
+        } else if (newVal < 0) {
+          this.alphaMin = 0;
+        } else {
+          this.baseConfigSet("alphaMin", newVal);
+        }
+      }
+    },
+    alphaDecay(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal > 1) {
+          this.alphaDecay = 1;
+        } else if (newVal < 0) {
+          this.alphaDecay = 0;
+        } else {
+          this.baseConfigSet("alphaDecay", newVal);
+        }
+      }
+    },
+    alphaTarget(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal > 1) {
+          this.alphaTarget = 1;
+        } else if (newVal < 0) {
+          this.alphaTarget = 0;
+        } else {
+          this.baseConfigSet("alphaTarget", newVal);
+        }
+      }
+    },
+    velocityDecay(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal > 1) {
+          this.velocityDecay = 1;
+        } else if (newVal < 0) {
+          this.velocityDecay = 0;
+        } else {
+          this.baseConfigSet("velocityDecay", newVal);
+        }
+      }
+    },
+    /* -------------------------------------------------------------------------- */
+    // center force config
+    /* -------------------------------------------------------------------------- */
+    setCenter(newVal) {
+      if (newVal) {
+        this.simulation.force(
+          "center",
+          d3
+            .forceCenter(
+              this.defaultForceConfig.center.X,
+              this.defaultForceConfig.center.Y
+            )
+            .strength(this.defaultForceConfig.center.Strength)
+        );
+      } else {
+        // remove center force
+        this.simulation.force("center", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+
+    centerX(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal < 0) {
+          this.conterX = 0;
+        } else {
+          this.forceConfigSet("center", "x", newVal);
+        }
+      }
+    },
+    centerY(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal < 0) {
+          this.conterY = 0;
+        } else {
+          this.forceConfigSet("center", "y", newVal);
+        }
+      }
+    },
+    centerStrength(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        if (newVal < -1) {
+          this.centerStrength = -1;
+        } else {
+          this.forceConfigSet("center", "strength", newVal);
+        }
+      }
+    },
+    /* -------------------------------------------------------------------------- */
+    // position force config
+    /* -------------------------------------------------------------------------- */
+    setX(newVal) {
+      if (newVal) {
+        const name = this.forceXMode;
+        switch (name) {
+          case "number":
+            this.simulation.force(
+              "x",
+              d3.forceX(this.xX).strength(this.xStrength)
+            );
+
+            break;
+          case "aggregate":
+            this.simulation.force(
+              "x",
+              d3
+                .forceX()
+                .x((d) => {
+                  return (+d.group + 1) * 100;
+                })
+                .strength(this.xStrength)
+            );
+            break;
+        }
+      } else {
+        this.simulation.force("x", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+
+    xX(newVal, oldVal) {
+      if (this.setX) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.xX = 0;
+          } else {
+            this.forceConfigSet("x", "x", newVal);
+          }
+        }
+      }
+    },
+    xStrength(newVal, oldVal) {
+      if (this.setX) {
+        if (newVal !== oldVal) {
+          if (newVal < -1) {
+            this.xStrength = -1;
+          } else {
+            this.forceConfigSet("x", "strength", newVal);
+          }
+        }
+      }
+    },
+
+    setY(newVal) {
+      if (newVal) {
+        this.simulation.force("y", d3.forceY(this.yY).strength(this.yStrength));
+      } else {
+        this.simulation.force("y", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+
+    yY(newVal, oldVal) {
+      if (this.setY) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.yY = 0;
+          } else {
+            this.forceConfigSet("y", "y", newVal);
+          }
+        }
+      }
+    },
+    yStrength(newVal, oldVal) {
+      if (this.setY) {
+        if (newVal !== oldVal) {
+          if (newVal < -1) {
+            this.yStrength = -1;
+          } else {
+            this.forceConfigSet("y", "strength", newVal);
+          }
+        }
+      }
+    },
+
+    setRadicial(newVal) {
+      if (newVal) {
+        this.simulation.force(
+          "radial",
+          d3
+            .forceRadial(this.radialR, this.radialX, this.radialY)
+            .strength(this.radialStrength)
+        );
+      } else {
+        this.simulation.force("radial", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+    radialX(newVal, oldVal) {
+      if (this.setRadicial) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.radialX = 0;
+          } else {
+            this.forceConfigSet("radial", "x", newVal);
+          }
+        }
+      }
+    },
+    radialY(newVal, oldVal) {
+      if (this.setRadicial) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.radialY = 0;
+          } else {
+            this.forceConfigSet("radial", "y", newVal);
+          }
+        }
+      }
+    },
+    radialR(newVal, oldVal) {
+      if (this.setRadicial) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.radialR = 0;
+          } else {
+            this.forceConfigSet("radial", "radius", newVal);
+          }
+        }
+      }
+    },
+    radialStrength(newVal, oldVal) {
+      if (this.setRadicial) {
+        if (newVal !== oldVal) {
+          if (newVal < -1) {
+            this.radialStrength = -1;
+          } else {
+            this.forceConfigSet("radial", "strength", newVal);
+          }
+        }
+      }
+    },
+    /* -------------------------------------------------------------------------- */
+    // nbody force config
+    /* -------------------------------------------------------------------------- */
+    setManyBody(newVal) {
+      const that = this;
+      if (newVal) {
+        this.simulation.force(
+          "charge",
+          d3
+            .forceManyBody()
+            .strength(function (d) {
+              if (d.showDetail) {
+                return that.vegaLiteStrength;
+              } else {
+                return that.circleStrength;
+              }
+            })
+            .theta(this.manyBodyTheta)
+            .distanceMin(this.manyBodyDistanceMin)
+            .distanceMax(this.manyBodyDistanceMax)
+        );
+      } else {
+        this.simulation.force("charge", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+    manyBodyStrength(newVal, oldVal) {
+      if (this.setManyBody) {
+        if (newVal !== oldVal) {
+          if (newVal < -500) {
+            this.manyBodyStrength = -500;
+          } else if (newVal > 500) {
+            this.manyBodyStrength = 500;
+          } else {
+            this.forceConfigSet("charge", "strength", newVal);
+          }
+        }
+      }
+    },
+    manyBodyTheta(newVal, oldVal) {
+      if (this.setManyBody) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.manyBodyTheta = 0;
+          } else if (newVal > 1) {
+            this.manyBodyTheta = 1;
+          } else {
+            this.forceConfigSet("charge", "theta", newVal);
+          }
+        }
+      }
+    },
+    manyBodyDistanceMin(newVal, oldVal) {
+      if (this.setManyBody) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.manyBodyDistanceMin = 0;
+          } else if (newVal > 1000) {
+            this.manyBodyDistanceMin = 1000;
+          } else {
+            this.forceConfigSet("charge", "distanceMin", newVal);
+          }
+        }
+      }
+    },
+    manyBodyDistanceMax(newVal, oldVal) {
+      if (this.setManyBody) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.manyBodyDistanceMax = 0;
+          } else if (newVal > 5000) {
+            this.manyBodyDistanceMax = 5000;
+          } else {
+            this.forceConfigSet("charge", "distanceMax", newVal);
+          }
+        }
+      }
+    },
+    /* -------------------------------------------------------------------------- */
+    // link force config
+    /* -------------------------------------------------------------------------- */
+    setLink(newVal) {
+      if (newVal) {
+        const that = this;
+        // get links data
+        const links = d3
+          .select("#svg-container")
+          .select("svg")
+          .select("g.link-group")
+          .selectAll("line")
+          .data();
+        this.simulation.force(
+          "link",
+          d3
+            .forceLink(links)
+            .id((d) => d.id)
+            .distance(function (d) {
+              if (that.showIndex.size > 0) {
+                const show1 = that.showIndex.has(d.source.index);
+                const show2 = that.showIndex.has(d.target.index);
+                if (show1 || show2) {
+                  if (show1 && show2) {
+                    return that.vegaLiteLongLink;
+                  } else {
+                    return that.vegaLiteLink;
+                  }
+                }
+              }
+              return that.circleLink;
+            })
+            .strength(this.linkStrength)
+            .iterations(this.linkIterations)
+        );
+      } else {
+        this.simulation.force("link", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+
+    linkDistance(newVal, oldVal) {
+      if (this.setLink) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.linkDistance = 0;
+          } else if (newVal > 300) {
+            this.linkDistance = 300;
+          } else {
+            //   console.log("link");
+            this.forceConfigSet("link", "distance", newVal);
+          }
+        }
+      }
+    },
+    linkStrength(newVal, oldVal) {
+      if (this.setLink) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.linkStrength = 0;
+          } else if (newVal > 1) {
+            this.linkStrength = 1;
+          } else {
+            //   console.log(newVal);
+            this.forceConfigSet("link", "strength", newVal);
+          }
+        }
+      }
+    },
+    linkIterations(newVal, oldVal) {
+      if (this.setLink) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.linkIterations = 0;
+          } else if (newVal > 500) {
+            this.linkIterations = 500;
+          } else {
+            this.forceConfigSet("link", "iterations", newVal);
+          }
+        }
+      }
+    },
+    /* -------------------------------------------------------------------------- */
+    // collide force config
+    /* -------------------------------------------------------------------------- */
+    setCollide(newVal) {
+      const that = this;
+      if (newVal) {
+        this.simulation.force(
+          "collide",
+          d3
+            .forceCollide((d) => {
+              if (d.showDetail) {
+                return that.vegaLiteR;
+              } else {
+                return that.circleR;
+              }
+            })
+            .strength(this.collideStrength)
+            .iterations(this.collideIterations)
+        );
+      } else {
+        this.simulation.force("collide", null);
+      }
+      this.simulation.alpha(this.alpha);
+      this.simulation.restart();
+    },
+    collideStrength(newVal, oldVal) {
+      if (this.setCollide) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.collideStrength = 0;
+          } else if (newVal > 1) {
+            this.collideStrength = 1;
+          } else {
+            //   console.log(newVal);
+            this.forceConfigSet("collide", "strength", newVal);
+          }
+        }
+      }
+    },
+    collideIterations(newVal, oldVal) {
+      if (this.setCollide) {
+        if (newVal !== oldVal) {
+          if (newVal < 0) {
+            this.collideIterations = 0;
+          } else if (newVal > 500) {
+            this.collideIterations = 500;
+          } else {
+            this.forceConfigSet("collide", "iterations", newVal);
+          }
+        }
+      }
+    },
   },
   methods: {
     // 载入nodes和links数据
@@ -317,9 +1389,32 @@ export default {
     /* -------------------------------------------------------------------------- */
     // base config
     /* -------------------------------------------------------------------------- */
-
+    // 修正输入为空的情况
+    handleBaseBlur(configType) {
+      //console.log(target);
+      if (!this[configType]) {
+        this[configType] = this.defaultBaseConfig[configType];
+      }
+    },
     simStop() {
       this.simulation.stop();
+    },
+
+    // reset all base config to default
+    simRestart() {
+      if (this.simulation) {
+        this.alpha = this.defaultBaseConfig.alpha;
+        this.alphaMin = this.defaultBaseConfig.alphaMin;
+        this.alphaDecay = this.defaultBaseConfig.alphaDecay;
+        this.alphaTarget = this.defaultBaseConfig.alphaTarget;
+        this.velocityDecay = this.defaultBaseConfig.velocityDecay;
+        this.simulation.alpha(this.defaultBaseConfig.alpha);
+        this.simulation.alphaMin(this.defaultBaseConfig.alphaMin);
+        this.simulation.alphaDecay(this.defaultBaseConfig.alphaDecay);
+        this.simulation.alphaTarget(this.defaultBaseConfig.alphaTarget);
+        this.simulation.velocityDecay(this.defaultBaseConfig.velocityDecay);
+        this.restart();
+      }
     },
 
     // ?
@@ -380,15 +1475,22 @@ export default {
 
       // rebind data of dom elements
       nodeG.selectChildren("g").data(nodes).join("g");
-      linkG.selectAll("g").data(links).join("g");
+      linkG.selectAll("line").data(links).join("line");
       // rebind data of simulation
       this.simulation.nodes(nodes);
       const linkForce = this.simulation.force("link");
       if (linkForce) this.simulation.force("link").links(links);
 
       // reset alpha to reheat
-      this.simulation.alpha(this.defaultBaseConfig.alpha);
       this.simulation.restart();
+    },
+    // 设置 default config
+    baseConfigSet(configType, newVal) {
+      this.simulation[configType](newVal);
+      if (configType !== "alpha") {
+        this.simulation.alpha(this.alpha);
+      }
+      this.restart();
     },
 
     /* -------------------------------------------------------------------------- */
@@ -400,7 +1502,7 @@ export default {
       this.simulation.force(forceType)[configType](newVal);
       //console.log(forceType);
 
-      this.simulation.alpha(this.defaultBaseConfig.alpha);
+      this.simulation.alpha(this.alpha);
       this.simulation.restart();
       //this.restart();
     },
@@ -413,7 +1515,7 @@ export default {
           break;
       }
       // reheat and restart
-      this.simulation.alpha(this.defaultBaseConfig.alpha);
+      this.simulation.alpha(this.alpha);
       this.simulation.restart();
       //this.restart();
     },
@@ -618,7 +1720,7 @@ export default {
           );
         });
       }
-      that.simulation.alpha(that.defaultBaseConfig.alpha);
+      that.simulation.alpha(that.alpha);
       that.simulation.restart();
     },
     deleteVegaLite(g, index) {
@@ -658,23 +1760,17 @@ export default {
             );
             break;
         }
-        this.simulation.alpha(this.defaultBaseConfig.alpha);
+        this.simulation.alpha(this.alpha);
         this.simulation.restart();
       }
     },
-    // getRandomInt(min, max) {
-    //   return Math.floor(Math.random() * (max - min + 1)) + min;
-    // },
-
     // initial drawing, create DOM elements and sim system
     drawGraph() {
       const that = this;
       // 获取绘画数据
       const data = this.drawData;
       // 创建原始数据的copy，因为 force simulation 会改变数组数据
-      const links = data.links.map((d) => ({
-        ...d,
-      }));
+      const links = data.links.map((d) => ({ ...d }));
       // 加入更多属性，控制vega-lite图的显示
       const nodes = data.nodes.map((d) => ({
         ...d,
@@ -709,37 +1805,24 @@ export default {
         .attr("height", height)
         .attr("viewbox", [-width, -height, width, height])
         .attr("style", "max-width: 100%; height: auto;");
-
       // 画links
       const linkGroup = svg
         .append("g")
         .attr("class", "link-group")
-        .selectAll("g")
-        .data(links)
-        .join("g")
-        .append("line")
-        .attr("class", "link")
         .attr("stroke", this.defaultLinkColor)
         .attr("stroke-opacity", 0.6)
+        .selectAll("line")
+        .data(links)
+        .join("line")
         .attr("class", "network-line")
-        .attr("stroke-width", 1);
-
-      const linkContainerGroup = svg.select("g.link-group").selectChildren("g");
-      const linkTextGroup = linkContainerGroup
-        .attr("class", "link-label")
-        .append("text")
-        .text((d) => d.relationship)
-        .attr("dy", ".35em")
-        .attr("fill", "#555")
-        .style("opacity", 0.5)
-        .style("user-select", "none");
-
-      const typeColor = d3.scaleOrdinal(
-        ["shape", "point", "correlation"],
-        //     d3.schemePaired
-        ["#fcc2d7", "#bac8ff", "#b992d3"]
-      );
+        // link的value值映射到粗细
+        .attr(
+          "stroke-width",
+          1
+          // (d) => Math.sqrt(d.value)
+        );
       //画nodes
+
       const circleGroup = svg
         .append("g")
         .attr("class", "node-group")
@@ -753,13 +1836,10 @@ export default {
           return gData.showDetail;
         })
         .attr("r", that.circleR)
-        .attr("stroke", function () {
-          const gData = d3.select(this.parentNode).datum();
-          return typeColor(gData.type);
-        })
+        .attr("stroke", this.defaultNodeColor)
         // node 进行分类颜色映射
         .attr("fill", "#fff")
-        .attr("stroke-width", 2)
+        .attr("stroke-width", 1)
         .style("transition", "r 0.2s")
         .on("mouseover", function (event) {
           const d = d3.select(this.parentNode).datum();
@@ -836,7 +1916,7 @@ export default {
                   .attr("fill", "#FFF");
                 insightIcon.classed("not-show", false);
 
-                that.simulation.alpha(that.defaultBaseConfig.alpha);
+                that.simulation.alpha(that.alpha);
                 that.simulation.restart();
               });
 
@@ -1144,33 +2224,10 @@ export default {
         });
 
         linkGroup
-          .attr("x1", function () {
-            const d = d3.select(this.parentNode).datum();
-
-            return d.source.x;
-          })
-          .attr("y1", function () {
-            const d = d3.select(this.parentNode).datum();
-            return d.source.y;
-          })
-          .attr("x2", function () {
-            const d = d3.select(this.parentNode).datum();
-            return d.target.x;
-          })
-          .attr("y2", function () {
-            const d = d3.select(this.parentNode).datum();
-            return d.target.y;
-          });
-
-        linkTextGroup
-          .attr("x", function () {
-            const d = d3.select(this.parentNode).datum();
-            return (d.source.x + d.target.x) / 2;
-          })
-          .attr("y", function () {
-            const d = d3.select(this.parentNode).datum();
-            return (d.source.y + d.target.y) / 2;
-          });
+          .attr("x1", (d) => d.source.x)
+          .attr("y1", (d) => d.source.y)
+          .attr("x2", (d) => d.target.x)
+          .attr("y2", (d) => d.target.y);
       }
 
       const nodeG = svg.selectChild(".node-group");
@@ -1197,9 +2254,7 @@ export default {
         if (!event.active)
           simulation
             .alphaTarget(
-              +that.defaultBaseConfig.alphaTarget + 0.3 > 1
-                ? 1
-                : +that.defaultBaseConfig.alphaTarget + 0.3
+              +that.alphaTarget + 0.3 > 1 ? 1 : +that.alphaTarget + 0.3
             )
             .restart();
 
@@ -1216,8 +2271,7 @@ export default {
 
       // 拖动结束，降温
       function dragended(event) {
-        if (!event.active)
-          simulation.alphaTarget(that.defaultBaseConfig.alphaTarget);
+        if (!event.active) simulation.alphaTarget(that.alphaTarget);
 
         if (event.subject.pinned) {
           event.subject.fx = event.subject.x;
@@ -1262,17 +2316,22 @@ export default {
       // initialize the default data
       // this.diagonal = diagonal;
       this.simulation = simulation;
-
-      this.defaultForceConfig.center.X =
+      this.centerX =
+        this.defaultForceConfig.center.X =
+        this.xX =
         this.defaultForceConfig.x.X =
+        this.radialX =
         this.defaultForceConfig.radial.X =
           width / 2;
-
-      this.defaultForceConfig.center.Y =
+      this.centerY =
+        this.defaultForceConfig.center.Y =
+        this.yY =
         this.defaultForceConfig.y.Y =
+        this.radialY =
         this.defaultForceConfig.radial.Y =
           height / 2;
-      this.defaultForceConfig.collide.Radius = this.circleR;
+      this.defaultForceConfig.collide.Radius = this.collideRadius =
+        this.circleR;
 
       function togglePin(event, d) {
         const g = d3.select(this.parentNode);
