@@ -8,10 +8,7 @@
       <StatisticsGraph></StatisticsGraph>
     </div>
     <div class="force-graph-box">
-      <ForceDirectedGraph
-        ref="forceGraph"
-        :drawData="selectedData"
-      ></ForceDirectedGraph>
+      <ForceDirectedGraph ref="forceGraph"></ForceDirectedGraph>
     </div>
   </div>
 </template>
@@ -25,27 +22,14 @@ export default {
     StatisticsGraph,
   },
   data() {
-    return {
-      selectedData: null,
-    };
+    return {};
   },
-  computed: {
-    totalData() {
-      return this.$store.getters["force/drawData"];
-    },
-    linkGroup() {
-      return this.$store.getters["force/linkDataGroup"];
-    },
-    nodeGroup() {
-      return this.$store.getters["force/nodeDataGroup"];
-    },
-  },
+  computed: {},
   watch: {
-    totalData(newVal) {
-      if (newVal) {
-        this.selectedData = newVal;
-      }
-    },
+    // selectedData(newVal) {
+    //   if (newVal) {
+    //   }
+    // },
   },
   methods: {
     stop() {

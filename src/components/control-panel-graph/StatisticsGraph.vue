@@ -8,7 +8,10 @@
 import * as echarts from "echarts";
 export default {
   data() {
-    return {};
+    return {
+      barchart: null,
+      piechart: null,
+    };
   },
 
   computed: {
@@ -69,108 +72,127 @@ export default {
           name: item.type,
           type: "bar",
           data: [item.count],
-          // 设置柱状图的颜色
-          itemStyle: {
-            color: function (params) {
-              const colorList = [
-                "#2f4554",
-                "#61a0a8",
-                "#91c7ae",
-                "#749f83",
-                "#ca8622",
-                "#bda29a",
-                "#6e7074",
-                "#546570",
-                "#c4ccd3",
-              ];
-              return colorList[params.seriesIndex % colorList.length];
-            },
-          },
         })),
       };
 
       barchart.setOption(option);
 
       barchart.on("legendselectchanged", function (params) {
-        const selectedData = that.totalData.links.filter(
+        const selectedLinkData = that.totalData.links.filter(
           (d) => params.selected[d.type]
         );
-        //that.$store.commit("");
+        const selectedId = new Set();
+        selectedLinkData.forEach((link) => {
+          // console.log(link);
+          const sourceId = link.source;
+          const targetId = link.target;
+          selectedId.add(sourceId);
+          selectedId.add(targetId);
+        });
+        // console.log(selectedId);
+        const filteredNodes = that.totalData.nodes.filter((d) =>
+          selectedId.has(d.id)
+        );
+        that.$store.dispatch("force/groupByNodeType", filteredNodes);
+        that.$store.commit("force/setSelectedData", {
+          nodes: filteredNodes,
+          links: selectedLinkData,
+        });
       });
     },
-    drawPiechart() {
-      const container = d3.select("#piechart-box").node();
-      const piechart = echarts.init(container);
-      const that = this;
-      console.log(this.nodeGroup);
-      const option = {
-        title: {
-          text: "Node: Insight Type",
-          left: "center",
-          top: "2%",
-          textStyle: {
-            color: "#555",
-            fontSize: 15,
+    drawPiechart(newVal) {
+      if (this.piechart) {
+        // update data
+        this.piechart.setOption({
+          series: [
+            {
+              data: newVal
+                .map((item) => ({
+                  name: item["insight-type"],
+                  value: item["count"],
+                }))
+                .sort(function (a, b) {
+                  return a.value - b.value;
+                }),
+            },
+          ],
+        });
+      } else {
+        // initialization
+        const container = d3.select("#piechart-box").node();
+        const piechart = echarts.init(container);
+        const that = this;
+        //console.log(this.nodeGroup);
+        const option = {
+          title: {
+            text: "Node: Insight Type",
+            left: "center",
+            top: "2%",
+            textStyle: {
+              color: "#555",
+              fontSize: 15,
+            },
           },
-        },
-        legend: {
-          top: "12%",
-          left: "5%",
-          textStyle: {
-            fontSize: 10,
-            color: "#555",
+          legend: {
+            top: "12%",
+            left: "5%",
+            textStyle: {
+              fontSize: 10,
+              color: "#555",
+            },
           },
-        },
-        tooltip: {
-          trigger: "item",
-          textStyle: {
-            color: "#555",
-            fontSize: 12,
+          tooltip: {
+            trigger: "item",
+            textStyle: {
+              color: "#555",
+              fontSize: 12,
+            },
           },
-        },
-        grid: {
-          left: "5%",
-          right: "4%",
-          bottom: "5%",
-          top: "35%",
-          containLabel: true,
-        },
+          grid: {
+            left: "5%",
+            right: "4%",
+            bottom: "5%",
+            top: "35%",
+            containLabel: true,
+          },
 
-        series: [
-          {
-            name: "insight-type",
-            stillShowZeroSum: false,
-            type: "pie",
-            data: this.nodeGroup
-              .map((item) => ({
-                name: item["insight-type"],
-                value: item["count"],
-              }))
-              .sort(function (a, b) {
-                return a.value - b.value;
-              }),
-            radius: ["5%", "50%"],
-            center: ["50%", "70%"],
-            roseType: "area",
-            itemStyle: {
-              borderRadius: 8,
+          series: [
+            {
+              name: "insight-type",
+              stillShowZeroSum: false,
+              type: "pie",
+              data: newVal
+                .map((item) => ({
+                  name: item["insight-type"],
+                  value: item["count"],
+                }))
+                .sort(function (a, b) {
+                  return a.value - b.value;
+                }),
+              radius: ["5%", "55%"],
+              center: ["50%", "70%"],
+              roseType: "area",
+              itemStyle: {
+                borderRadius: 4,
+              },
+              labelLine: {
+                smooth: 0.2,
+                length: 10,
+                length2: 20,
+              },
             },
-            labelLine: {
-              smooth: 0.2,
-              length: 10,
-              length2: 20,
-            },
-          },
-        ],
-      };
-      piechart.setOption(option);
-      piechart.on("legendselectchanged", function (params) {
-        console.log(params);
-        const selectedData = that.totalData.nodes.filter(
-          (d) => params.selected[d["insight-type"]]
-        );
-        console.log(selectedData);
-      });
+          ],
+        };
+        piechart.setOption(option);
+        this.piechart = piechart;
+        piechart.on("legendselectchanged", function (params) {
+          // console.log(params);
+          const selectedData = that.totalData.nodes.filter(
+            (d) => params.selected[d["insight-type"]]
+          );
+          //console.log(selectedData);
+        });
+      }
     },
   },
   watch: {
@@ -183,7 +205,7 @@ export default {
     nodeGroup(newVal) {
       // console.log(newVal);
       if (newVal) {
-        this.drawPiechart();
+        this.drawPiechart(newVal);
       }
     },
   },

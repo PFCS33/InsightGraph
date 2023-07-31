@@ -108,7 +108,6 @@ import {
 } from "@element-plus/icons-vue";
 
 export default {
-  props: ["drawData"],
   components: {
     Tools,
     Location,
@@ -118,6 +117,11 @@ export default {
     Operation,
     Warning,
     Remove: RemoveFilled,
+  },
+  computed: {
+    selectedData() {
+      return this.$store.getters["force/selectedData"];
+    },
   },
   data() {
     return {
@@ -158,9 +162,9 @@ export default {
       iconOffset: 5,
 
       // show conifg of vega-lite graph
-      // (index,view)
+      // (id,view)
       showIndex: new Map(),
-      // (index, g)
+      // (id, g)
       pinnedIndex: new Map(),
       // neighbor info
       // (id, [...idn])
@@ -170,9 +174,6 @@ export default {
       simulation: null,
       ticks: 0,
       editMode: false,
-
-      // element plus
-      forceXMode: "number",
 
       /* -------------------------------------------------------------------------- */
       // force Config
@@ -226,12 +227,19 @@ export default {
   },
 
   watch: {
-    drawData(newVal) {
+    selectedData(newVal) {
       if (newVal) {
+        if (this.simulation) {
+          this.simulation.stop();
+          this.simulation = null;
+        }
+        this.ticks = 0;
         //construct the neighbor info
+        //console.log(newVal);
         this.getNeighbourInfo(newVal);
+
         // draw force graph
-        this.drawGraph();
+        this.drawGraph(newVal);
       }
     },
 
@@ -254,11 +262,6 @@ export default {
   },
   methods: {
     // 载入nodes和links数据
-    loadData() {
-      // this.$store.dispatch("force/loadData");
-      // this.$store.dispatch("force/loadCarsData");
-      this.$store.dispatch("force/loadData");
-    },
 
     neighborHighligt(id, neighbor, type, enable) {
       const className = type + "-highlight";
@@ -326,7 +329,7 @@ export default {
     restart() {
       this.ticks = 0;
       // 获取原始绘画数据
-      const data = this.drawData;
+      const data = this.selectedData;
 
       //const= d3.select('.node-group')
 
@@ -354,15 +357,18 @@ export default {
 
       //  console.log(this.showIndex);
 
-      if (this.showIndex.size)
-        for (const key of this.showIndex.keys()) {
-          nodes[key].showDetail = true;
-        }
+      if (this.showIndex.size) {
+        nodes
+          .filter((d) => this.showIndex.has(d.id))
+          .forEach((d) => {
+            d.showDetail = true;
+          });
+      }
 
       if (this.pinnedIndex.size)
-        for (const [index, g] of this.pinnedIndex) {
+        for (const [id, g] of this.pinnedIndex) {
           // this.deleteVegaLite(g, index);
-          this.drawVegaLite(g, index, "svg");
+          this.drawVegaLite(g, "svg");
         }
 
       // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
@@ -429,7 +435,7 @@ export default {
     /* -------------------------------------------------------------------------- */
     // vegaLite relative
     /* -------------------------------------------------------------------------- */
-    drawVegaLite(g, index, mode) {
+    drawVegaLite(g, mode) {
       const that = this;
       const container = g.select(".vega-lite-container");
       const rect = g.selectChild(".rect");
@@ -480,7 +486,7 @@ export default {
           const view = result.view.background("transparent");
           // record the view
           g.datum().view = view;
-          that.showIndex.set(index, view);
+          that.showIndex.set(g.datum().id, view);
 
           const linkForce = that.simulation.force("link");
           if (linkForce) linkForce.initialize(that.simulation.nodes());
@@ -611,7 +617,7 @@ export default {
             case "svg":
               // 初始就设置为 pinned 状态
               pinIcon.classed("icon-pinned", true);
-              that.pinnedIndex.set(index, g);
+              that.pinnedIndex.set(g.datum().id, g);
               g.datum().pinned = true;
               g.classed("pinned", true);
               g.datum().fx = g.datum().x;
@@ -634,13 +640,14 @@ export default {
       that.simulation.alpha(that.defaultBaseConfig.alpha);
       that.simulation.restart();
     },
-    deleteVegaLite(g, index) {
-      this.showIndex.get(index).finalize();
+    deleteVegaLite(g) {
+      const id = g.datum().id;
+      this.showIndex.get(id).finalize();
       g.selectAll(".vega-lite-graph").remove();
       g.datum().view = null;
       g.datum().img = null;
-      this.pinnedIndex.delete(index);
-      this.showIndex.delete(index);
+      this.pinnedIndex.delete(id);
+      this.showIndex.delete(id);
     },
     /* -------------------------------------------------------------------------- */
     // other
@@ -680,14 +687,15 @@ export default {
     // },
 
     // initial drawing, create DOM elements and sim system
-    drawGraph() {
+    drawGraph(newVal) {
       const that = this;
       // 获取绘画数据
-      const data = this.drawData;
+      const data = newVal;
       // 创建原始数据的copy，因为 force simulation 会改变数组数据
       const links = data.links.map((d) => ({
         ...d,
       }));
+
       // 加入更多属性，控制vega-lite图的显示
       const nodes = data.nodes.map((d) => ({
         ...d,
@@ -697,17 +705,18 @@ export default {
         img: null,
         rect: null,
       }));
+
       //  console.log(data.links);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
       // 清除之前的
       svgContainer.selectAll("*").remove();
 
-      const defs = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "defs"
-      );
-      svgContainer.node().appendChild(defs);
+      // const defs = document.createElementNS(
+      //   "http://www.w3.org/2000/svg",
+      //   "defs"
+      // );
+      // svgContainer.node().appendChild(defs);
 
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
@@ -833,7 +842,7 @@ export default {
                 g.datum().fy = null;
                 that.selectedNode = null;
                 g.selectChildren(".vega-lite-icon").remove();
-                that.deleteVegaLite(g, d.index);
+                that.deleteVegaLite(g);
                 const collideForce = that.simulation.force("collide");
                 const bodyForce = that.simulation.force("charge");
                 const linkForce = that.simulation.force("link");
@@ -864,7 +873,7 @@ export default {
               .attr("cursor", "pointer")
               .on("click", togglePin);
 
-            that.drawVegaLite(g, d.index, "img");
+            that.drawVegaLite(g, "img");
           }
         });
 
@@ -1012,8 +1021,8 @@ export default {
             // .distance(defaultForceConfig.link.Distance)
             .distance(function (d) {
               if (that.showIndex.size > 0) {
-                const show1 = that.showIndex.has(d.source.index);
-                const show2 = that.showIndex.has(d.target.index);
+                const show1 = that.showIndex.has(d.source.id);
+                const show2 = that.showIndex.has(d.target.id);
                 if (show1 || show2) {
                   if (show1 && show2) {
                     return that.vegaLiteLongLink;
@@ -1027,8 +1036,7 @@ export default {
                 // const sourceNeighbor = that.neighborMap.get(sourceId);
                 // const targetNeighbor = that.neighborMap.get(targetId);
 
-                for (const index of that.showIndex.keys()) {
-                  const id = nodes[index].id.replace(".", "");
+                for (const id of that.showIndex.keys()) {
                   //console.log(id);
                   const directNeighbor = that.neighborMap.get(id);
                   if (directNeighbor) {
@@ -1063,8 +1071,7 @@ export default {
               } else {
                 if (that.showIndex.size > 0) {
                   const id = d.id.replace(".", "");
-                  for (const index of that.showIndex.keys()) {
-                    const showId = nodes[index].id.replace(".", "");
+                  for (const showId of that.showIndex.keys()) {
                     const directNeighbor = that.neighborMap.get(showId);
                     if (directNeighbor) {
                       for (const neighbor of directNeighbor) {
@@ -1305,22 +1312,18 @@ export default {
           g.datum().fy = g.datum().y;
           g.select(".pin").classed("icon-pinned", true);
 
-          that.drawVegaLite(g, d.index, "svg");
+          that.drawVegaLite(g, "svg");
         } else {
           g.classed("pinned", false);
           g.select(".pin").classed("icon-pinned", false);
           g.datum().fx = null;
           g.datum().fy = null;
 
-          that.drawVegaLite(g, d.index, "img");
+          that.drawVegaLite(g, "img");
         }
       }
     },
   },
-
-  // created() {
-  //   this.loadData();
-  // },
 };
 </script>
 
