@@ -229,6 +229,7 @@ export default {
   watch: {
     selectedData(newVal) {
       if (newVal) {
+        //console.log("force data:", newVal);
         this.neighborHighligt(
           this.selectedNode,
           this.neighborMap.get(this.selectedNode),

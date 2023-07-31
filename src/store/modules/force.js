@@ -2,15 +2,15 @@ export default {
   namespaced: true,
   state() {
     return {
-      drawData: null,
+      totalData: null,
       selectedData: null,
       linkDataGroup: null,
       nodeDataGroup: null,
     };
   },
   getters: {
-    drawData(state) {
-      return state.drawData;
+    totalData(state) {
+      return state.totalData;
     },
     selectedData(state) {
       return state.selectedData;
@@ -23,8 +23,8 @@ export default {
     },
   },
   mutations: {
-    setDrawData(state, payload) {
-      state.drawData = payload;
+    setTotalData(state, payload) {
+      state.totalData = payload;
     },
     setSelectedData(state, payload) {
       state.selectedData = payload;
@@ -48,11 +48,20 @@ export default {
       context.commit("setNodeDataGroup", counts);
     },
     groupByLinkType(context, payload) {
-      const groups = d3.group(payload, (d) => d.type);
-      const counts = Array.from(groups, ([type, sum]) => ({
-        type,
-        count: sum.length,
-      }));
+      const counts = [
+        { type: "siblings", value: 0 },
+        { type: "parent-child", value: 0 },
+        { type: "same-name", value: 0 },
+      ];
+      if (payload.length > 0) {
+        const groups = d3.group(payload, (d) => d.type);
+        groups.forEach((group, type) => {
+          const index = counts.findIndex((c) => c.type === type);
+          if (index !== -1) {
+            counts[index].count = group.length;
+          }
+        });
+      }
       context.commit("setLinkDataGroup", counts);
     },
     // load test data
@@ -60,7 +69,8 @@ export default {
       const file = "test_data/result_0730.json";
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
-        context.commit("setDrawData", data);
+        context.commit("setTotalData", data);
+
         context.commit("setSelectedData", data);
         context.dispatch("groupByLinkType", data.links);
         context.dispatch("groupByNodeType", data.nodes);
