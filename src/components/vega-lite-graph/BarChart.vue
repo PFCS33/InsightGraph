@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <svg class="svg">
+    <!-- <svg class="svg">
       <rect
         x="50%"
         y="50%"
@@ -31,44 +31,76 @@
           <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
         </filter>
       </defs>
-      <!-- </svg> -->
-    </svg>
+
+    </svg> -->
+    <div id="echarts-container"></div>
   </div>
 </template>
 <script>
-import { Remove } from "@element-plus/icons-vue";
+import * as echarts from "echarts";
 export default {
-  components: {
-    Remove,
-  },
   data() {
-    return {
-      graphNum: 1,
-    };
+    return {};
   },
   methods: {
-    loadData() {
-      this.$store.dispatch("force/loadCarsData");
+    drawEcharts() {
+      const container = d3.select("#echarts-container").node();
+      const barchart = echarts.init(container);
+      const option = {
+        dataset: {
+          source: [
+            {
+              source: "_-2013_",
+              target: "_-2014_",
+              type: "siblings",
+              count: 1,
+            },
+            {
+              source: "_-2014_",
+              target: "_-2015_",
+              type: "siblings",
+              count: 1,
+            },
+            {
+              source: "_-2015_",
+              target: "_-2016_",
+              type: "siblings",
+              count: 1,
+            },
+            { source: "_-2013_", target: "_-2014_", type: "friends", count: 1 },
+            { source: "_-2014_", target: "_-2015_", type: "friends", count: 1 },
+          ],
+          transform: [
+            {
+              type: "aggregate",
+              groupBy: "type",
+              aggregate: {
+                count: "sum",
+              },
+            },
+          ],
+        },
+        xAxis: { type: "category" },
+        yAxis: {},
+        series: [
+          {
+            datasetIndex: 1,
+            type: "bar",
+            encode: {
+              x: "type",
+              y: "count",
+            },
+          },
+        ],
+      };
+
+      barchart.setOption(option);
     },
-    drawGraph() {},
   },
-  computed: {
-    drawData() {
-      return this.$store.getters["force/vegaLiteData"];
-    },
-    carsData() {
-      return this.$store.getters["force/carsData"];
-    },
-  },
-  watch: {
-    carsData(newVal) {
-      if (newVal) {
-        this.drawGraph();
-      }
-    },
-  },
-  created() {
-    this.loadData();
+  computed: {},
+  watch: {},
+  mounted() {
+    this.drawEcharts();
   },
 };
 </script>
@@ -77,6 +109,11 @@ export default {
   width: 100%;
   height: 100%;
 }
+#echarts-container {
+  width: 100%;
+  height: 100%;
+}
+
 .svg {
   width: 100%;
   height: 100%;

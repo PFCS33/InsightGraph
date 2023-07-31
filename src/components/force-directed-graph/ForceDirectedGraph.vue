@@ -108,6 +108,7 @@ import {
 } from "@element-plus/icons-vue";
 
 export default {
+  props: ["drawData"],
   components: {
     Tools,
     Location,
@@ -223,17 +224,7 @@ export default {
       },
     };
   },
-  computed: {
-    drawData() {
-      return this.$store.getters["force/drawData"];
-    },
-    vegaLiteData() {
-      return this.$store.getters["force/vegaLiteData"];
-    },
-    carsData() {
-      return this.$store.getters["force/carsData"];
-    },
-  },
+
   watch: {
     drawData(newVal) {
       if (newVal) {
@@ -266,7 +257,7 @@ export default {
     loadData() {
       // this.$store.dispatch("force/loadData");
       // this.$store.dispatch("force/loadCarsData");
-      this.$store.dispatch("force/loadResultData");
+      this.$store.dispatch("force/loadData");
     },
 
     neighborHighligt(id, neighbor, type, enable) {
@@ -709,6 +700,9 @@ export default {
       //  console.log(data.links);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
+      // 清除之前的
+      svgContainer.selectAll("*").remove();
+
       const defs = document.createElementNS(
         "http://www.w3.org/2000/svg",
         "defs"
@@ -882,7 +876,7 @@ export default {
           const g = d3.select(this.parentNode);
           //const group = g.datum().group % that.insightNum;
           const group = g.datum()["insight-type"];
-          console.log(group);
+          //  console.log(group);
           let insightType = null;
           switch (group) {
             case "dominance":
@@ -957,7 +951,7 @@ export default {
           // 获取对应的container - g元素
           const g = d3.select(this.parentNode);
           that.selectedNode = g.datum().id.replace(".", "");
-          console.log("trueId", g.datum().id);
+          //     console.log("trueId", g.datum().id);
           // d3.select(this).classed("center-highlight", true);
         })
         .on("dblclick", togglePin);
@@ -1324,9 +1318,9 @@ export default {
     },
   },
 
-  created() {
-    this.loadData();
-  },
+  // created() {
+  //   this.loadData();
+  // },
 };
 </script>
 

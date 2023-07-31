@@ -2,71 +2,67 @@ export default {
   namespaced: true,
   state() {
     return {
-      drawData: [],
-      vegaLiteData: [
-        { a: "A", b: 28 },
-        { a: "B", b: 55 },
-        { a: "C", b: 43 },
-        { a: "D", b: 91 },
-        { a: "E", b: 81 },
-        { a: "F", b: 53 },
-        { a: "G", b: 19 },
-        { a: "H", b: 87 },
-        { a: "I", b: 52 },
-      ],
-      carsData: [],
-      resultData: [],
+      drawData: null,
+      selectedData: null,
+      linkDataGroup: null,
+      nodeDataGroup: null,
     };
   },
   getters: {
     drawData(state) {
       return state.drawData;
     },
-    vegaLiteData(state) {
-      return state.vegaLiteData;
+    selectedData(state) {
+      return state.selectedData;
     },
-    carsData(state) {
-      return state.carsData;
+    linkDataGroup(state) {
+      return state.linkDataGroup;
     },
-    resultData(state) {
-      return state.resultData;
+    nodeDataGroup(state) {
+      return state.nodeDataGroup;
     },
   },
   mutations: {
     setDrawData(state, payload) {
       state.drawData = payload;
     },
-    setCarsData(state, payload) {
-      state.carsData = payload;
+    setSelectedData(state, payload) {
+      state.selectedData = payload;
     },
-    setResultData(state, payload) {
-      state.resultData = payload;
+    setLinkDataGroup(state, payload) {
+      state.linkDataGroup = payload;
+    },
+    setNodeDataGroup(state, payload) {
+      state.nodeDataGroup = payload;
     },
   },
   actions: {
+    groupByNodeType(context, payload) {
+      const groups = d3.group(payload, (d) => d["insight-type"]);
+      //  console.log(groups);
+      const counts = Array.from(groups, ([key, value]) => ({
+        "insight-type": key,
+        count: value.length,
+      }));
+      //  console.log(counts);
+      context.commit("setNodeDataGroup", counts);
+    },
+    groupByLinkType(context, payload) {
+      const groups = d3.group(payload, (d) => d.type);
+      const counts = Array.from(groups, ([type, sum]) => ({
+        type,
+        count: sum.length,
+      }));
+      context.commit("setLinkDataGroup", counts);
+    },
     // load test data
     loadData(context, _payload) {
-      const file = "test_data/test_data_for_force.json";
-      const path = `data/${file}`;
-      d3.json(path).then(function (data) {
-        context.commit("setDrawData", data);
-      });
-    },
-    loadCarsData(context, _payload) {
-      const file = "test_data/test_data_cars.json";
-      const path = `data/${file}`;
-      d3.json(path).then(function (data) {
-        context.commit("setCarsData", data);
-        console.log(data.length);
-      });
-    },
-    loadResultData(context, _payload) {
       const file = "test_data/result_0730.json";
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
-        context.commit("setResultData", data);
         context.commit("setDrawData", data);
-        console.log(data);
+        context.dispatch("groupByLinkType", data.links);
+        context.dispatch("groupByNodeType", data.nodes);
       });
     },
   },
