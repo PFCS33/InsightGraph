@@ -229,17 +229,22 @@ export default {
   watch: {
     selectedData(newVal) {
       if (newVal) {
+        this.neighborHighligt(
+          this.selectedNode,
+          this.neighborMap.get(this.selectedNode),
+          "selected",
+          false
+        );
+        this.selectedNode = null;
+        this.getNeighbourInfo(newVal);
         if (this.simulation) {
           this.simulation.stop();
-          this.simulation = null;
-        }
-        this.ticks = 0;
-        //construct the neighbor info
-        //console.log(newVal);
-        this.getNeighbourInfo(newVal);
 
-        // draw force graph
-        this.drawGraph(newVal);
+          this.restart(newVal);
+        } else {
+          // draw force graph
+          this.drawGraph(newVal);
+        }
       }
     },
 
@@ -251,8 +256,6 @@ export default {
 
         this.neighborHighligt(oldVal, oldNeighborSet, "selected", false);
 
-        //  console.log(linkGroup);
-
         this.neighborHighligt(newVal, neighborSet, "selected", true);
       }
     },
@@ -261,7 +264,353 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
-    // 载入nodes和links数据
+    setDomAttributes(linkG, circleG) {
+      const that = this;
+
+      // 画links
+      const linkGroup = linkG
+        .append("line")
+        .attr("class", "link")
+        .attr("stroke", this.defaultLinkColor)
+        .attr("stroke-opacity", 0.6)
+        .attr("class", "network-line")
+        .attr("stroke-width", 1);
+
+      const linkContainerGroup = linkG;
+      const linkTextGroup = linkContainerGroup
+        .attr("class", "link-label")
+        .append("text")
+        .text((d) => d.type)
+        .attr("dy", ".35em")
+        .attr("fill", "#555")
+        .style("opacity", 0.5)
+        .style("user-select", "none")
+        .attr("font-size", "8px");
+
+      const typeColor = d3.scaleOrdinal(
+        ["shape", "point", "compound"],
+        //     d3.schemePaired
+        ["#fcc2d7", "#bac8ff", "#b992d3"]
+      );
+      //画nodes
+
+      const circleGroup = circleG
+        .append("circle")
+        .attr("class", "circle")
+        .classed("not-show", function () {
+          const gData = d3.select(this.parentNode).datum();
+          return gData.showDetail;
+        })
+        .attr("r", that.circleR)
+        .attr("stroke", function () {
+          const gData = d3.select(this.parentNode).datum();
+          return typeColor(gData["insight-category"]);
+        })
+        // node 进行分类颜色映射
+        .attr("fill", "#fff")
+        .attr("stroke-width", 2)
+        .style("transition", "r 0.2s")
+        .on("mouseover", function (event) {
+          const d = d3.select(this.parentNode).datum();
+          if (!d.showDetail) {
+            //颜色变，表示被选中
+            d3.select(this)
+              .attr("fill", that.circleHoveredColor)
+              .attr("r", that.circleFocusR)
+              .style("cursor", "pointer");
+
+            d3.select(this.parentNode)
+              .select(".insight-icon")
+              .attr("transform", "scale(2)");
+          }
+        })
+        .on("mouseout", function (event) {
+          const d = d3.select(this.parentNode).datum();
+          if (!d.showDetail) {
+            d3.select(this).attr("r", that.circleR).attr("fill", "#FFF");
+          }
+          d3.select(this.parentNode)
+            .select(".insight-icon")
+            .attr("transform", "scale(1)");
+        })
+        .on("click", function (event, d) {
+          // 获取选择circle对应的container - g元素
+          const g = d3.select(this.parentNode);
+          that.selectedNode = g.datum().id.replace(".", "");
+
+          if (!g.datum().showDetail) {
+            g.datum().showDetail = true;
+
+            const circle = d3.select(this);
+            const rect = g.selectChild(".rect");
+            const insightIcon = g.selectChild(".insight-icon");
+            const rectTitle = g.select(".rect-title");
+            const rectText = g.selectChildren(".title-text");
+
+            rect.classed("not-show", false);
+            rectTitle.classed("not-show", false);
+            rectText.classed("not-show", false);
+            circle.classed("not-show", true);
+            insightIcon.classed("not-show", true);
+            const remove = g
+              .append("use")
+              .attr("href", "#defs-remove")
+              .attr("class", "remove vega-lite-icon")
+              .attr("cursor", "pointer")
+              .on("click", function () {
+                g.datum().showDetail = false;
+                g.datum().pinned = false;
+                g.classed("pinned", false);
+                g.datum().fx = null;
+                g.datum().fy = null;
+                that.selectedNode = null;
+                g.selectChildren(".vega-lite-icon").remove();
+                that.deleteVegaLite(g);
+                const collideForce = that.simulation.force("collide");
+                const bodyForce = that.simulation.force("charge");
+                const linkForce = that.simulation.force("link");
+                if (collideForce)
+                  collideForce.initialize(that.simulation.nodes());
+                if (linkForce) linkForce.initialize(that.simulation.nodes());
+                if (bodyForce) {
+                  that.simulation.force("charge", null);
+                  that.simulation.force("charge", bodyForce);
+                }
+                rect.classed("not-show", true);
+                rectTitle.classed("not-show", true);
+                rectText.classed("not-show", true);
+                circle
+                  .classed("not-show", false)
+                  .attr("r", that.circleR)
+                  .attr("fill", "#FFF");
+                insightIcon.classed("not-show", false);
+
+                that.simulation.alpha(that.defaultBaseConfig.alpha);
+                that.simulation.restart();
+              });
+
+            const pin = g
+              .append("use")
+              .attr("href", "#defs-pin")
+              .attr("class", "pin vega-lite-icon")
+              .attr("cursor", "pointer")
+              .on("click", togglePin);
+
+            that.drawVegaLite(g, "img");
+          }
+        });
+
+      const containerGroup = circleG;
+
+      const iconGroup = containerGroup
+        .append("use")
+        .attr("href", function () {
+          const g = d3.select(this.parentNode);
+          //const group = g.datum().group % that.insightNum;
+          const group = g.datum()["insight-type"];
+          //  console.log(group);
+          let insightType = null;
+          switch (group) {
+            case "dominance":
+              insightType = "dominance";
+              break;
+            case "outlier":
+              insightType = "outlier";
+              break;
+            case "top2":
+              insightType = "top2";
+              break;
+            case "evenness":
+              insightType = "evenness";
+              break;
+            case "trend":
+              insightType = "trend";
+              break;
+            case "skewness":
+              insightType = "skewness";
+              break;
+            case "kurtosis":
+              insightType = "kurtosis";
+              break;
+            case "correlation":
+            case "correlation-temporal":
+              insightType = "correlation";
+              break;
+          }
+          return "#defs-" + insightType;
+        })
+        .attr("class", "insight-icon")
+        .attr("x", -this.insightIconSize / 2)
+        .attr("y", -this.insightIconSize / 2)
+        .attr("pointer-events", "none")
+        .style("transition", "transform 0.2s");
+
+      const rectGroup = containerGroup
+        .append("rect")
+        .attr("class", "rect")
+        .classed("not-show", function () {
+          const gData = d3.select(this.parentNode).datum();
+          return !gData.showDetail;
+        })
+        .attr("fill", "#fff")
+        .attr("stroke", "#ccc")
+        .attr("stroke-width", 1.5)
+        .attr("cursor", "pointer")
+        .on("mouseover", function (event) {
+          //颜色变，表示被选中
+          const rect = d3.select(this);
+          const parentNode = d3.select(this.parentNode);
+          const id = parentNode.datum().id.replace(".", "");
+          const neighbor = that.neighborMap.get(id);
+          that.neighborHighligt(id, neighbor, "hover", true);
+          rect.classed("center-highlight", true);
+          //  console.log(parentNode.select(".rect-title"));
+          parentNode.select(".rect-title").classed("center-highlight", true);
+        })
+        .on("mouseout", function (event) {
+          const rect = d3.select(this);
+          const parentNode = d3.select(this.parentNode);
+          const id = parentNode.datum().id.replace(".", "");
+          const neighbor = that.neighborMap.get(id);
+          that.neighborHighligt(id, neighbor, "hover", false);
+
+          if (id !== that.selectedNode) {
+            rect.classed("center-highlight", false);
+            parentNode.select(".rect-title").classed("center-highlight", false);
+          }
+        })
+        .on("click", function () {
+          // 获取对应的container - g元素
+          const g = d3.select(this.parentNode);
+          that.selectedNode = g.datum().id.replace(".", "");
+          //     console.log("trueId", g.datum().id);
+          // d3.select(this).classed("center-highlight", true);
+        })
+        .on("dblclick", togglePin);
+
+      const titleGroup = containerGroup
+        .append("rect")
+        .attr("class", "rect-title")
+        .classed("not-show", function () {
+          const gData = d3.select(this.parentNode).datum();
+
+          return !gData.showDetail;
+        })
+        .attr("fill", "#e9ecef")
+        .attr("stroke", "#ccc")
+        .attr("stroke-width", 1.5)
+        .attr("pointer-events", "none");
+
+      const nameGroup = containerGroup
+        .append("text")
+        .classed("not-show", function () {
+          const gData = d3.select(this.parentNode).datum();
+          return !gData.showDetail;
+        })
+        .attr("class", "title-text title-name")
+        .attr("pointer-events", "none")
+        .style("user-select", "none")
+        .attr("fill", "#555")
+        .attr("font-weight", 600);
+
+      const descriptionGroup = containerGroup
+        .append("text")
+        .classed("not-show", function () {
+          const gData = d3.select(this.parentNode).datum();
+          return !gData.showDetail;
+        })
+        .attr("class", "title-text title-description")
+        .attr("pointer-events", "none")
+        .attr("fill", "#555")
+        .style("user-select", "none");
+
+      const vegaLiteContainerGroup = containerGroup
+        .append("g")
+        .attr("class", "vega-lite-container");
+
+      const svg = d3.select("#svg-container").select("svg");
+      const dragDefine = d3
+        .drag()
+        .container(function () {
+          // 选择顶层nodeGy元素作为容器，影响 event.x和event.y
+          return svg.selectChild(".node-group").node();
+        })
+        .subject(function (event) {
+          // 将父元素 g 作为 subject 返回 (因为数据挂载在父元素g上)
+          return d3.select(this.parentNode).datum();
+        })
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended);
+      // 设置结点拖动行为，也是只在圆上设置，避免与vega-lite图的鼠标事件冲突
+      svg
+        .selectChild(".node-group")
+        .selectChildren("g")
+        .selectChild(".circle")
+        .call(dragDefine);
+      svg
+        .selectChild(".node-group")
+        .selectChildren("g")
+        .selectChild(".rect")
+        .call(dragDefine);
+
+      const simulation = this.simulation;
+      // 拖动开始时，重新加热迭代过程，并且修正被拖动点的fx,fy
+      function dragstarted(event) {
+        if (!event.active)
+          simulation
+            .alphaTarget(
+              +that.defaultBaseConfig.alphaTarget + 0.3 > 1
+                ? 1
+                : +that.defaultBaseConfig.alphaTarget + 0.3
+            )
+            .restart();
+
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+      }
+
+      // 拖动时，让点跟着鼠标走
+      function dragged(event) {
+        // 更新节点位置
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+      }
+
+      // 拖动结束，降温
+      function dragended(event) {
+        if (!event.active)
+          simulation.alphaTarget(that.defaultBaseConfig.alphaTarget);
+
+        if (event.subject.pinned) {
+          event.subject.fx = event.subject.x;
+          event.subject.fy = event.subject.y;
+        } else {
+          event.subject.fx = null;
+          event.subject.fy = null;
+        }
+      }
+      function togglePin(event, d) {
+        const g = d3.select(this.parentNode);
+        const pinned = !g.datum().pinned;
+        g.datum().pinned = pinned;
+        g.classed("pinned", true);
+        if (pinned) {
+          g.datum().fx = g.datum().x;
+          g.datum().fy = g.datum().y;
+          g.select(".pin").classed("icon-pinned", true);
+
+          that.drawVegaLite(g, "svg");
+        } else {
+          g.classed("pinned", false);
+          g.select(".pin").classed("icon-pinned", false);
+          g.datum().fx = null;
+          g.datum().fy = null;
+
+          that.drawVegaLite(g, "img");
+        }
+      }
+    },
 
     neighborHighligt(id, neighbor, type, enable) {
       const className = type + "-highlight";
@@ -298,6 +647,7 @@ export default {
 
     // 构造用于查询邻居的 neighborMap
     getNeighbourInfo(data) {
+      this.neighborMap = new Map();
       const links = data.links;
       links.forEach((link) => {
         const sourceId = link.source.replace(".", "");
@@ -326,24 +676,47 @@ export default {
 
     // ?
     // rebind data of dom element(nodes and links) and sim system
-    restart() {
+    restart(newVal) {
       this.ticks = 0;
       // 获取原始绘画数据
+
       const data = this.selectedData;
-
       //const= d3.select('.node-group')
-
       const preNodes = this.simulation.nodes();
-      // 创建原始数据的copy，因为 force simulation 会改变数组数据
       const links = data.links.map((d) => ({ ...d }));
-      const nodes = preNodes.map(function (d) {
-        delete d.x;
-        delete d.y;
-        delete d.vx;
-        delete d.vy;
+      let nodes = null;
+      if (!newVal) {
+        nodes = preNodes.map(function (d) {
+          delete d.x;
+          delete d.y;
+          delete d.vx;
+          delete d.vy;
+          return d;
+        });
+      } else {
+        let idMap = new Map();
+        preNodes.forEach((node) => {
+          idMap.set(node.id, node);
+        });
+        nodes = data.nodes.map((newNode) => {
+          const oldNode = idMap.get(newNode.id);
+          if (oldNode) {
+            newNode.showDetail = oldNode.showDetail;
+            newNode.pinned = oldNode.pinned;
+            newNode.view = oldNode.view;
+            newNode.img = oldNode.img;
+            newNode.rect = oldNode.rect;
+          } else {
+            newNode.showDetail = false;
+            newNode.pinned = false;
+            newNode.view = null;
+            newNode.img = null;
+            newNode.rect = null;
+          }
 
-        return d;
-      });
+          return newNode;
+        });
+      }
 
       // const nodes = data.nodes.map(function (d, index) {
       //   //console.log(preNodes[index].showDetail);
@@ -373,19 +746,49 @@ export default {
 
       // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
 
-      const nodeG = d3
+      const nodeSingleG = d3
         .select("#svg-container")
         .select("svg")
         .select("g.node-group");
-      const linkG = d3
+      const linkSingleG = d3
         .select("#svg-container")
         .select("svg")
         .select("g.link-group");
       //console.log("2: ", nodeG);
 
       // rebind data of dom elements
-      nodeG.selectChildren("g").data(nodes).join("g");
-      linkG.selectAll("g").data(links).join("g");
+      let nodeG = null;
+      let linkG = null;
+      nodeSingleG
+        .selectChildren("g")
+        .data(nodes, (d) => d.id)
+        .join(
+          (enter) => {
+            nodeG = enter.append("g");
+            return nodeG;
+          },
+          (update) => update,
+          (exit) => exit.remove()
+        );
+      linkSingleG
+        .selectAll("g")
+        .data(links, (d) => {
+          if (d.source.id) {
+            return `${d.source.id}_${d.target.id}`;
+          } else {
+            return `${d.source}_${d.target}`;
+          }
+        })
+        .join(
+          (enter) => {
+            linkG = enter.append("g");
+            return linkG;
+          },
+          (update) => update,
+          (exit) => exit.remove()
+        );
+
+      this.setDomAttributes(linkG, nodeG);
       // rebind data of simulation
       this.simulation.nodes(nodes);
       const linkForce = this.simulation.force("link");
@@ -709,8 +1112,8 @@ export default {
       //  console.log(data.links);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
-      // 清除之前的
-      svgContainer.selectAll("*").remove();
+      // // 清除之前的
+      // svgContainer.selectAll("*").remove();
 
       // const defs = document.createElementNS(
       //   "http://www.w3.org/2000/svg",
@@ -735,275 +1138,26 @@ export default {
         .attr("viewbox", [-width, -height, width, height])
         .attr("style", "max-width: 100%; height: auto;");
 
-      // 画links
-      const linkGroup = svg
+      //data binding
+      const linkG = svg
         .append("g")
         .attr("class", "link-group")
         .selectAll("g")
-        .data(links)
-        .join("g")
-        .append("line")
-        .attr("class", "link")
-        .attr("stroke", this.defaultLinkColor)
-        .attr("stroke-opacity", 0.6)
-        .attr("class", "network-line")
-        .attr("stroke-width", 1);
+        .data(links, (d) => {
+          if (d.source.id) {
+            return `${d.source.id}_${d.target.id}`;
+          } else {
+            return `${d.source}_${d.target}`;
+          }
+        })
+        .join("g");
 
-      const linkContainerGroup = svg.select("g.link-group").selectChildren("g");
-      const linkTextGroup = linkContainerGroup
-        .attr("class", "link-label")
-        .append("text")
-        .text((d) => d.type)
-        .attr("dy", ".35em")
-        .attr("fill", "#555")
-        .style("opacity", 0.5)
-        .style("user-select", "none")
-        .attr("font-size", "8px");
-
-      const typeColor = d3.scaleOrdinal(
-        ["shape", "point", "compound"],
-        //     d3.schemePaired
-        ["#fcc2d7", "#bac8ff", "#b992d3"]
-      );
-      //画nodes
-      const circleGroup = svg
+      const circleG = svg
         .append("g")
         .attr("class", "node-group")
         .selectAll("g")
-        .data(nodes)
-        .join("g")
-        .append("circle")
-        .attr("class", "circle")
-        .classed("not-show", function () {
-          const gData = d3.select(this.parentNode).datum();
-          return gData.showDetail;
-        })
-        .attr("r", that.circleR)
-        .attr("stroke", function () {
-          const gData = d3.select(this.parentNode).datum();
-          return typeColor(gData["insight-category"]);
-        })
-        // node 进行分类颜色映射
-        .attr("fill", "#fff")
-        .attr("stroke-width", 2)
-        .style("transition", "r 0.2s")
-        .on("mouseover", function (event) {
-          const d = d3.select(this.parentNode).datum();
-          if (!d.showDetail) {
-            //颜色变，表示被选中
-            d3.select(this)
-              .attr("fill", that.circleHoveredColor)
-              .attr("r", that.circleFocusR)
-              .style("cursor", "pointer");
-
-            d3.select(this.parentNode)
-              .select(".insight-icon")
-              .attr("transform", "scale(2)");
-          }
-        })
-        .on("mouseout", function (event) {
-          const d = d3.select(this.parentNode).datum();
-          if (!d.showDetail) {
-            d3.select(this).attr("r", that.circleR).attr("fill", "#FFF");
-          }
-          d3.select(this.parentNode)
-            .select(".insight-icon")
-            .attr("transform", "scale(1)");
-        })
-        .on("click", function (event, d) {
-          // 获取选择circle对应的container - g元素
-          const g = d3.select(this.parentNode);
-          that.selectedNode = g.datum().id.replace(".", "");
-
-          if (!g.datum().showDetail) {
-            g.datum().showDetail = true;
-
-            const circle = d3.select(this);
-            const rect = g.selectChild(".rect");
-            const insightIcon = g.selectChild(".insight-icon");
-            const rectTitle = g.select(".rect-title");
-            const rectText = g.selectChildren(".title-text");
-
-            rect.classed("not-show", false);
-            rectTitle.classed("not-show", false);
-            rectText.classed("not-show", false);
-            circle.classed("not-show", true);
-            insightIcon.classed("not-show", true);
-            const remove = g
-              .append("use")
-              .attr("href", "#defs-remove")
-              .attr("class", "remove vega-lite-icon")
-              .attr("cursor", "pointer")
-              .on("click", function () {
-                g.datum().showDetail = false;
-                g.datum().pinned = false;
-                g.classed("pinned", false);
-                g.datum().fx = null;
-                g.datum().fy = null;
-                that.selectedNode = null;
-                g.selectChildren(".vega-lite-icon").remove();
-                that.deleteVegaLite(g);
-                const collideForce = that.simulation.force("collide");
-                const bodyForce = that.simulation.force("charge");
-                const linkForce = that.simulation.force("link");
-                if (collideForce)
-                  collideForce.initialize(that.simulation.nodes());
-                if (linkForce) linkForce.initialize(that.simulation.nodes());
-                if (bodyForce) {
-                  that.simulation.force("charge", null);
-                  that.simulation.force("charge", bodyForce);
-                }
-                rect.classed("not-show", true);
-                rectTitle.classed("not-show", true);
-                rectText.classed("not-show", true);
-                circle
-                  .classed("not-show", false)
-                  .attr("r", that.circleR)
-                  .attr("fill", "#FFF");
-                insightIcon.classed("not-show", false);
-
-                that.simulation.alpha(that.defaultBaseConfig.alpha);
-                that.simulation.restart();
-              });
-
-            const pin = g
-              .append("use")
-              .attr("href", "#defs-pin")
-              .attr("class", "pin vega-lite-icon")
-              .attr("cursor", "pointer")
-              .on("click", togglePin);
-
-            that.drawVegaLite(g, "img");
-          }
-        });
-
-      const containerGroup = svg.select("g.node-group").selectChildren("g");
-
-      const iconGroup = containerGroup
-        .append("use")
-        .attr("href", function () {
-          const g = d3.select(this.parentNode);
-          //const group = g.datum().group % that.insightNum;
-          const group = g.datum()["insight-type"];
-          //  console.log(group);
-          let insightType = null;
-          switch (group) {
-            case "dominance":
-              insightType = "dominance";
-              break;
-            case "outlier":
-              insightType = "outlier";
-              break;
-            case "top2":
-              insightType = "top2";
-              break;
-            case "evenness":
-              insightType = "evenness";
-              break;
-            case "trend":
-              insightType = "trend";
-              break;
-            case "skewness":
-              insightType = "skewness";
-              break;
-            case "kurtosis":
-              insightType = "kurtosis";
-              break;
-            case "correlation":
-            case "correlation-temporal":
-              insightType = "correlation";
-              break;
-          }
-          return "#defs-" + insightType;
-        })
-        .attr("class", "insight-icon")
-        .attr("x", -this.insightIconSize / 2)
-        .attr("y", -this.insightIconSize / 2)
-        .attr("pointer-events", "none")
-        .style("transition", "transform 0.2s");
-
-      const rectGroup = containerGroup
-        .append("rect")
-        .attr("class", "rect")
-        .classed("not-show", function () {
-          const gData = d3.select(this.parentNode).datum();
-          return !gData.showDetail;
-        })
-        .attr("fill", "#fff")
-        .attr("stroke", "#ccc")
-        .attr("stroke-width", 1.5)
-        .attr("cursor", "pointer")
-        .on("mouseover", function (event) {
-          //颜色变，表示被选中
-          const rect = d3.select(this);
-          const parentNode = d3.select(this.parentNode);
-          const id = parentNode.datum().id.replace(".", "");
-          const neighbor = that.neighborMap.get(id);
-          that.neighborHighligt(id, neighbor, "hover", true);
-          rect.classed("center-highlight", true);
-          //  console.log(parentNode.select(".rect-title"));
-          parentNode.select(".rect-title").classed("center-highlight", true);
-        })
-        .on("mouseout", function (event) {
-          const rect = d3.select(this);
-          const parentNode = d3.select(this.parentNode);
-          const id = parentNode.datum().id.replace(".", "");
-          const neighbor = that.neighborMap.get(id);
-          that.neighborHighligt(id, neighbor, "hover", false);
-
-          if (id !== that.selectedNode) {
-            rect.classed("center-highlight", false);
-            parentNode.select(".rect-title").classed("center-highlight", false);
-          }
-        })
-        .on("click", function () {
-          // 获取对应的container - g元素
-          const g = d3.select(this.parentNode);
-          that.selectedNode = g.datum().id.replace(".", "");
-          //     console.log("trueId", g.datum().id);
-          // d3.select(this).classed("center-highlight", true);
-        })
-        .on("dblclick", togglePin);
-
-      const titleGroup = containerGroup
-        .append("rect")
-        .attr("class", "rect-title")
-        .classed("not-show", function () {
-          const gData = d3.select(this.parentNode).datum();
-
-          return !gData.showDetail;
-        })
-        .attr("fill", "#e9ecef")
-        .attr("stroke", "#ccc")
-        .attr("stroke-width", 1.5)
-        .attr("pointer-events", "none");
-
-      const nameGroup = containerGroup
-        .append("text")
-        .classed("not-show", function () {
-          const gData = d3.select(this.parentNode).datum();
-          return !gData.showDetail;
-        })
-        .attr("class", "title-text title-name")
-        .attr("pointer-events", "none")
-        .style("user-select", "none")
-        .attr("fill", "#555")
-        .attr("font-weight", 600);
-
-      const descriptionGroup = containerGroup
-        .append("text")
-        .classed("not-show", function () {
-          const gData = d3.select(this.parentNode).datum();
-          return !gData.showDetail;
-        })
-        .attr("class", "title-text title-description")
-        .attr("pointer-events", "none")
-        .attr("fill", "#555")
-        .style("user-select", "none");
-
-      const vegaLiteContainerGroup = containerGroup
-        .append("g")
-        .attr("class", "vega-lite-container");
+        .data(nodes, (d) => d.id)
+        .join("g");
 
       /* -------------------------------------------------------------------------- */
       const defaultBaseConfig = this.defaultBaseConfig;
@@ -1133,45 +1287,53 @@ export default {
         .velocityDecay(defaultBaseConfig.velocityDecay)
         .on("tick", ticked);
 
+      this.simulation = simulation;
+      this.setDomAttributes(linkG, circleG);
       // 每次迭代回调函数，更新结点位置
       function ticked() {
         that.ticks++;
 
         // 只通过transform.translate 更新父元素g的位置
-        containerGroup.style("transform", (d) => {
-          let offsetWidth = 0;
-          let offsetHeight = 0;
+        svg
+          .select(".node-group")
+          .selectChildren("g")
+          .style("transform", (d) => {
+            let offsetWidth = 0;
+            let offsetHeight = 0;
 
-          if (d.showDetail) {
-            offsetWidth =
-              d.img.width / 2 + that.rectWidthOffset + that.iconOffset;
-            offsetHeight =
-              d.img.height / 2 +
-              ((that.rectHeightOffset + that.iconOffset) * 5) / 4;
-          } else {
-            offsetWidth = offsetHeight = that.circleR;
-          }
-          const x = d.x;
-          const y = d.y;
-          if (x - offsetWidth < that.leftCornerCoord[0]) {
-            // d.vx = Math.abs(d.vx);
-            d.x = that.leftCornerCoord[0] + offsetWidth;
-          } else if (x + offsetWidth > that.rightCornerCoord[0]) {
-            //d.vx = -Math.abs(d.vx);
-            d.x = that.rightCornerCoord[0] - offsetWidth;
-          }
+            if (d.showDetail) {
+              offsetWidth =
+                d.img.width / 2 + that.rectWidthOffset + that.iconOffset;
+              offsetHeight =
+                d.img.height / 2 +
+                ((that.rectHeightOffset + that.iconOffset) * 5) / 4;
+            } else {
+              offsetWidth = offsetHeight = that.circleR;
+            }
+            const x = d.x;
+            const y = d.y;
+            if (x - offsetWidth < that.leftCornerCoord[0]) {
+              // d.vx = Math.abs(d.vx);
+              d.x = that.leftCornerCoord[0] + offsetWidth;
+            } else if (x + offsetWidth > that.rightCornerCoord[0]) {
+              //d.vx = -Math.abs(d.vx);
+              d.x = that.rightCornerCoord[0] - offsetWidth;
+            }
 
-          if (y - offsetHeight < that.leftCornerCoord[1]) {
-            // d.vy = Math.abs(d.vy);
-            d.y = that.leftCornerCoord[1] + offsetHeight;
-          } else if (y + offsetHeight > that.rightCornerCoord[1]) {
-            //  d.vy = -Math.abs(d.vy);
-            d.y = that.rightCornerCoord[1] - offsetHeight;
-          }
-          return `translate(${d.x}px,${d.y}px)`;
-        });
+            if (y - offsetHeight < that.leftCornerCoord[1]) {
+              // d.vy = Math.abs(d.vy);
+              d.y = that.leftCornerCoord[1] + offsetHeight;
+            } else if (y + offsetHeight > that.rightCornerCoord[1]) {
+              //  d.vy = -Math.abs(d.vy);
+              d.y = that.rightCornerCoord[1] - offsetHeight;
+            }
+            return `translate(${d.x}px,${d.y}px)`;
+          });
 
-        linkGroup
+        svg
+          .select(".link-group")
+          .selectChildren("g")
+          .selectChildren(".network-line")
           .attr("x1", function () {
             const d = d3.select(this.parentNode).datum();
 
@@ -1190,7 +1352,10 @@ export default {
             return d.target.y;
           });
 
-        linkTextGroup
+        svg
+          .select(".link-group")
+          .selectChildren("g")
+          .selectChildren("text")
           .attr("x", function () {
             const d = d3.select(this.parentNode).datum();
             return (d.source.x + d.target.x) / 2;
@@ -1199,61 +1364,6 @@ export default {
             const d = d3.select(this.parentNode).datum();
             return (d.source.y + d.target.y) / 2;
           });
-      }
-
-      const nodeG = svg.selectChild(".node-group");
-
-      const dragDefine = d3
-        .drag()
-        .container(function () {
-          // 选择顶层nodeGy元素作为容器，影响 event.x和event.y
-          return nodeG.node();
-        })
-        .subject(function (event) {
-          // 将父元素 g 作为 subject 返回 (因为数据挂载在父元素g上)
-          return d3.select(this.parentNode).datum();
-        })
-        .on("start", dragstarted)
-        .on("drag", dragged)
-        .on("end", dragended);
-      // 设置结点拖动行为，也是只在圆上设置，避免与vega-lite图的鼠标事件冲突
-      circleGroup.call(dragDefine);
-      rectGroup.call(dragDefine);
-
-      // 拖动开始时，重新加热迭代过程，并且修正被拖动点的fx,fy
-      function dragstarted(event) {
-        if (!event.active)
-          simulation
-            .alphaTarget(
-              +that.defaultBaseConfig.alphaTarget + 0.3 > 1
-                ? 1
-                : +that.defaultBaseConfig.alphaTarget + 0.3
-            )
-            .restart();
-
-        event.subject.fx = event.subject.x;
-        event.subject.fy = event.subject.y;
-      }
-
-      // 拖动时，让点跟着鼠标走
-      function dragged(event) {
-        // 更新节点位置
-        event.subject.fx = event.x;
-        event.subject.fy = event.y;
-      }
-
-      // 拖动结束，降温
-      function dragended(event) {
-        if (!event.active)
-          simulation.alphaTarget(that.defaultBaseConfig.alphaTarget);
-
-        if (event.subject.pinned) {
-          event.subject.fx = event.subject.x;
-          event.subject.fy = event.subject.y;
-        } else {
-          event.subject.fx = null;
-          event.subject.fy = null;
-        }
       }
 
       // 设置整体zoom行为,只选择最顶层的2个g即可
@@ -1288,8 +1398,6 @@ export default {
       }
 
       // initialize the default data
-      // this.diagonal = diagonal;
-      this.simulation = simulation;
 
       this.defaultForceConfig.center.X =
         this.defaultForceConfig.x.X =
@@ -1301,27 +1409,6 @@ export default {
         this.defaultForceConfig.radial.Y =
           height / 2;
       this.defaultForceConfig.collide.Radius = this.circleR;
-
-      function togglePin(event, d) {
-        const g = d3.select(this.parentNode);
-        const pinned = !g.datum().pinned;
-        g.datum().pinned = pinned;
-        g.classed("pinned", true);
-        if (pinned) {
-          g.datum().fx = g.datum().x;
-          g.datum().fy = g.datum().y;
-          g.select(".pin").classed("icon-pinned", true);
-
-          that.drawVegaLite(g, "svg");
-        } else {
-          g.classed("pinned", false);
-          g.select(".pin").classed("icon-pinned", false);
-          g.datum().fx = null;
-          g.datum().fy = null;
-
-          that.drawVegaLite(g, "img");
-        }
-      }
     },
   },
 };
