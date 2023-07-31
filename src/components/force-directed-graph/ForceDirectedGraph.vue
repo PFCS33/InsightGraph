@@ -278,8 +278,8 @@ export default {
 
       const linkContainerGroup = linkG;
       const linkTextGroup = linkContainerGroup
-        .attr("class", "link-label")
         .append("text")
+        .attr("class", "link-label")
         .text((d) => d.type)
         .attr("dy", ".35em")
         .attr("fill", "#555")
@@ -601,13 +601,14 @@ export default {
           g.select(".pin").classed("icon-pinned", true);
 
           that.drawVegaLite(g, "svg");
+          that.pinnedIndex.set(g.datum().id, g);
         } else {
           g.classed("pinned", false);
           g.select(".pin").classed("icon-pinned", false);
           g.datum().fx = null;
           g.datum().fy = null;
-
           that.drawVegaLite(g, "img");
+          that.pinnedIndex.delete(g.datum().id);
         }
       }
     },
@@ -674,12 +675,10 @@ export default {
       this.simulation.stop();
     },
 
-    // ?
     // rebind data of dom element(nodes and links) and sim system
     restart(newVal) {
       this.ticks = 0;
       // 获取原始绘画数据
-
       const data = this.selectedData;
       //const= d3.select('.node-group')
       const preNodes = this.simulation.nodes();
@@ -730,20 +729,6 @@ export default {
 
       //  console.log(this.showIndex);
 
-      if (this.showIndex.size) {
-        nodes
-          .filter((d) => this.showIndex.has(d.id))
-          .forEach((d) => {
-            d.showDetail = true;
-          });
-      }
-
-      if (this.pinnedIndex.size)
-        for (const [id, g] of this.pinnedIndex) {
-          // this.deleteVegaLite(g, index);
-          this.drawVegaLite(g, "svg");
-        }
-
       // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
 
       const nodeSingleG = d3
@@ -768,7 +753,21 @@ export default {
             return nodeG;
           },
           (update) => update,
-          (exit) => exit.remove()
+          (exit) => {
+            exit
+              .each((data) => {
+                const id = data.id;
+                if (this.showIndex.has(id)) {
+                  this.showIndex.delete(id);
+                }
+                if (this.pinnedIndex.has(id)) {
+                  console.log("!");
+                  data.fx = null;
+                  data.fy = null;
+                }
+              })
+              .remove();
+          }
         );
       linkSingleG
         .selectAll("g")
@@ -787,6 +786,22 @@ export default {
           (update) => update,
           (exit) => exit.remove()
         );
+      // if (this.showIndex.size) {
+      //   nodes
+      //     .filter((d) => this.showIndex.has(d.id))
+      //     .forEach((d) => {
+      //       d.showDetail = true;
+      //     });
+      // }
+
+      // if (this.pinnedIndex.size) {
+      //   // this.deleteVegaLite(g, index);
+      //   nodes
+      //     .filter((d) => this.pinnedIndex.has(d.id))
+      //     .forEach((d) => {
+      //       d.pinned = true;
+      //     });
+      // }
 
       this.setDomAttributes(linkG, nodeG);
       // rebind data of simulation
