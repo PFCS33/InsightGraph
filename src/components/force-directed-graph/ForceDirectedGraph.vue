@@ -1,16 +1,7 @@
 <template>
-  <div class="container" ref="1">
+  <div class="container">
     <!-- <transition name="slide"> -->
-    <BaseButton
-      @click="toggleEditMode"
-      class="edit-btn btn"
-      :class="{ 'active-btn': editMode }"
-    >
-      <el-icon size="large" class="icon">
-        <Tools />
-      </el-icon>
-    </BaseButton>
-    <BaseCard :inset="true" class="ticks-card"> {{ ticks }} </BaseCard>
+    <BaseCard inset class="ticks-card"> {{ ticks }} </BaseCard>
     <div id="svg-container"></div>
     <defs style="display: none">
       <svg
@@ -96,28 +87,7 @@
 </template>
 
 <script>
-import {
-  Tools,
-  Share,
-  Menu as IconMenu,
-  Location,
-  Setting,
-  Operation,
-  Warning,
-  RemoveFilled,
-} from "@element-plus/icons-vue";
-
 export default {
-  components: {
-    Tools,
-    Location,
-    IconMenu,
-    Setting,
-    Share,
-    Operation,
-    Warning,
-    Remove: RemoveFilled,
-  },
   computed: {
     selectedData() {
       return this.$store.getters["force/selectedData"];
@@ -239,7 +209,6 @@ export default {
         this.getNeighbourInfo(newVal);
         if (this.simulation) {
           this.simulation.stop();
-
           this.restart(newVal);
         } else {
           // draw force graph
@@ -264,6 +233,11 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    redraw(data) {
+      this.simulation.stop();
+      this.simulation = null;
+      this.drawGraph(data);
+    },
     setDomAttributes(linkG, circleG) {
       const that = this;
       circleG.attr("opacity", 0).transition().duration(175).attr("opacity", 1);
@@ -781,7 +755,9 @@ export default {
       this.simulation.nodes(nodes);
       const linkForce = this.simulation.force("link");
       if (linkForce) this.simulation.force("link").links(links);
-
+      // this.simulation.force("center").initialize(nodes);
+      // this.simulation.force("x").initialize(nodes);
+      // this.simulation.force("y").initialize(nodes);
       // reset alpha to reheat
       this.simulation.alpha(this.defaultBaseConfig.alpha);
       this.simulation.restart();
@@ -1011,14 +987,52 @@ export default {
     /* -------------------------------------------------------------------------- */
     // other
     /* -------------------------------------------------------------------------- */
-    toggleEditMode() {
-      this.editMode = !this.editMode;
-    },
 
     // getRandomInt(min, max) {
     //   return Math.floor(Math.random() * (max - min + 1)) + min;
     // },
 
+    createObserver(svgElement) {
+      // 创建 ResizeObserver 实例
+      const observer = new ResizeObserver((entries) => {
+        // 遍历所有被观察的元素
+        for (let entry of entries) {
+          const { width, height } = entry.contentRect;
+          this.width = width;
+          this.height = height;
+          this.rightCornerCoord = [width, height];
+          this.leftCornerCoord = [0, 0];
+          const defaultForceConfig = this.defaultForceConfig;
+          this.simulation
+            .force(
+              "center",
+              d3
+                .forceCenter(width / 2, height / 2)
+                .strength(defaultForceConfig.center.Strength)
+            )
+            .force(
+              "x",
+
+              d3
+                .forceX()
+                .x(width / 2)
+                .strength(defaultForceConfig.x.Strength)
+            )
+            .force(
+              "y",
+
+              d3
+                .forceY()
+                .y(height / 2)
+                .strength(defaultForceConfig.y.Strength)
+            );
+
+          this.restart();
+        }
+      });
+      // 开始观察 SVG 元素
+      observer.observe(svgElement);
+    },
     // initial drawing, create DOM elements and sim system
     drawGraph(newVal) {
       const that = this;
@@ -1041,18 +1055,16 @@ export default {
 
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
+
       // // 清除之前的
       // svgContainer.selectAll("*").remove();
-
-      // const defs = document.createElementNS(
-      //   "http://www.w3.org/2000/svg",
-      //   "defs"
-      // );
-      // svgContainer.node().appendChild(defs);
 
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
+
+      this.width = width;
+      this.height = height;
       this.leftCornerCoord = [0, 0];
       this.rightCornerCoord = [width, height];
       // 先把svg图和nodes+links 元素画出来
@@ -1062,11 +1074,10 @@ export default {
       // 创建svg
       const svg = svgContainer
         .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("viewbox", [-width, -height, width, height])
-        .attr("style", "max-width: 100%; height: auto;");
+        .attr("style", "width: 100%; height: 100%;")
+        .attr("viewbox", [-width, -height, width, height]);
 
+      this.createObserver(svg.node());
       //data binding
       const linkG = svg
         .append("g")
@@ -1175,7 +1186,7 @@ export default {
         .force(
           "center",
           d3
-            .forceCenter(width / 2, height / 2)
+            .forceCenter(that.width / 2, that.height / 2)
             .strength(defaultForceConfig.center.Strength)
         )
         .force(
@@ -1183,7 +1194,7 @@ export default {
 
           d3
             .forceX()
-            .x(width / 2)
+            .x(that.width / 2)
             .strength(defaultForceConfig.x.Strength)
         )
         .force(
@@ -1191,7 +1202,7 @@ export default {
 
           d3
             .forceY()
-            .y(height / 2)
+            .y(that.height / 2)
             .strength(defaultForceConfig.y.Strength)
         )
         .force(
@@ -1319,7 +1330,7 @@ export default {
 
         if (transform.k < 1.3) {
           that.leftCornerCoord = transform.invert([0, 0]);
-          that.rightCornerCoord = transform.invert([width, height]);
+          that.rightCornerCoord = transform.invert([that.width, that.height]);
         }
       }
 
@@ -1515,5 +1526,8 @@ export default {
 }
 .icon-pinned {
   fill: #1098ad;
+}
+.svg {
+  width: 100%;
 }
 </style>
