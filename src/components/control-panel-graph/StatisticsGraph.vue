@@ -52,7 +52,6 @@ export default {
             text: "Link Relationship",
             left: "center",
             top: "5%",
-
             textStyle: {
               color: "#555",
               fontSize: 13,
@@ -91,6 +90,16 @@ export default {
             name: item.type,
             type: "bar",
             data: [item.count],
+            itemStyle: {
+              borderRadius: 3,
+            },
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 4,
+                shadowOffsetX: 0,
+                shadowColor: "rgba(0, 0, 0, 0.5)",
+              },
+            },
           })),
         };
 
@@ -209,8 +218,15 @@ export default {
               },
               labelLine: {
                 smooth: 0.2,
-                length: 10,
-                length2: 20,
+                length: 5,
+                length2: 10,
+              },
+              emphasis: {
+                itemStyle: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: "rgba(0, 0, 0, 0.5)",
+                },
               },
             },
           ],

@@ -142,6 +142,7 @@ export default {
       selectedNode: null,
 
       simulation: null,
+      zoom: null,
       ticks: 0,
       editMode: false,
 
@@ -993,6 +994,7 @@ export default {
     // },
 
     createObserver(svgElement) {
+      console.log(1);
       // 创建 ResizeObserver 实例
       const observer = new ResizeObserver((entries) => {
         // 遍历所有被观察的元素
@@ -1001,7 +1003,11 @@ export default {
           this.width = width;
           this.height = height;
           this.rightCornerCoord = [width, height];
-          this.leftCornerCoord = [0, 0];
+
+          this.zoom.translateExtent([
+            [0, 0],
+            [width, height],
+          ]);
           const defaultForceConfig = this.defaultForceConfig;
           this.simulation
             .force(
@@ -1012,7 +1018,6 @@ export default {
             )
             .force(
               "x",
-
               d3
                 .forceX()
                 .x(width / 2)
@@ -1020,7 +1025,6 @@ export default {
             )
             .force(
               "y",
-
               d3
                 .forceY()
                 .y(height / 2)
@@ -1313,12 +1317,13 @@ export default {
         .scaleExtent([0.5, 30]) // 设置缩放的范围
         .translateExtent([
           [0, 0],
-          [width, height],
+          [that.width, that.height],
         ])
         .on("zoom", zoomed)
         // .on("end", zoomEnd)
         .filter((event) => event.target === svg.node());
 
+      this.zoom = zoom;
       // 仅将缩放行为应用到顶层元素
       svg.call(zoom);
       // 定义zoom的回调函数
