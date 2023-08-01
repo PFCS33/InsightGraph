@@ -229,7 +229,6 @@ export default {
   watch: {
     selectedData(newVal) {
       if (newVal) {
-        //console.log("force data:", newVal);
         this.neighborHighligt(
           this.selectedNode,
           this.neighborMap.get(this.selectedNode),
@@ -267,7 +266,7 @@ export default {
   methods: {
     setDomAttributes(linkG, circleG) {
       const that = this;
-
+      circleG.attr("opacity", 0).transition().duration(175).attr("opacity", 1);
       // 画links
       const linkGroup = linkG
         .append("line")
@@ -409,7 +408,7 @@ export default {
           const g = d3.select(this.parentNode);
           //const group = g.datum().group % that.insightNum;
           const group = g.datum()["insight-type"];
-          //  console.log(group);
+
           let insightType = null;
           switch (group) {
             case "dominance":
@@ -465,7 +464,7 @@ export default {
           const neighbor = that.neighborMap.get(id);
           that.neighborHighligt(id, neighbor, "hover", true);
           rect.classed("center-highlight", true);
-          //  console.log(parentNode.select(".rect-title"));
+
           parentNode.select(".rect-title").classed("center-highlight", true);
         })
         .on("mouseout", function (event) {
@@ -484,7 +483,7 @@ export default {
           // 获取对应的container - g元素
           const g = d3.select(this.parentNode);
           that.selectedNode = g.datum().id.replace(".", "");
-          //     console.log("trueId", g.datum().id);
+
           // d3.select(this).classed("center-highlight", true);
         })
         .on("dblclick", togglePin);
@@ -718,20 +717,6 @@ export default {
         });
       }
 
-      // const nodes = data.nodes.map(function (d, index) {
-      //   //console.log(preNodes[index].showDetail);
-      //   d["showDetail"] = preNodes[index].showDetail;
-      //   d["pinned"] = preNodes[index].pinned;
-      //   d["view"] = preNodes[index].view;
-      //   d["img "] = preNodes[index].img;
-      //   d["rect"] = preNodes[index].rect;
-      //   return d;
-      // });
-
-      //  console.log(this.showIndex);
-
-      // console.log("nodes", JSON.parse(JSON.stringify(nodes)));
-
       const nodeSingleG = d3
         .select("#svg-container")
         .select("svg")
@@ -740,7 +725,6 @@ export default {
         .select("#svg-container")
         .select("svg")
         .select("g.link-group");
-      //console.log("2: ", nodeG);
 
       // rebind data of dom elements
       let nodeG = null;
@@ -751,6 +735,7 @@ export default {
         .join(
           (enter) => {
             nodeG = enter.append("g");
+
             return nodeG;
           },
           (update) => update,
@@ -762,11 +747,14 @@ export default {
                   this.showIndex.delete(id);
                 }
                 if (this.pinnedIndex.has(id)) {
-                  console.log("!");
                   data.fx = null;
                   data.fy = null;
                 }
               })
+              .attr("opacity", 1)
+              .transition()
+              .duration(175)
+              .attr("opacity", 0)
               .remove();
           }
         );
@@ -787,22 +775,6 @@ export default {
           (update) => update,
           (exit) => exit.remove()
         );
-      // if (this.showIndex.size) {
-      //   nodes
-      //     .filter((d) => this.showIndex.has(d.id))
-      //     .forEach((d) => {
-      //       d.showDetail = true;
-      //     });
-      // }
-
-      // if (this.pinnedIndex.size) {
-      //   // this.deleteVegaLite(g, index);
-      //   nodes
-      //     .filter((d) => this.pinnedIndex.has(d.id))
-      //     .forEach((d) => {
-      //       d.pinned = true;
-      //     });
-      // }
 
       this.setDomAttributes(linkG, nodeG);
       // rebind data of simulation
@@ -813,42 +785,6 @@ export default {
       // reset alpha to reheat
       this.simulation.alpha(this.defaultBaseConfig.alpha);
       this.simulation.restart();
-    },
-
-    /* -------------------------------------------------------------------------- */
-    // force config
-    /* -------------------------------------------------------------------------- */
-    forceConfigSet(forceType, configType, newVal) {
-      //console.log(configType, newVal, typeof newVal);
-      // since have set new force there, no need to reinitialize
-      this.simulation.force(forceType)[configType](newVal);
-      //console.log(forceType);
-
-      this.simulation.alpha(this.defaultBaseConfig.alpha);
-      this.simulation.restart();
-      //this.restart();
-    },
-    forceDefaultSet(forceType) {
-      switch (forceType) {
-        case "center":
-          this.centerX = this.defaultForceConfig.center.X;
-          this.centerY = this.defaultForceConfig.center.Y;
-          this.centerStrength = this.defaultForceConfig.center.Strength;
-          break;
-      }
-      // reheat and restart
-      this.simulation.alpha(this.defaultBaseConfig.alpha);
-      this.simulation.restart();
-      //this.restart();
-    },
-
-    /* -------------------------------------------------------------------------- */
-    // center force config
-    /* -------------------------------------------------------------------------- */
-
-    handleCenterBlur(configType) {
-      const name = "center" + configType;
-      if (!this[name]) this[name] = this.defaultForceConfig.center[configType];
     },
 
     /* -------------------------------------------------------------------------- */
@@ -1015,7 +951,6 @@ export default {
 
           switch (mode) {
             case "img":
-              //  console.log("img");
               // 创建反应新状态的img
               svg.classed("not-show", true);
               const imgInfo = g.datum().img;
@@ -1079,33 +1014,7 @@ export default {
     toggleEditMode() {
       this.editMode = !this.editMode;
     },
-    handleTabClick(tab, _event) {
-      if (this.setX) {
-        const name = tab.props.name;
-        switch (name) {
-          case "number":
-            this.simulation.force(
-              "x",
-              d3.forceX(this.xX).strength(this.xStrength)
-            );
 
-            break;
-          case "aggregate":
-            this.simulation.force(
-              "x",
-              d3
-                .forceX()
-                .x((d) => {
-                  return (+d.group + 1) * 100;
-                })
-                .strength(this.xStrength)
-            );
-            break;
-        }
-        this.simulation.alpha(this.defaultBaseConfig.alpha);
-        this.simulation.restart();
-      }
-    },
     // getRandomInt(min, max) {
     //   return Math.floor(Math.random() * (max - min + 1)) + min;
     // },
@@ -1130,7 +1039,6 @@ export default {
         rect: null,
       }));
 
-      //  console.log(data.links);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
       // // 清除之前的
@@ -1212,7 +1120,6 @@ export default {
                 // const targetNeighbor = that.neighborMap.get(targetId);
 
                 for (const id of that.showIndex.keys()) {
-                  //console.log(id);
                   const directNeighbor = that.neighborMap.get(id);
                   if (directNeighbor) {
                     for (const neighbor of directNeighbor) {
@@ -1239,7 +1146,6 @@ export default {
           d3
             .forceManyBody()
             .strength(function (d) {
-              //console.log(d.showDetail);
               let strength = that.circleStrength;
               if (d.showDetail) {
                 strength = that.vegaLiteStrength;
@@ -1390,7 +1296,6 @@ export default {
       // 设置整体zoom行为,只选择最顶层的2个g即可
       const group = svg.selectChildren("g");
 
-      //console.log(group);
       // 创建缩放函数
       const zoom = d3
         .zoom()
@@ -1408,10 +1313,10 @@ export default {
       // 定义zoom的回调函数
       function zoomed(event) {
         const transform = event.transform;
-        //console.log(that.transform);
+
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
-        //    console.log(transform);
+
         if (transform.k < 1.3) {
           that.leftCornerCoord = transform.invert([0, 0]);
           that.rightCornerCoord = transform.invert([width, height]);

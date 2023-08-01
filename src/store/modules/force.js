@@ -48,7 +48,7 @@ export default {
       ];
       if (payload.length > 0) {
         const groups = d3.group(payload, (d) => d["insight-type"]);
-        console.log(groups);
+
         groups.forEach((group, type) => {
           const index = counts.findIndex((c) => c.name === type);
           if (index !== -1) {
@@ -56,7 +56,7 @@ export default {
           }
         });
       }
-      console.log(counts);
+
       context.commit("setNodeDataGroup", counts);
     },
     groupByLinkType(context, payload) {

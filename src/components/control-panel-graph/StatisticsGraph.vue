@@ -95,16 +95,13 @@ export default {
         barchart.setOption(option);
         this.barchart = barchart;
         barchart.on("legendselectchanged", function (params) {
-          const filteredLinks = that.filteredLinks
-            ? that.filteredLinks
-            : that.totalData.links;
-          const selectedNodes = that.selectedNodes
-            ? that.selectedNodes
-            : that.totalData.nodes;
-          const selectedLinkData = filteredLinks.filter(
+          const totalLinks = that.totalData.links;
+          const totalNodes = that.totalData.nodes;
+
+          const selectedLinkData = totalLinks.filter(
             (d) => params.selected[d.type]
           );
-          //  console.log("filteredLinks", filteredLinks);
+
           const selectedId = new Set();
           selectedLinkData.forEach((link) => {
             const sourceId = link.source;
@@ -112,9 +109,9 @@ export default {
             selectedId.add(sourceId);
             selectedId.add(targetId);
           });
-          //    console.log("selected", selectedId);
+
           const unSelectedId = new Set();
-          const unSelectedLinkData = filteredLinks.filter(
+          const unSelectedLinkData = totalLinks.filter(
             (d) => !params.selected[d.type]
           );
 
@@ -125,17 +122,16 @@ export default {
             unSelectedId.add(sourceId);
             unSelectedId.add(targetId);
           });
-          //  console.log("un-selected", unSelectedId);
 
           const unSelectedIdFixed = new Set(
             [...unSelectedId].filter((x) => !selectedId.has(x))
           );
 
-          const filteredNodes = selectedNodes.filter(
+          const filteredNodes = totalNodes.filter(
             (d) => !unSelectedIdFixed.has(d.id)
           );
           that.filteredNodes = filteredNodes;
-
+          that.$store.dispatch("force/groupByLinkType", selectedLinkData);
           that.$store.dispatch("force/groupByNodeType", filteredNodes);
           that.$store.commit("force/setSelectedData", {
             nodes: filteredNodes,
@@ -226,7 +222,7 @@ export default {
           const selectedNodeData = filteredNodes.filter(
             (d) => params.selected[d["insight-type"]]
           );
-          that.selectedNodes = selectedNodeData;
+
           const idMap = new Set();
           selectedNodeData.forEach((node) => {
             idMap.add(node.id);
@@ -234,7 +230,7 @@ export default {
           const filteredLinks = that.totalData.links.filter(
             (d) => idMap.has(d.source) && idMap.has(d.target)
           );
-          that.filteredLinks = filteredLinks;
+
           that.$store.dispatch("force/groupByLinkType", filteredLinks);
           that.$store.commit("force/setSelectedData", {
             nodes: selectedNodeData,
@@ -256,7 +252,6 @@ export default {
     // },
     linkGroup(newVal) {
       if (newVal) {
-        //console.log(newVal);
         this.drawBarchart(newVal);
       }
     },
