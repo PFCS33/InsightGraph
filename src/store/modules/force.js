@@ -38,20 +38,32 @@ export default {
   },
   actions: {
     groupByNodeType(context, payload) {
-      const groups = d3.group(payload, (d) => d["insight-type"]);
-      //  console.log(groups);
-      const counts = Array.from(groups, ([key, value]) => ({
-        "insight-type": key,
-        count: value.length,
-      }));
-      //  console.log(counts);
+      const counts = [
+        { name: "trend", value: 0 },
+        { name: "correlation", value: 0 },
+        { name: "dominance", value: 0 },
+        { name: "correlation-temporal", value: 0 },
+        { name: "outlier", value: 0 },
+        { name: "top2", value: 0 },
+      ];
+      if (payload.length > 0) {
+        const groups = d3.group(payload, (d) => d["insight-type"]);
+        console.log(groups);
+        groups.forEach((group, type) => {
+          const index = counts.findIndex((c) => c.name === type);
+          if (index !== -1) {
+            counts[index].value = group.length;
+          }
+        });
+      }
+      console.log(counts);
       context.commit("setNodeDataGroup", counts);
     },
     groupByLinkType(context, payload) {
       const counts = [
-        { type: "siblings", value: 0 },
-        { type: "parent-child", value: 0 },
-        { type: "same-name", value: 0 },
+        { type: "siblings", count: 0 },
+        { type: "parent-child", count: 0 },
+        { type: "same-name", count: 0 },
       ];
       if (payload.length > 0) {
         const groups = d3.group(payload, (d) => d.type);

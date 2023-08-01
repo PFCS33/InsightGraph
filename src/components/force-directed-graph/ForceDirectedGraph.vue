@@ -1031,6 +1031,11 @@ export default {
                 image.setAttribute("class", "vega-lite-graph");
                 container.node().appendChild(svg.node());
                 container.node().appendChild(image);
+                g.select("image")
+                  .attr("opacity", 0)
+                  .transition()
+                  .duration(175)
+                  .attr("opacity", 1);
               });
               break;
             case "svg":
