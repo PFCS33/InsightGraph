@@ -1,8 +1,8 @@
 <template>
-  <button v-if="!link" :class="{ mode }">
+  <button v-if="!link" :class="[mode, { inset: inset }]">
     <slot></slot>
   </button>
-  <router-link v-else :to="to" :class="mode">
+  <router-link v-else :to="to" :class="[mode, { inset: inset }]">
     <slot> </slot>
   </router-link>
 </template>
@@ -24,6 +24,11 @@ export default {
       type: String,
       required: false,
       default: "/",
+    },
+    inset: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
 };
@@ -58,6 +63,24 @@ button:active {
     #3ecaac 60.37%,
     #43d3b9 103.14%
   );
-  /* box-shadow: inset 2px 2px 16px #4444442a, inset -2px -2px 16px #4444442a; */
+}
+
+button.inset,
+a.inset {
+  color: #30a882;
+  background: #f8f9fa;
+}
+
+button:hover.inset,
+button:active.inset {
+  background: linear-gradient(
+    119.06deg,
+    #3fdfac 10.71%,
+    #44e1bf 60.37%,
+    #46dfc3 103.14%
+  );
+  color: #fff;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(0, 0, 0, 0),
+    inset 0.4rem 0.3rem 0.4rem rgba(62, 202, 172, 0.6);
 }
 </style>

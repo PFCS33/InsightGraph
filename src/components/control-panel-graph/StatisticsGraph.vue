@@ -1,7 +1,7 @@
 <template>
-  <div class="container">
-    <div id="barchart-box"></div>
-    <div id="piechart-box"></div>
+  <div class="statistics-graph-box">
+    <BaseCard inset id="barchart-box"></BaseCard>
+    <BaseCard inset id="piechart-box"></BaseCard>
   </div>
 </template>
 <script>
@@ -49,17 +49,19 @@ export default {
         const barchart = echarts.init(container);
         const option = {
           title: {
-            text: "Links: Relationship",
+            text: "Link Relationship",
             left: "center",
-            top: "2%",
+            top: "5%",
+
             textStyle: {
               color: "#555",
-              fontSize: 15,
+              fontSize: 13,
             },
           },
           legend: {
-            top: "12%",
+            top: "15%",
             left: "5%",
+            icon: "circle",
             textStyle: {
               fontSize: 10,
               color: "#555",
@@ -73,10 +75,10 @@ export default {
             },
           },
           grid: {
-            left: "5%",
-            right: "4%",
-            bottom: "5%",
-            top: "35%",
+            left: "10%",
+            right: "10%",
+            bottom: "10%",
+            top: "32%",
             containLabel: true,
           },
           xAxis: {},
@@ -159,17 +161,18 @@ export default {
         const piechart = echarts.init(container);
         const option = {
           title: {
-            text: "Node: Insight Type",
+            text: "Insight Type",
             left: "center",
-            top: "2%",
+            top: "4%",
             textStyle: {
               color: "#555",
-              fontSize: 15,
+              fontSize: 13,
             },
           },
           legend: {
-            top: "12%",
+            top: "13%",
             left: "5%",
+
             textStyle: {
               fontSize: 10,
               color: "#555",
@@ -184,9 +187,9 @@ export default {
           },
           grid: {
             left: "5%",
-            right: "4%",
-            bottom: "5%",
-            top: "35%",
+            right: "10%",
+            bottom: "10%",
+            top: "33%",
             containLabel: true,
           },
 
@@ -267,22 +270,24 @@ export default {
 </script>
 
 <style scoped>
-.container {
+.statistics-graph-box {
   width: 100%;
   height: 100%;
-
-  border: 1px solid #000;
   display: flex;
   flex-direction: column;
+  gap: 1vw;
+  background: #f1f3f5;
 }
 #barchart-box {
   width: 100%;
   height: 100%;
-  border: 1px solid #000;
+  flex: 0.4;
+  background: #fff;
 }
 #piechart-box {
   width: 100%;
   height: 100%;
-  border: 1px solid #000;
+  flex: 0.6;
+  background: #fff;
 }
 </style>
