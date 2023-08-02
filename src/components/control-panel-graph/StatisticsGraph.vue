@@ -5,7 +5,6 @@
   </div>
 </template>
 <script>
-import * as echarts from "echarts";
 export default {
   data() {
     return {
@@ -29,6 +28,7 @@ export default {
       return this.$store.getters["force/nodeDataGroup"];
     },
   },
+
   methods: {
     drawBarchart(newVal) {
       const that = this;
@@ -46,7 +46,9 @@ export default {
         });
       } else {
         const container = d3.select("#barchart-box").node();
-        const barchart = echarts.init(container);
+
+        const barchart = echarts.init(container, "myTheme");
+
         const option = {
           title: {
             text: "Link Relationship",
@@ -167,7 +169,7 @@ export default {
       } else {
         // initialization
         const container = d3.select("#piechart-box").node();
-        const piechart = echarts.init(container);
+        const piechart = echarts.init(container, "myTheme");
         const option = {
           title: {
             text: "Insight Type",
@@ -293,6 +295,7 @@ export default {
   flex-direction: column;
   gap: 1vw;
   background: #f1f3f5;
+  /* background: #e9ecef; */
 }
 #barchart-box {
   width: 100%;

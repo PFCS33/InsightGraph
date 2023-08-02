@@ -147,7 +147,7 @@ export default {
       zoom: null,
       ticks: 0,
       editMode: false,
-      durationTime: 100,
+      durationTime: 150,
 
       /* -------------------------------------------------------------------------- */
       // force Config
@@ -1491,15 +1491,15 @@ export default {
 .network-line,
 .rect-title {
   &.hover-highlight {
-    stroke: #b197fc;
+    stroke: #f98585;
     stroke-width: 3px;
   }
   &.selected-highlight {
-    stroke: #22b8cf;
+    stroke: #71627a;
     stroke-width: 3px;
   }
   &.center-highlight {
-    stroke: #0c8599;
+    stroke: #22b8cf;
     stroke-width: 3px;
   }
 }

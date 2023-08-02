@@ -2493,7 +2493,7 @@ export default {
 </style>
 
 <!-- global style -->
-<style lang="less">
+<style scoped lang="less">
 .circle,
 .rect,
 .network-line,
