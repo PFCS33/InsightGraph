@@ -12,8 +12,8 @@ export default {
       piechart: null,
 
       filteredNodes: null,
-      selectedNodes: null,
       filterdLinks: null,
+      selectedNodes: null,
     };
   },
 
@@ -144,11 +144,15 @@ export default {
             (d) => !unSelectedIdFixed.has(d.id)
           );
           that.filteredNodes = filteredNodes;
+          that.filterdLinks = selectedLinkData;
           that.$store.dispatch("force/groupByLinkType", selectedLinkData);
           that.$store.dispatch("force/groupByNodeType", filteredNodes);
           that.$store.commit("force/setSelectedData", {
             nodes: filteredNodes,
             links: selectedLinkData,
+          });
+          that.piechart.dispatchAction({
+            type: "legendAllSelect",
           });
         });
       }
@@ -239,6 +243,9 @@ export default {
           const filteredNodes = that.filteredNodes
             ? that.filteredNodes
             : that.totalData.nodes;
+          const selectedLinks = that.filterdLinks
+            ? that.filterdLinks
+            : that.totalData.links;
 
           const selectedNodeData = filteredNodes.filter(
             (d) => params.selected[d["insight-type"]]
@@ -248,7 +255,7 @@ export default {
           selectedNodeData.forEach((node) => {
             idMap.add(node.id);
           });
-          const filteredLinks = that.totalData.links.filter(
+          const filteredLinks = selectedLinks.filter(
             (d) => idMap.has(d.source) && idMap.has(d.target)
           );
 
