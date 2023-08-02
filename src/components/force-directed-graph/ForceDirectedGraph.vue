@@ -95,6 +95,8 @@ export default {
   },
   data() {
     return {
+      nodeIdMap: null,
+
       // color
       defaultLinkColor: "#999",
       defaultNodeColor: "#868e96",
@@ -656,7 +658,7 @@ export default {
       this.ticks = 0;
       // 获取原始绘画数据
       const data = this.selectedData;
-      console.log(this.selectedData);
+
       const preNodes = this.simulation.nodes();
       const links = data.links.map((d) => ({ ...d }));
       let nodes = null;
@@ -669,24 +671,9 @@ export default {
           return d;
         });
       } else {
-        let idMap = new Map();
-        preNodes.forEach((node) => {
-          idMap.set(node.id, node);
-        });
         nodes = data.nodes.map((d) => {
-          const oldNode = idMap.get(d.id);
-          if (oldNode) {
-            return { ...oldNode };
-          } else {
-            return {
-              ...d,
-              showDetail: false,
-              pinned: false,
-              view: null,
-              img: null,
-              rect: null,
-            };
-          }
+          const oldNode = this.nodeIdMap.get(d.id);
+          return oldNode;
         });
       }
 
@@ -1063,7 +1050,11 @@ export default {
         img: null,
         rect: null,
       }));
-
+      const nodeIdMap = new Map();
+      nodes.forEach((node) => {
+        nodeIdMap.set(node.id, node);
+      });
+      this.nodeIdMap = nodeIdMap;
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
 
