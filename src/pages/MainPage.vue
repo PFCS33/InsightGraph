@@ -66,7 +66,7 @@ export default {
       this.$refs.forceGraph.simStop();
     },
     restart() {
-      this.$refs.forceGraph.restart();
+      this.$refs.forceGraph.restart(false);
     },
     toggleEditMode() {
       this.animationDone = false;

@@ -81,6 +81,6 @@ button:active.inset {
   );
   color: #fff;
   box-shadow: 0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(0, 0, 0, 0),
-    inset 0.4rem 0.3rem 0.4rem rgba(62, 202, 172, 0.6);
+    inset 0.3rem 0.5rem 0.4rem rgba(30, 162, 134, 0.6);
 }
 </style>

@@ -145,6 +145,7 @@ export default {
       zoom: null,
       ticks: 0,
       editMode: false,
+      durationTime: 100,
 
       /* -------------------------------------------------------------------------- */
       // force Config
@@ -210,7 +211,7 @@ export default {
         this.getNeighbourInfo(newVal);
         if (this.simulation) {
           this.simulation.stop();
-          this.restart(newVal);
+          this.restart(true);
         } else {
           // draw force graph
           this.drawGraph(newVal);
@@ -234,14 +235,18 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
-    redraw(data) {
-      this.simulation.stop();
-      this.simulation = null;
-      this.drawGraph(data);
-    },
     setDomAttributes(linkG, circleG) {
       const that = this;
-      circleG.attr("opacity", 0).transition().duration(175).attr("opacity", 1);
+      circleG
+        .attr("opacity", 0)
+        .transition()
+        .duration(this.durationTime)
+        .attr("opacity", 1);
+      linkG
+        .attr("opacity", 0)
+        .transition()
+        .duration(this.durationTime)
+        .attr("opacity", 1);
       // 画links
       const linkGroup = linkG
         .append("line")
@@ -311,7 +316,7 @@ export default {
         .on("click", function (event, d) {
           // 获取选择circle对应的container - g元素
           const g = d3.select(this.parentNode);
-          that.selectedNode = g.datum().id.replace(".", "");
+          that.selectedNode = g.datum().id;
 
           if (!g.datum().showDetail) {
             g.datum().showDetail = true;
@@ -435,7 +440,7 @@ export default {
           //颜色变，表示被选中
           const rect = d3.select(this);
           const parentNode = d3.select(this.parentNode);
-          const id = parentNode.datum().id.replace(".", "");
+          const id = parentNode.datum().id;
           const neighbor = that.neighborMap.get(id);
           that.neighborHighligt(id, neighbor, "hover", true);
           rect.classed("center-highlight", true);
@@ -445,7 +450,7 @@ export default {
         .on("mouseout", function (event) {
           const rect = d3.select(this);
           const parentNode = d3.select(this.parentNode);
-          const id = parentNode.datum().id.replace(".", "");
+          const id = parentNode.datum().id;
           const neighbor = that.neighborMap.get(id);
           that.neighborHighligt(id, neighbor, "hover", false);
 
@@ -457,7 +462,7 @@ export default {
         .on("click", function () {
           // 获取对应的container - g元素
           const g = d3.select(this.parentNode);
-          that.selectedNode = g.datum().id.replace(".", "");
+          that.selectedNode = g.datum().id;
 
           // d3.select(this).classed("center-highlight", true);
         })
@@ -601,21 +606,17 @@ export default {
         .selectChildren("g");
       if (neighbor) {
         nodeGroup
-          .filter((d) => neighbor.includes(d.id.replace(".", "")))
+          .filter((d) => neighbor.includes(d.id))
           .selectChildren("circle, rect")
           .classed(className, enable);
         linkGroup
-          .filter(
-            (d) =>
-              id === d.source.id.replace(".", "") ||
-              id === d.target.id.replace(".", "")
-          )
+          .filter((d) => id === d.source.id || id === d.target.id)
           .selectChildren("line")
           .classed(className, enable);
       }
       if (type === "selected") {
         nodeGroup
-          .filter((d) => d.id.replace(".", "") === id)
+          .filter((d) => d.id === id)
           .selectChildren("circle, rect")
           .classed("center-highlight", enable);
       }
@@ -626,8 +627,8 @@ export default {
       this.neighborMap = new Map();
       const links = data.links;
       links.forEach((link) => {
-        const sourceId = link.source.replace(".", "");
-        const targetId = link.target.replace(".", "");
+        const sourceId = link.source;
+        const targetId = link.target;
 
         if (this.neighborMap.has(sourceId)) {
           this.neighborMap.get(sourceId).push(targetId);
@@ -655,7 +656,7 @@ export default {
       this.ticks = 0;
       // 获取原始绘画数据
       const data = this.selectedData;
-      //const= d3.select('.node-group')
+      console.log(this.selectedData);
       const preNodes = this.simulation.nodes();
       const links = data.links.map((d) => ({ ...d }));
       let nodes = null;
@@ -672,23 +673,20 @@ export default {
         preNodes.forEach((node) => {
           idMap.set(node.id, node);
         });
-        nodes = data.nodes.map((newNode) => {
-          const oldNode = idMap.get(newNode.id);
+        nodes = data.nodes.map((d) => {
+          const oldNode = idMap.get(d.id);
           if (oldNode) {
-            newNode.showDetail = oldNode.showDetail;
-            newNode.pinned = oldNode.pinned;
-            newNode.view = oldNode.view;
-            newNode.img = oldNode.img;
-            newNode.rect = oldNode.rect;
+            return { ...oldNode };
           } else {
-            newNode.showDetail = false;
-            newNode.pinned = false;
-            newNode.view = null;
-            newNode.img = null;
-            newNode.rect = null;
+            return {
+              ...d,
+              showDetail: false,
+              pinned: false,
+              view: null,
+              img: null,
+              rect: null,
+            };
           }
-
-          return newNode;
         });
       }
 
@@ -704,6 +702,30 @@ export default {
       // rebind data of dom elements
       let nodeG = null;
       let linkG = null;
+      linkSingleG
+        .selectAll("g")
+        .data(links, (d) => {
+          if (typeof d.source === "object") {
+            return `${d.source.id}_${d.target.id}`;
+          } else {
+            return `${d.source}_${d.target}`;
+          }
+        })
+        .join(
+          (enter) => {
+            linkG = enter.append("g");
+            return linkG;
+          },
+          (update) => update,
+          (exit) => {
+            exit
+              .attr("opacity", 1)
+              .transition()
+              .duration(this.durationTime)
+              .attr("opacity", 0)
+              .remove();
+          }
+        );
       nodeSingleG
         .selectChildren("g")
         .data(nodes, (d) => d.id)
@@ -722,40 +744,26 @@ export default {
                   this.showIndex.delete(id);
                 }
                 if (this.pinnedIndex.has(id)) {
+                  this.pinnedIndex.delete(id);
+
                   data.fx = null;
                   data.fy = null;
                 }
               })
               .attr("opacity", 1)
               .transition()
-              .duration(175)
+              .duration(this.durationTime)
               .attr("opacity", 0)
               .remove();
           }
         );
-      linkSingleG
-        .selectAll("g")
-        .data(links, (d) => {
-          if (d.source.id) {
-            return `${d.source.id}_${d.target.id}`;
-          } else {
-            return `${d.source}_${d.target}`;
-          }
-        })
-        .join(
-          (enter) => {
-            linkG = enter.append("g");
-            return linkG;
-          },
-          (update) => update,
-          (exit) => exit.remove()
-        );
 
       this.setDomAttributes(linkG, nodeG);
+
       // rebind data of simulation
       this.simulation.nodes(nodes);
-      const linkForce = this.simulation.force("link");
-      if (linkForce) this.simulation.force("link").links(links);
+      this.simulation.force("link").links(links);
+
       // this.simulation.force("center").initialize(nodes);
       // this.simulation.force("x").initialize(nodes);
       // this.simulation.force("y").initialize(nodes);
@@ -994,7 +1002,6 @@ export default {
     // },
 
     createObserver(svgElement) {
-      console.log(1);
       // 创建 ResizeObserver 实例
       const observer = new ResizeObserver((entries) => {
         // 遍历所有被观察的元素
@@ -1031,7 +1038,7 @@ export default {
                 .strength(defaultForceConfig.y.Strength)
             );
 
-          this.restart();
+          this.restart(false);
         }
       });
       // 开始观察 SVG 元素
@@ -1042,11 +1049,11 @@ export default {
       const that = this;
       // 获取绘画数据
       const data = newVal;
-      // 创建原始数据的copy，因为 force simulation 会改变数组数据
-      const links = data.links.map((d) => ({
-        ...d,
-      }));
 
+      // const links = data.links.map((d) => ({
+      //   ...d,
+      // }));
+      const links = data.links.map((d) => ({ ...d }));
       // 加入更多属性，控制vega-lite图的显示
       const nodes = data.nodes.map((d) => ({
         ...d,
@@ -1088,7 +1095,7 @@ export default {
         .attr("class", "link-group")
         .selectAll("g")
         .data(links, (d) => {
-          if (d.source.id) {
+          if (typeof d.source === "object") {
             return `${d.source.id}_${d.target.id}`;
           } else {
             return `${d.source}_${d.target}`;
@@ -1129,8 +1136,8 @@ export default {
                   }
                 }
 
-                const sourceId = d.source.id.replace(".", "");
-                const targetId = d.target.id.replace(".", "");
+                const sourceId = d.source.id;
+                const targetId = d.target.id;
                 // const sourceNeighbor = that.neighborMap.get(sourceId);
                 // const targetNeighbor = that.neighborMap.get(targetId);
 
@@ -1166,7 +1173,7 @@ export default {
                 strength = that.vegaLiteStrength;
               } else {
                 if (that.showIndex.size > 0) {
-                  const id = d.id.replace(".", "");
+                  const id = d.id;
                   for (const showId of that.showIndex.keys()) {
                     const directNeighbor = that.neighborMap.get(showId);
                     if (directNeighbor) {

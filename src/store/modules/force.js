@@ -82,7 +82,6 @@ export default {
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
         context.commit("setTotalData", data);
-
         context.commit("setSelectedData", data);
         context.dispatch("groupByLinkType", data.links);
         context.dispatch("groupByNodeType", data.nodes);
