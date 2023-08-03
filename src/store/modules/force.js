@@ -45,6 +45,11 @@ export default {
         { name: "correlation-temporal", value: 0 },
         { name: "outlier", value: 0 },
         { name: "top2", value: 0 },
+        { name: "skewness", value: 0 },
+        {
+          name: "kurtosis",
+          value: 0,
+        },
       ];
       if (payload.length > 0) {
         const groups = d3.group(payload, (d) => d["insight-type"]);

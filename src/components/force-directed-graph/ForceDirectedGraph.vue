@@ -1677,7 +1677,7 @@ export default {
 .insight-icon,
 .circle {
   &.hover-highlight {
-    transform: scale(1.3);
+    transform: scale(1.4);
   }
 }
 
