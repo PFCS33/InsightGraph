@@ -89,7 +89,7 @@ export default {
             type: "category",
             axisLabel: { show: false }, // 隐藏 Y 轴的标签,
           },
-
+          color: ["#15aabf", "#e64980", "#f59f00"],
           series: newVal.map((item) => ({
             name: item.type,
             type: "bar",
@@ -97,6 +97,7 @@ export default {
             itemStyle: {
               borderRadius: 3,
             },
+
             emphasis: {
               itemStyle: {
                 shadowBlur: 4,

@@ -140,7 +140,7 @@ export default {
 
       // color
       defaultLinkColor: "#999",
-      defaultNodeColor: "#868e96",
+      defaultNodeColor: "#aaa",
       circleHoveredColor: "#e6fcf5",
 
       // graph set
@@ -359,42 +359,46 @@ export default {
         .transition()
         .duration(this.durationTime)
         .attr("opacity", 1);
+
+      const linkTypeColor = d3.scaleOrdinal(
+        ["parent-child", "siblings", "same-name"],
+        //     d3.schemePaired
+        ["#15aabf", "#e64980", "#f59f00"]
+      );
+
       // 画links
       const linkGroup = linkG
         .append("line")
         .attr("class", "link")
-        .attr("stroke", this.defaultLinkColor)
+        .attr("stroke", function () {
+          const type = d3.select(this.parentNode).datum().type;
+          return linkTypeColor(type);
+        })
         .attr("stroke-opacity", 0.6)
         .attr("class", "network-line")
         .attr("stroke-width", 1);
 
       const linkContainerGroup = linkG;
-      const linkTextGroup = linkContainerGroup
-        .append("text")
-        .attr("class", "link-label")
-        .text((d) => {
-          switch (d.type) {
-            case "parent-child":
-              return "P-C";
-            case "siblings":
-              return "S";
-            case "same-name":
-              return "S-A";
-          }
-        })
-        .attr("dy", ".35em")
-        .attr("fill", "#555")
-        .style("opacity", 0.5)
-        .style("user-select", "none")
-        .attr("font-size", "8px");
+      // const linkTextGroup = linkContainerGroup
+      //   .append("text")
+      //   .attr("class", "link-label")
+      //   .text((d) => {
+      //     switch (d.type) {
+      //       case "parent-child":
+      //         return "P-C";
+      //       case "siblings":
+      //         return "S";
+      //       case "same-name":
+      //         return "S-A";
+      //     }
+      //   })
+      //   .attr("dy", ".35em")
+      //   .attr("fill", "#555")
+      //   .style("opacity", 0.5)
+      //   .style("user-select", "none")
+      //   .attr("font-size", "8px");
 
-      const typeColor = d3.scaleOrdinal(
-        ["shape", "point", "compound"],
-        //     d3.schemePaired
-        ["#fcc2d7", "#bac8ff", "#b992d3"]
-      );
       //画nodes
-
       const circleGroup = circleG
         .append("circle")
         .attr("class", "circle")
@@ -403,14 +407,11 @@ export default {
           return gData.showDetail;
         })
         .attr("r", that.circleR)
-        .attr("stroke", function () {
-          const gData = d3.select(this.parentNode).datum();
-          return typeColor(gData["insight-category"]);
-        })
-        // node 进行分类颜色映射
+        .attr("stroke", this.defaultNodeColor)
         .attr("fill", "#fff")
-        .attr("stroke-width", 2)
-        .style("transition", "r 0.2s")
+        .attr("stroke-width", 1.5)
+        .style("transition", "r 0.2s,transform 0.2s")
+
         .on("mouseover", function (event) {
           const d = d3.select(this.parentNode).datum();
           if (!d.showDetail) {
@@ -747,7 +748,7 @@ export default {
       if (neighbor) {
         nodeGroup
           .filter((d) => neighbor.includes(d.id))
-          .selectChildren("circle, rect")
+          .selectChildren("circle, rect, .insight-icon")
           .classed(className, enable);
         linkGroup
           .filter((d) => id === d.source.id || id === d.target.id)
@@ -757,7 +758,7 @@ export default {
       if (type === "selected") {
         nodeGroup
           .filter((d) => d.id === id)
-          .selectChildren("circle, rect")
+          .selectChildren("circle, rect,.insight-icon")
           .classed("center-highlight", enable);
       }
     },
@@ -1658,19 +1659,33 @@ export default {
 <style lang="less">
 .circle,
 .rect,
-.network-line,
 .rect-title {
   &.hover-highlight {
-    stroke: #f98585;
-    stroke-width: 3px;
+    //stroke: #f98585;
+    stroke: #aaa;
+    stroke-width: 2.5px;
   }
   &.selected-highlight {
     stroke: #71627a;
-    stroke-width: 3px;
+    stroke-width: 2.5px;
   }
   &.center-highlight {
     stroke: #22b8cf;
     stroke-width: 3px;
+  }
+}
+.insight-icon,
+.circle {
+  &.hover-highlight {
+    transform: scale(1.3);
+  }
+}
+
+.network-line {
+  &.hover-highlight,
+  &.selected-highlight,
+  &.center-highlight {
+    stroke-width: 4px;
   }
 }
 
