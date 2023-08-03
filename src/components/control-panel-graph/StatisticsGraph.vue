@@ -60,13 +60,15 @@ export default {
             },
           },
           legend: {
-            top: "15%",
+            top: "17%",
             left: "5%",
             icon: "circle",
             textStyle: {
               fontSize: 10,
-              color: "#555",
+              color: "#888",
             },
+            itemWidth: 10,
+            itemGap: 5,
           },
           tooltip: {
             trigger: "item",
@@ -190,8 +192,10 @@ export default {
 
             textStyle: {
               fontSize: 10,
-              color: "#555",
+              color: "#888",
             },
+            itemWidth: 18,
+            itemGap: 5,
           },
           tooltip: {
             trigger: "item",

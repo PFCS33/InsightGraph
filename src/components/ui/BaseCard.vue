@@ -28,7 +28,7 @@ export default {
 }
 
 .inset {
-  box-shadow: inset 2px 2px 5px #4444442a, inset -2px -2px 5px #4444442a;
+  box-shadow: inset 1px 1px 5px #4444442a, inset -1px -1px 5px #4444442a;
 }
 
 .flat {

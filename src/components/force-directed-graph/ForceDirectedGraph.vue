@@ -2,6 +2,35 @@
   <div class="container">
     <!-- <transition name="slide"> -->
     <BaseCard inset class="ticks-card"> {{ ticks }} </BaseCard>
+    <BaseCard inset class="camera-card">
+      <svg
+        viewBox="0 0 1024 1024"
+        xmlns="http://www.w3.org/2000/svg"
+        width="30"
+        height="30"
+        class="camera-icon"
+      >
+        <path
+          d="M832 192 512 192c0-52.928-43.072-96-96-96l-64 0C299.072 96 256 139.072 256 192L160 192C107.072 192 64 235.072 64 288l0 512c0 52.928 43.072 96 96 96l417.888 0c9.088 0 17.792-3.872 23.84-10.656s8.96-15.84 7.968-24.864c-0.928-8.416-1.568-16.864-1.568-25.536 0-141.664 132.192-254.688 279.904-216.672 9.568 2.4 19.744 0.352 27.584-5.728C923.424 606.496 928 597.152 928 587.296L928 288C928 235.072 884.928 192 832 192zM480 736c-105.888 0-192-86.112-192-192s86.112-192 192-192 192 86.112 192 192S585.888 736 480 736zM784 416c-26.496 0-48-21.504-48-48s21.504-48 48-48 48 21.504 48 48S810.496 416 784 416z"
+        ></path>
+        <path
+          d="M832 673.984c-88.384 0-160 71.616-160 160s71.616 160 160 160 160-71.616 160-160S920.384 673.984 832 673.984zM896 864l-32 0 0 32c0 17.696-14.304 32-32 32s-32-14.304-32-32l0-32-32 0c-17.696 0-32-14.304-32-32s14.304-32 32-32l32 0 0-32c0-17.696 14.304-32 32-32s32 14.304 32 32l0 32 32 0c17.696 0 32 14.304 32 32S913.696 864 896 864z"
+        ></path>
+      </svg>
+    </BaseCard>
+    <BaseCard inset class="warehouse-card"
+      ><svg
+        class="warehouse-icon"
+        viewBox="0 0 1280 1024"
+        xmlns="http://www.w3.org/2000/svg"
+        width="30"
+        height="30"
+      >
+        <path
+          d="M1221 234L676.8 7.4a96.3 96.3 0 0 0-73.8 0L59 234C23.4 249 0 283.8 0 322.6V1008c0 8.8 7.2 16 16 16h96c8.8 0 16-7.2 16-16V416c0-17.6 14.4-32 32-32h960c17.6 0 32 14.4 32 32v592c0 8.8 7.2 16 16 16h96c8.8 0 16-7.2 16-16V322.6c0-38.8-23.4-73.6-59-88.6zM608 832H288c-17.6 0-32 14.4-32 32v128c0 17.6 14.4 32 32 32h320c17.6 0 32-14.4 32-32v-128c0-17.6-14.4-32-32-32z m384 0H736c-17.6 0-32 14.4-32 32v128c0 17.6 14.4 32 32 32h256c17.6 0 32-14.4 32-32v-128c0-17.6-14.4-32-32-32zM608 576H288c-17.6 0-32 14.4-32 32v128c0 17.6 14.4 32 32 32h320c17.6 0 32-14.4 32-32v-128c0-17.6-14.4-32-32-32z"
+        ></path>
+      </svg>
+    </BaseCard>
     <div id="svg-container"></div>
     <defs style="display: none">
       <svg
@@ -26,6 +55,18 @@
           d="M320 839.68l-238.592 174.08c-8.704 6.656-19.456 9.728-29.696 9.728-12.8 0-26.112-5.12-35.84-14.848-17.92-17.92-20.48-46.08-5.12-66.56l212.992-288.256L56.32 487.424C39.936 471.04 36.864 445.44 48.128 425.472c8.192-12.8 76.8-112.64 229.376-75.264 2.56 0.512 5.12 0.512 8.192 1.024 6.144 0.512 13.312 1.024 20.992 2.56 32.256 5.12 89.6-20.48 139.264-62.976 47.616-40.448 78.336-87.552 78.336-120.32 0-7.68 0-15.872-0.512-23.552-1.024-30.72-3.072-77.824 31.744-112.64 41.472-41.472 107.52-45.056 153.088-7.68 1.024 0.512 1.536 1.536 2.56 2.56 24.576 24.064 276.48 275.968 279.04 278.528 21.504 21.504 33.792 50.688 33.792 81.408s-11.776 59.392-33.792 80.896c-34.816 34.816-82.432 33.28-113.664 31.744-7.168 0-15.36-0.512-23.04-0.512-30.72 0-67.584 21.504-103.936 60.928-50.688 55.296-81.92 126.464-79.36 158.72 1.024 10.24 3.072 28.16 3.584 30.72 36.864 149.504-62.976 217.6-74.752 225.28-20.48 12.288-46.592 9.216-62.976-7.168l-165.376-165.376-50.688 35.328z"
         ></path>
       </svg>
+      <svg
+        id="defs-check"
+        viewBox="0 0 1024 1024"
+        xmlns="http://www.w3.org/2000/svg"
+        :width="iconSize"
+        :height="iconSize"
+      >
+        <path
+          d="M1002.88 321.92L405.76 935.04a32 32 0 0 1-45.76 0L21.12 612.48a32 32 0 0 1 0-44.8L160 433.6a32 32 0 0 1 45.76 0L359.04 576 796.16 120.64a32 32 0 0 1 46.08 0l160 156.48a32 32 0 0 1 0.64 44.8z"
+        ></path>
+      </svg>
+
       <svg id="defs-dominance" xmlns="http://www.w3.org/2000/svg">
         <image
           href="/pic/dominance.png"
@@ -120,12 +161,12 @@ export default {
       vegaLiteWidth: 150,
 
       circleLink: 75,
-      circleNeighborLink: 100,
+      circleNeighborLink: 125,
       vegaLiteLink: 200,
       vegaLiteLongLink: 350,
 
-      circleStrength: -100,
-      circleNeighborStrength: -300,
+      circleStrength: -200,
+      circleNeighborStrength: -500,
       vegaLiteStrength: -3000,
 
       insightNum: 7,
@@ -138,6 +179,8 @@ export default {
       showIndex: new Map(),
       // (id, g)
       pinnedIndex: new Map(),
+      // (id)
+      checkIndex: new Set(),
       // neighbor info
       // (id, [...idn])
       neighborMap: new Map(),
@@ -237,6 +280,73 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    createInsetFilter(svg) {
+      let svgNamespace = "http://www.w3.org/2000/svg";
+
+      let filter = document.createElementNS(svgNamespace, "filter");
+      filter.setAttribute("id", "inset-shadow");
+      filter.setAttribute("x", "-50%");
+      filter.setAttribute("y", "-50%");
+      filter.setAttribute("width", "200%");
+      filter.setAttribute("height", "200%");
+
+      let feComponentTransfer = document.createElementNS(
+        svgNamespace,
+        "feComponentTransfer"
+      );
+      feComponentTransfer.setAttribute("in", "SourceAlpha");
+
+      let feFuncA = document.createElementNS(svgNamespace, "feFuncA");
+      feFuncA.setAttribute("type", "table");
+      feFuncA.setAttribute("tableValues", "1 0");
+
+      feComponentTransfer.appendChild(feFuncA);
+
+      let feGaussianBlur = document.createElementNS(
+        svgNamespace,
+        "feGaussianBlur"
+      );
+      feGaussianBlur.setAttribute("stdDeviation", "5");
+
+      let feOffset = document.createElementNS(svgNamespace, "feOffset");
+      feOffset.setAttribute("dx", "2.5");
+      feOffset.setAttribute("dy", "2.5");
+      feOffset.setAttribute("result", "offsetblur");
+
+      let feFlood = document.createElementNS(svgNamespace, "feFlood");
+      feFlood.setAttribute("flood-color", "steelblue");
+      feFlood.setAttribute("result", "color");
+
+      let feComposite1 = document.createElementNS(svgNamespace, "feComposite");
+      feComposite1.setAttribute("in2", "offsetblur");
+      feComposite1.setAttribute("operator", "in");
+
+      let feComposite2 = document.createElementNS(svgNamespace, "feComposite");
+      feComposite2.setAttribute("in2", "SourceAlpha");
+      feComposite2.setAttribute("operator", "in");
+
+      let feMerge = document.createElementNS(svgNamespace, "feMerge");
+
+      let feMergeNode1 = document.createElementNS(svgNamespace, "feMergeNode");
+      feMergeNode1.setAttribute("in", "SourceGraphic");
+
+      let feMergeNode2 = document.createElementNS(svgNamespace, "feMergeNode");
+
+      feMerge.appendChild(feMergeNode1);
+      feMerge.appendChild(feMergeNode2);
+
+      filter.appendChild(feComponentTransfer);
+      filter.appendChild(feGaussianBlur);
+      filter.appendChild(feOffset);
+      filter.appendChild(feFlood);
+      filter.appendChild(feComposite1);
+      filter.appendChild(feComposite2);
+      filter.appendChild(feMerge);
+
+      // Append the filter to the SVG element
+      let svgElement = document.querySelector("svg"); // replace this with the actual svg element
+      svg.appendChild(filter);
+    },
     setDomAttributes(linkG, circleG) {
       const that = this;
       circleG
@@ -262,7 +372,16 @@ export default {
       const linkTextGroup = linkContainerGroup
         .append("text")
         .attr("class", "link-label")
-        .text((d) => d.type)
+        .text((d) => {
+          switch (d.type) {
+            case "parent-child":
+              return "P-C";
+            case "siblings":
+              return "S";
+            case "same-name":
+              return "S-A";
+          }
+        })
         .attr("dy", ".35em")
         .attr("fill", "#555")
         .style("opacity", 0.5)
@@ -334,18 +453,19 @@ export default {
             rectText.classed("not-show", false);
             circle.classed("not-show", true);
             insightIcon.classed("not-show", true);
-            const remove = g
-              .append("use")
+            g.append("use")
               .attr("href", "#defs-remove")
               .attr("class", "remove vega-lite-icon")
               .attr("cursor", "pointer")
               .on("click", function () {
                 g.datum().showDetail = false;
                 g.datum().pinned = false;
+                g.datum().checked = false;
                 g.classed("pinned", false);
                 g.datum().fx = null;
                 g.datum().fy = null;
                 that.selectedNode = null;
+                g.selectChildren("rect").classed("svg-inset", false);
                 g.selectChildren(".vega-lite-icon").remove();
                 that.deleteVegaLite(g);
                 const collideForce = that.simulation.force("collide");
@@ -371,12 +491,17 @@ export default {
                 that.simulation.restart();
               });
 
-            const pin = g
-              .append("use")
+            g.append("use")
               .attr("href", "#defs-pin")
               .attr("class", "pin vega-lite-icon")
               .attr("cursor", "pointer")
               .on("click", togglePin);
+
+            g.append("use")
+              .attr("href", "#defs-check")
+              .attr("class", "check vega-lite-icon")
+              .attr("cursor", "pointer")
+              .on("click", toggleCheck);
 
             that.drawVegaLite(g, "img");
           }
@@ -429,7 +554,7 @@ export default {
 
       const rectGroup = containerGroup
         .append("rect")
-        .attr("class", "rect")
+        .attr("class", "rect vega-lite-border")
         .classed("not-show", function () {
           const gData = d3.select(this.parentNode).datum();
           return !gData.showDetail;
@@ -591,6 +716,19 @@ export default {
           g.datum().fy = null;
           that.drawVegaLite(g, "img");
           that.pinnedIndex.delete(g.datum().id);
+        }
+      }
+
+      function toggleCheck() {
+        const g = d3.select(this.parentNode);
+        const checked = !g.datum().checked;
+        g.datum().checked = checked;
+        if (checked) {
+          g.select(".check").classed("icon-pinned", true);
+          g.selectChildren("rect").classed("svg-inset", true);
+        } else {
+          g.select(".check").classed("icon-pinned", false);
+          g.selectChildren("rect").classed("svg-inset", false);
         }
       }
     },
@@ -768,6 +906,7 @@ export default {
       const rect = g.selectChild(".rect");
       const removeIcon = g.selectChild(".remove");
       const pinIcon = g.selectChild(".pin");
+      const checkIcon = g.selectChild(".check");
       const preView = g.datum().view;
       const rectTitle = g.select(".rect-title");
       const rectTitleName = g.selectChild(".title-name");
@@ -920,6 +1059,12 @@ export default {
               -translateY + that.iconOffset
             })`
           );
+          checkIcon.attr(
+            "transform",
+            `translate(${
+              translateX - 3 * that.iconSize - that.iconOffset - 2
+            },${-translateY + that.iconOffset})`
+          );
 
           switch (mode) {
             case "img":
@@ -1046,6 +1191,7 @@ export default {
         ...d,
         showDetail: false,
         pinned: false,
+        checked: false,
         view: null,
         img: null,
         rect: null,
@@ -1079,6 +1225,7 @@ export default {
         .attr("style", "width: 100%; height: 100%;")
         .attr("viewbox", [-width, -height, width, height]);
 
+      this.createInsetFilter(svg.node());
       this.createObserver(svg.node());
       //data binding
       const linkG = svg
@@ -1393,10 +1540,27 @@ export default {
   right: 3%;
 }
 
+.camera-icon,
+.warehouse-icon {
+  fill: #555;
+}
+.camera-card {
+  padding: 0.5vw;
+  position: fixed;
+  top: 13%;
+  right: 2%;
+}
+
+.warehouse-card {
+  padding: 0.5vw;
+  position: fixed;
+  top: 22%;
+  right: 2%;
+}
 .ticks-card {
   position: fixed;
   top: 5%;
-  right: 3%;
+  right: 2%;
   padding: 1vw;
   font-weight: 600;
   display: flex;
@@ -1532,5 +1696,11 @@ export default {
 }
 .svg {
   width: 100%;
+}
+.svg-inset {
+  stroke: steelblue !important;
+  stroke-width: 2 !important;
+  stroke-opacity: 0.3;
+  filter: url(#inset-shadow);
 }
 </style>

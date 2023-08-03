@@ -78,7 +78,7 @@ export default {
     },
     // load test data
     loadData(context, _payload) {
-      const file = "test_data/result_0730.json";
+      const file = "test_data/result_0802.json";
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
         context.commit("setTotalData", data);

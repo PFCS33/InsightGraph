@@ -92,7 +92,7 @@ export default {
   /* display: flex; */
 
   display: grid;
-  grid-template-columns: 2.5fr 7.5fr;
+  grid-template-columns: 2.3fr 7.7fr;
   transition: all 0.2s ease-in-out;
 }
 
