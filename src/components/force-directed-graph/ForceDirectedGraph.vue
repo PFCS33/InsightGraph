@@ -811,6 +811,12 @@ export default {
       } else {
         nodes = data.nodes.map((d) => {
           const oldNode = this.nodeIdMap.get(d.id);
+          oldNode.showDetail = false;
+          oldNode.pinned = false;
+          oldNode.checked = false;
+          oldNode.view = null;
+          oldNode.img = null;
+          oldNode.rect = null;
           return oldNode;
         });
       }
@@ -870,7 +876,6 @@ export default {
                 }
                 if (this.pinnedIndex.has(id)) {
                   this.pinnedIndex.delete(id);
-
                   data.fx = null;
                   data.fy = null;
                 }
