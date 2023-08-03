@@ -812,12 +812,12 @@ export default {
       } else {
         nodes = data.nodes.map((d) => {
           const oldNode = this.nodeIdMap.get(d.id);
-          oldNode.showDetail = false;
-          oldNode.pinned = false;
-          oldNode.checked = false;
-          oldNode.view = null;
-          oldNode.img = null;
-          oldNode.rect = null;
+          // oldNode.showDetail = false;
+          // oldNode.pinned = false;
+          // oldNode.checked = false;
+          // oldNode.view = null;
+          // oldNode.img = null;
+          // oldNode.rect = null;
           return oldNode;
         });
       }
@@ -880,6 +880,13 @@ export default {
                   data.fx = null;
                   data.fy = null;
                 }
+
+                data.showDetail = false;
+                data.pinned = false;
+                data.checked = false;
+                data.view = null;
+                data.img = null;
+                data.rect = null;
               })
               .attr("opacity", 1)
               .transition()
@@ -997,6 +1004,8 @@ export default {
           const translateY = rectHeight / 2;
           g.datum().rect = {
             r: Math.sqrt(Math.pow(translateX, 2) + Math.pow(translateY, 2)),
+            width: rectWidth,
+            height: rectHeight,
           };
           const collideForce = that.simulation.force("collide");
           if (collideForce) collideForce.initialize(that.simulation.nodes());
@@ -1395,11 +1404,8 @@ export default {
             let offsetHeight = 0;
 
             if (d.showDetail) {
-              offsetWidth =
-                d.img.width / 2 + that.rectWidthOffset + that.iconOffset;
-              offsetHeight =
-                d.img.height / 2 +
-                ((that.rectHeightOffset + that.iconOffset) * 5) / 4;
+              offsetWidth = d.rect.width / 2;
+              offsetHeight = d.rect.height / 2;
             } else {
               offsetWidth = offsetHeight = that.circleR;
             }
@@ -1720,7 +1726,7 @@ export default {
 }
 .svg-inset {
   stroke: steelblue !important;
-  stroke-width: 2 !important;
+  //  stroke-width: 0 !important;
   stroke-opacity: 0.3;
   filter: url(#inset-shadow);
 }
