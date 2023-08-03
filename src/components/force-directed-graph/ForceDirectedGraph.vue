@@ -1486,6 +1486,7 @@ export default {
         if (transform.k < 1.3) {
           that.leftCornerCoord = transform.invert([0, 0]);
           that.rightCornerCoord = transform.invert([that.width, that.height]);
+          that.simulation.restart();
         }
       }
 
