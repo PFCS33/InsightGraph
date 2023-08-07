@@ -7,14 +7,47 @@
       <div :class="['control-panel-box', { 'no-padding': !editMode }]">
         <BaseCard
           inset
+          class="control-panel-button-box"
+          v-show="editMode || !animationDone"
+        >
+          <div class="button-box-content" v-show="animationDone && editMode">
+            <BaseButton
+              inset
+              :class="['btn', { 'active-btn': controlPanelMode === 'base' }]"
+              @click="controlPanelMode = 'base'"
+              >Base</BaseButton
+            >
+            <BaseButton
+              inset
+              :class="['btn', { 'active-btn': controlPanelMode === 'table' }]"
+              @click="controlPanelMode = 'table'"
+              >Table</BaseButton
+            >
+          </div>
+        </BaseCard>
+        <BaseCard
+          inset
           class="control-panel"
           v-show="editMode || !animationDone"
         >
-          <div class="button-box" v-show="animationDone && editMode">
-            <BaseButton inset @click="restart" class="btn">ReStart</BaseButton>
-            <BaseButton inset @click="stop" class="btn">Stop</BaseButton>
+          <div
+            class="base-mode"
+            v-show="controlPanelMode === 'base' && animationDone && editMode"
+          >
+            <div class="button-box">
+              <BaseButton inset @click="restart" class="btn"
+                >ReStart</BaseButton
+              >
+              <BaseButton inset @click="stop" class="btn">Stop</BaseButton>
+            </div>
+            <StatisticsGraph></StatisticsGraph>
           </div>
-          <StatisticsGraph v-show="animationDone && editMode"></StatisticsGraph>
+          <div
+            class="table-mode"
+            v-if="controlPanelMode === 'table' && animationDone && editMode"
+          >
+            <MiniTable></MiniTable>
+          </div>
         </BaseCard>
       </div>
 
@@ -42,17 +75,20 @@
 // import BarChart from "@/components/vega-lite-graph/BarChart.vue";
 import ForceDirectedGraph from "../components/force-directed-graph/ForceDirectedGraph.vue";
 import StatisticsGraph from "@/components/control-panel-graph/StatisticsGraph.vue";
+import MiniTable from "@/components/control-panel-graph/MiniTable.vue";
 import { Tools } from "@element-plus/icons-vue";
 export default {
   components: {
     ForceDirectedGraph,
     StatisticsGraph,
+    MiniTable,
     Tools,
   },
   data() {
     return {
       editMode: true,
       animationDone: true,
+      controlPanelMode: "base",
     };
   },
   computed: {},
@@ -110,16 +146,42 @@ export default {
   width: 100%;
   height: 100%;
   padding: 0.5vw;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.5vw;
 }
-.control-panel {
+.control-panel-button-box {
+  flex: 0.1;
+
+  background: #f1f3f5;
+}
+.button-box-content {
   width: 100%;
   height: 100%;
-
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1vw;
+}
+.control-panel {
+  flex: 0.9;
+  background: #f1f3f5;
+  /* width: 100%;
+  height: 100%; */
+}
+.base-mode {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 1vw;
   padding: 1vw;
-  background: #f1f3f5;
+}
+.table-mode {
+  width: 100%;
+  height: 100%;
+  padding: 1vw;
 }
 
 .button-box {
@@ -153,6 +215,6 @@ export default {
   ) !important;
   color: #fff !important;
   box-shadow: 0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(0, 0, 0, 0),
-    inset 0.4rem 0.3rem 0.4rem rgba(62, 202, 172, 0.6);
+    inset 0.4rem 0.3rem 0.4rem rgba(56, 175, 149, 0.6);
 }
 </style>

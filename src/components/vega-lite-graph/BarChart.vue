@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <svg class="svg">
+    <!-- <svg class="svg">
       <rect
         x="40%"
         y="40%"
@@ -22,15 +22,7 @@
         fill="#fff"
         filter="url(#inset-shadow)"
       />
-      <!-- <rect
-        x="40%"
-        y="40%"
-        cr="50"
-        width="100"
-        height="30"
-        fill="#f9f9f9"
-        filter="url(#inset-shadow)"
-      /> -->
+  
       <defs>
         <filter id="inset-shadow" x="-50%" y="-50%" width="200%" height="200%">
           <feComponentTransfer in="SourceAlpha">
@@ -53,75 +45,46 @@
           <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
         </filter>
       </defs>
-    </svg>
-    <div id="echarts-container"></div>
+    </svg> -->
+    <!-- <div id="echarts-container"></div> -->
   </div>
 </template>
 <script>
-import * as echarts from "echarts";
 export default {
   data() {
-    return {};
+    return {
+      rowName: null,
+      colName: null,
+      rowDict: null,
+      colDict: null,
+    };
   },
-  methods: {
-    drawEcharts() {
-      const container = d3.select("#echarts-container").node();
-      const barchart = echarts.init(container);
-      const option = {
-        dataset: {
-          source: [
-            {
-              source: "_-2013_",
-              target: "_-2014_",
-              type: "siblings",
-              count: 1,
-            },
-            {
-              source: "_-2014_",
-              target: "_-2015_",
-              type: "siblings",
-              count: 1,
-            },
-            {
-              source: "_-2015_",
-              target: "_-2016_",
-              type: "siblings",
-              count: 1,
-            },
-            { source: "_-2013_", target: "_-2014_", type: "friends", count: 1 },
-            { source: "_-2014_", target: "_-2015_", type: "friends", count: 1 },
-          ],
-          transform: [
-            {
-              type: "aggregate",
-              groupBy: "type",
-              aggregate: {
-                count: "sum",
-              },
-            },
-          ],
-        },
-        xAxis: { type: "category" },
-        yAxis: {},
-        series: [
-          {
-            datasetIndex: 1,
-            type: "bar",
-            encode: {
-              x: "type",
-              y: "count",
-            },
-          },
-        ],
-      };
-
-      barchart.setOption(option);
+  methods: {},
+  computed: {
+    headData() {
+      return this.$store.getters["table/headData"];
     },
   },
-  computed: {},
-  watch: {},
+  watch: {
+    headData(newVal) {
+      if (newVal) {
+        this.rowDict = listToDict(newVal.rows);
+        this.colDict = listToDict(newVal.cols);
+      }
+      function listToDict(list) {
+        let obj = {};
+        for (let item of list) {
+          if ("children" in item && item.children) {
+            item.children = listToDict(item.children);
+          }
+          obj[item.name] = item;
+        }
+        return obj;
+      }
+    },
+  },
   mounted() {
-    this.drawEcharts();
+    this.$store.dispatch("table/loadHeadData");
   },
 };
 </script>

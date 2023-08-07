@@ -1,18 +1,20 @@
 <template>
   <div class="container">
     <!-- <ForceDirectedGraphOld></ForceDirectedGraphOld> -->
-    <BarChart></BarChart>
+    <MiniTable></MiniTable>
   </div>
 </template>
 
 <script>
 import BarChart from "@/components/vega-lite-graph/BarChart.vue";
 import * as echarts from "echarts";
-import ForceDirectedGraphOld from "../components/vega-lite-graph/ForceDirectedGraphOld.vue";
+import MiniTable from "../components/control-panel-graph/MiniTable.vue";
+
 export default {
   components: {
     BarChart,
-    ForceDirectedGraphOld,
+
+    MiniTable,
   },
   data() {
     return {};
