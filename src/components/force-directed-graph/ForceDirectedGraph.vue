@@ -179,8 +179,10 @@ export default {
       showIndex: new Map(),
       // (id, g)
       pinnedIndex: new Map(),
-      // (id)
+      // (id, row, col)
       checkIndex: new Map(),
+      // (id, row,col)
+      hoverIndex: new Map(),
       // neighbor info
       // (id, [...idn])
       neighborMap: new Map(),
@@ -246,11 +248,22 @@ export default {
   watch: {
     checkIndex: {
       handler(newVal) {
-        this.$store.dispatch("table/convertCheckSelection", newVal);
+        this.$store.dispatch("table/convertCheckSelection", {
+          mode: "checked",
+          data: newVal,
+        });
       },
       deep: true,
     },
-
+    hoverIndex: {
+      handler(newVal) {
+        this.$store.dispatch("table/convertCheckSelection", {
+          mode: "hovered",
+          data: newVal,
+        });
+      },
+      deep: true,
+    },
     selectedData(newVal) {
       if (newVal) {
         this.neighborHighligt(
@@ -579,8 +592,12 @@ export default {
           const neighbor = that.neighborMap.get(id);
           that.neighborHighligt(id, neighbor, "hover", true);
           rect.classed("center-highlight", true);
-
           parentNode.select(".rect-title").classed("center-highlight", true);
+          that.hoverIndex.clear();
+          that.hoverIndex.set(id, {
+            col: parentNode.datum().col,
+            row: parentNode.datum().row,
+          });
         })
         .on("mouseout", function (event) {
           const rect = d3.select(this);
