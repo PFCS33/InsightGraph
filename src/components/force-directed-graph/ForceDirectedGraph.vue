@@ -180,7 +180,7 @@ export default {
       // (id, g)
       pinnedIndex: new Map(),
       // (id)
-      checkIndex: new Set(),
+      checkIndex: new Map(),
       // neighbor info
       // (id, [...idn])
       neighborMap: new Map(),
@@ -244,6 +244,13 @@ export default {
   },
 
   watch: {
+    checkIndex: {
+      handler(newVal) {
+        this.$store.dispatch("table/convertCheckSelection", newVal);
+      },
+      deep: true,
+    },
+
     selectedData(newVal) {
       if (newVal) {
         this.neighborHighligt(
@@ -725,9 +732,16 @@ export default {
         const checked = !g.datum().checked;
         g.datum().checked = checked;
         if (checked) {
+          that.checkIndex.set(g.datum().id, {
+            row: g.datum().row,
+            col: g.datum().col,
+          });
+
+          //  console.log(that.checkIndex);
           g.select(".check").classed("icon-pinned", true);
           g.selectChildren("rect").classed("svg-inset", true);
         } else {
+          that.checkIndex.delete(g.datum().id);
           g.select(".check").classed("icon-pinned", false);
           g.selectChildren("rect").classed("svg-inset", false);
         }
@@ -879,6 +893,9 @@ export default {
                   this.pinnedIndex.delete(id);
                   data.fx = null;
                   data.fy = null;
+                }
+                if (this.checkIndex.has(id)) {
+                  this.checkIndex.delete(id);
                 }
 
                 data.showDetail = false;
@@ -1137,6 +1154,7 @@ export default {
       g.selectAll(".vega-lite-graph").remove();
       g.datum().view = null;
       g.datum().img = null;
+      this.checkIndex.delete(id);
       this.pinnedIndex.delete(id);
       this.showIndex.delete(id);
     },
