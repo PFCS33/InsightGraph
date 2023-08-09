@@ -1,0 +1,242 @@
+{
+  "table": {
+    "colDepth": 2,
+    "rowDepth": 3,
+    "rowNum": 40,
+    "colNum": 32,
+    "rows": [
+      {
+        "name": "Nintendo",
+        "children": [
+          {
+            "name": "Nintendo 3DS (3DS)",
+            "children": [
+              { "name": "Europe", "children": null, "rowSpan": [0, 0] },
+              { "name": "Japan", "children": null, "rowSpan": [1, 1] },
+              { "name": "North America", "children": null, "rowSpan": [2, 2] },
+              { "name": "Other", "children": null, "rowSpan": [3, 3] }
+            ],
+            "rowSpan": [0, 3]
+          },
+          {
+            "name": "Nintendo DS (DS)",
+            "children": [
+              { "name": "Europe", "children": null, "rowSpan": [4, 4] },
+              { "name": "Japan", "children": null, "rowSpan": [5, 5] },
+              { "name": "North America", "children": null, "rowSpan": [6, 6] },
+              { "name": "Other", "children": null, "rowSpan": [7, 7] }
+            ],
+            "rowSpan": [4, 7]
+          },
+          {
+            "name": "Nintendo Switch (NS)",
+            "children": [
+              { "name": "Europe", "children": null, "rowSpan": [8, 8] },
+              { "name": "Japan", "children": null, "rowSpan": [9, 9] },
+              {
+                "name": "North America",
+                "children": null,
+                "rowSpan": [10, 10]
+              },
+              { "name": "Other", "children": null, "rowSpan": [11, 11] }
+            ],
+            "rowSpan": [8, 11]
+          },
+          {
+            "name": "Wii (Wii)",
+            "children": [
+              { "name": "Europe", "children": null, "rowSpan": [12, 12] },
+              { "name": "Japan", "children": null, "rowSpan": [13, 13] },
+              {
+                "name": "North America",
+                "children": null,
+                "rowSpan": [14, 14]
+              },
+              { "name": "Other", "children": null, "rowSpan": [15, 15] }
+            ],
+            "rowSpan": [12, 15]
+          },
+          {
+            "name": "Wii U (WiiU)",
+            "children": [
+              { "name": "Europe", "children": null, "rowSpan": [16, 16] },
+              { "name": "Japan", "children": null, "rowSpan": [17, 17] },
+              {
+                "name": "North America",
+                "children": null,
+                "rowSpan": [18, 18]
+              },
+              { "name": "Other", "children": null, "rowSpan": [19, 19] }
+            ],
+            "rowSpan": [16, 19]
+          }
+        ],
+        "rowSpan": [0, 19]
+      },
+      {
+        "name": "Sony",
+        "children": [
+          {
+            "name": "PlayStation 3 (PS3)",
+            "children": [
+              { "name": "Europe", "children": null, "rowSpan": [20, 20] },
+              { "name": "Japan", "children": null, "rowSpan": [21, 21] },
+              {
+                "name": "North America",
+                "children": null,
+                "rowSpan": [22, 22]
+              },
+              { "name": "Other", "children": null, "rowSpan": [23, 23] }
+            ],
+            "rowSpan": [20, 23]
+          },
+          {
+            "name": "PlayStation 4 (PS4)",
+            "children": [
+              { "name": "Europe", "children": null, "rowSpan": [24, 24] },
+              { "name": "Japan", "children": null, "rowSpan": [25, 25] },
+              {
+                "name": "North America",
+                "children": null,
+                "rowSpan": [26, 26]
+              },
+              { "name": "Other", "children": null, "rowSpan": [27, 27] }
+            ],
+            "rowSpan": [24, 27]
+          },
+          {
+            "name": "PlayStation Vita (PSV)",
+            "children": [
+              { "name": "Europe", "children": null, "rowSpan": [28, 28] },
+              { "name": "Japan", "children": null, "rowSpan": [29, 29] },
+              {
+                "name": "North America",
+                "children": null,
+                "rowSpan": [30, 30]
+              },
+              { "name": "Other", "children": null, "rowSpan": [31, 31] }
+            ],
+            "rowSpan": [28, 31]
+          }
+        ],
+        "rowSpan": [20, 31]
+      },
+      {
+        "name": "Microsoft",
+        "children": [
+          {
+            "name": "Xbox 360 (X360)",
+            "children": [
+              { "name": "Europe", "children": null, "rowSpan": [32, 32] },
+              { "name": "Japan", "children": null, "rowSpan": [33, 33] },
+              {
+                "name": "North America",
+                "children": null,
+                "rowSpan": [34, 34]
+              },
+              { "name": "Other", "children": null, "rowSpan": [35, 35] }
+            ],
+            "rowSpan": [32, 35]
+          },
+          {
+            "name": "Xbox One (XOne)",
+            "children": [
+              { "name": "Europe", "children": null, "rowSpan": [36, 36] },
+              { "name": "Japan", "children": null, "rowSpan": [37, 37] },
+              {
+                "name": "North America",
+                "children": null,
+                "rowSpan": [38, 38]
+              },
+              { "name": "Other", "children": null, "rowSpan": [39, 39] }
+            ],
+            "rowSpan": [36, 39]
+          }
+        ],
+        "rowSpan": [32, 39]
+      }
+    ],
+    "cols": [
+      {
+        "name": "2013",
+        "children": [
+          { "name": "MAR", "children": null, "colSpan": [0, 0] },
+          { "name": "JUN", "children": null, "colSpan": [1, 1] },
+          { "name": "SEP", "children": null, "colSpan": [2, 2] },
+          { "name": "DEC", "children": null, "colSpan": [3, 3] }
+        ],
+        "colSpan": [0, 3]
+      },
+      {
+        "name": "2014",
+        "children": [
+          { "name": "MAR", "children": null, "colSpan": [4, 4] },
+          { "name": "JUN", "children": null, "colSpan": [5, 5] },
+          { "name": "SEP", "children": null, "colSpan": [6, 6] },
+          { "name": "DEC", "children": null, "colSpan": [7, 7] }
+        ],
+        "colSpan": [4, 7]
+      },
+      {
+        "name": "2015",
+        "children": [
+          { "name": "MAR", "children": null, "colSpan": [8, 8] },
+          { "name": "JUN", "children": null, "colSpan": [9, 9] },
+          { "name": "SEP", "children": null, "colSpan": [10, 10] },
+          { "name": "DEC", "children": null, "colSpan": [11, 11] }
+        ],
+        "colSpan": [8, 11]
+      },
+      {
+        "name": "2016",
+        "children": [
+          { "name": "MAR", "children": null, "colSpan": [12, 12] },
+          { "name": "JUN", "children": null, "colSpan": [13, 13] },
+          { "name": "SEP", "children": null, "colSpan": [14, 14] },
+          { "name": "DEC", "children": null, "colSpan": [15, 15] }
+        ],
+        "colSpan": [12, 15]
+      },
+      {
+        "name": "2017",
+        "children": [
+          { "name": "MAR", "children": null, "colSpan": [16, 16] },
+          { "name": "JUN", "children": null, "colSpan": [17, 17] },
+          { "name": "SEP", "children": null, "colSpan": [18, 18] },
+          { "name": "DEC", "children": null, "colSpan": [19, 19] }
+        ],
+        "colSpan": [16, 19]
+      },
+      {
+        "name": "2018",
+        "children": [
+          { "name": "MAR", "children": null, "colSpan": [20, 20] },
+          { "name": "JUN", "children": null, "colSpan": [21, 21] },
+          { "name": "SEP", "children": null, "colSpan": [22, 22] },
+          { "name": "DEC", "children": null, "colSpan": [23, 23] }
+        ],
+        "colSpan": [20, 23]
+      },
+      {
+        "name": "2019",
+        "children": [
+          { "name": "MAR", "children": null, "colSpan": [24, 24] },
+          { "name": "JUN", "children": null, "colSpan": [25, 25] },
+          { "name": "SEP", "children": null, "colSpan": [26, 26] },
+          { "name": "DEC", "children": null, "colSpan": [27, 27] }
+        ],
+        "colSpan": [24, 27]
+      },
+      {
+        "name": "2020",
+        "children": [
+          { "name": "MAR", "children": null, "colSpan": [28, 28] },
+          { "name": "JUN", "children": null, "colSpan": [29, 29] },
+          { "name": "SEP", "children": null, "colSpan": [30, 30] },
+          { "name": "DEC", "children": null, "colSpan": [31, 31] }
+        ],
+        "colSpan": [28, 31]
+      }
+    ]
+  }
+}
