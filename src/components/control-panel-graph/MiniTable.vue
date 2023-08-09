@@ -248,18 +248,38 @@ export default {
 </style>
 <style lang="less">
 table.mini-table {
-  //   border-collapse: collapse;
-  border-spacing: 0;
-  border-collapse: separate;
-  border: 1.25px solid #555;
+  border-collapse: collapse;
+  // border-spacing: 0;
+  // border-collapse: separate;
+  border: 1.5px solid #aaa;
 }
 
 table.mini-table {
   th {
-    border: 1.25px solid #555;
+    border: 1.5px solid #aaa;
   }
   td {
     border: 1px dashed #ccc;
+  }
+  th.cell-border-tooltip-highlight {
+    box-shadow: inset 0 0 0 1px #555;
+    background-color: #ddd;
+  }
+  td.cell-border-left-highlight {
+    border-left: 2px solid #555;
+  }
+  td.cell-border-right-highlight {
+    border-right: 2px solid #555;
+  }
+
+  td.cell-border-top-highlight {
+    border-top: 2px solid #555;
+  }
+  td.cell-border-bottom-highlight {
+    border-bottom: 2px solid #555;
+  }
+  td.cell-background-highlight {
+    background-color: #ddd;
   }
 }
 .tooltip {
@@ -270,25 +290,5 @@ table.mini-table {
   width: fit-content;
   height: fit-content;
   position: fixed;
-}
-th.cell-border-tooltip-highlight {
-  border-width: 2px !important;
-  background-color: #ddd;
-}
-td.cell-border-left-highlight {
-  border-left: 2px solid #000 !important;
-}
-td.cell-border-right-highlight {
-  border-right: 2px solid #000 !important;
-}
-
-td.cell-border-top-highlight {
-  border-top: 2px solid #000 !important;
-}
-td.cell-border-bottom-highlight {
-  border-bottom: 2px solid #000 !important;
-}
-td.cell-background-highlight {
-  background-color: #ddd;
 }
 </style>
