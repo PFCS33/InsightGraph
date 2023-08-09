@@ -535,7 +535,7 @@ export default {
         .attr("href", function () {
           const g = d3.select(this.parentNode);
           //const group = g.datum().group % that.insightNum;
-          const group = g.datum()["insight-type"];
+          const group = g.datum()["insight-list"][0]["insight-type"];
 
           let insightType = null;
           switch (group) {
@@ -987,7 +987,7 @@ export default {
             break;
         }
       } else {
-        let yourVlSpec = JSON.parse(g.datum()["vega-lite"]);
+        let yourVlSpec = JSON.parse(g.datum()["insight-list"][0]["vega-lite"]);
 
         // add some options
         yourVlSpec["width"] = this.vegaLiteWidth;
@@ -1073,7 +1073,7 @@ export default {
 
           rectTitleName
             .text(function () {
-              return g.datum()["insight-type"];
+              return g.datum()["insight-list"][0]["insight-type"];
             })
             .attr("x", -translateX + that.iconOffset)
             .attr("y", -translateY + that.iconSize + that.iconOffset / 2)
@@ -1081,7 +1081,7 @@ export default {
           rectTitleDescription
             .text(function () {
               const rowName = g.datum().row;
-              const colName = g.datum().col;
+
               return `row: ${rowName}`;
             })
             .attr("font-size", "10px")

@@ -52,7 +52,10 @@ export default {
         },
       ];
       if (payload.length > 0) {
-        const groups = d3.group(payload, (d) => d["insight-type"]);
+        const groups = d3.group(
+          payload,
+          (d) => d["insight-list"][0]["insight-type"]
+        );
 
         groups.forEach((group, type) => {
           const index = counts.findIndex((c) => c.name === type);
@@ -83,7 +86,7 @@ export default {
     },
     // load test data
     loadData(context, _payload) {
-      const file = "test_data/result_0802.json";
+      const file = "test_data/result_0807.json";
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
         context.commit("setTotalData", data);

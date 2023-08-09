@@ -259,7 +259,7 @@ export default {
             : that.totalData.links;
 
           const selectedNodeData = filteredNodes.filter(
-            (d) => params.selected[d["insight-type"]]
+            (d) => params.selected[d["insight-list"][0]["insight-type"]]
           );
 
           const idMap = new Set();
