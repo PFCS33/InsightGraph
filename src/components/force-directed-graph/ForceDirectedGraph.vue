@@ -1194,8 +1194,8 @@ export default {
           this.rightCornerCoord = [width, height];
 
           this.zoom.translateExtent([
-            [0, 0],
-            [width, height],
+            [-width, -height],
+            [width * 2, height * 2],
           ]);
           const defaultForceConfig = this.defaultForceConfig;
           this.simulation
@@ -1273,7 +1273,7 @@ export default {
       const svg = svgContainer
         .append("svg")
         .attr("style", "width: 100%; height: 100%;")
-        .attr("viewbox", [-width, -height, width, height]);
+        .attr("viewbox", [0, 0, width, height]);
 
       this.createInsetFilter(svg.node());
       this.createObserver(svg.node());
@@ -1435,32 +1435,32 @@ export default {
           .select(".node-group")
           .selectChildren("g")
           .style("transform", (d) => {
-            let offsetWidth = 0;
-            let offsetHeight = 0;
+            // let offsetWidth = 0;
+            // let offsetHeight = 0;
 
-            if (d.showDetail) {
-              offsetWidth = d.rect.width / 2;
-              offsetHeight = d.rect.height / 2;
-            } else {
-              offsetWidth = offsetHeight = that.circleR;
-            }
-            const x = d.x;
-            const y = d.y;
-            if (x - offsetWidth < that.leftCornerCoord[0]) {
-              // d.vx = Math.abs(d.vx);
-              d.x = that.leftCornerCoord[0] + offsetWidth;
-            } else if (x + offsetWidth > that.rightCornerCoord[0]) {
-              //d.vx = -Math.abs(d.vx);
-              d.x = that.rightCornerCoord[0] - offsetWidth;
-            }
+            // if (d.showDetail) {
+            //   offsetWidth = d.rect.width / 2;
+            //   offsetHeight = d.rect.height / 2;
+            // } else {
+            //   offsetWidth = offsetHeight = that.circleR;
+            // }
+            // const x = d.x;
+            // const y = d.y;
+            // if (x - offsetWidth < that.leftCornerCoord[0]) {
+            //   // d.vx = Math.abs(d.vx);
+            //   d.x = that.leftCornerCoord[0] + offsetWidth;
+            // } else if (x + offsetWidth > that.rightCornerCoord[0]) {
+            //   //d.vx = -Math.abs(d.vx);
+            //   d.x = that.rightCornerCoord[0] - offsetWidth;
+            // }
 
-            if (y - offsetHeight < that.leftCornerCoord[1]) {
-              // d.vy = Math.abs(d.vy);
-              d.y = that.leftCornerCoord[1] + offsetHeight;
-            } else if (y + offsetHeight > that.rightCornerCoord[1]) {
-              //  d.vy = -Math.abs(d.vy);
-              d.y = that.rightCornerCoord[1] - offsetHeight;
-            }
+            // if (y - offsetHeight < that.leftCornerCoord[1]) {
+            //   // d.vy = Math.abs(d.vy);
+            //   d.y = that.leftCornerCoord[1] + offsetHeight;
+            // } else if (y + offsetHeight > that.rightCornerCoord[1]) {
+            //   //  d.vy = -Math.abs(d.vy);
+            //   d.y = that.rightCornerCoord[1] - offsetHeight;
+            // }
             return `translate(${d.x}px,${d.y}px)`;
           });
 
@@ -1506,13 +1506,12 @@ export default {
       // 创建缩放函数
       const zoom = d3
         .zoom()
-        .scaleExtent([0.5, 30]) // 设置缩放的范围
+        .scaleExtent([0.5, 5]) // 设置缩放的范围
         .translateExtent([
-          [0, 0],
-          [that.width, that.height],
+          [-that.width, -that.height],
+          [that.width * 2, that.height * 2],
         ])
         .on("zoom", zoomed)
-        // .on("end", zoomEnd)
         .filter((event) => event.target === svg.node());
 
       this.zoom = zoom;
@@ -1521,15 +1520,14 @@ export default {
       // 定义zoom的回调函数
       function zoomed(event) {
         const transform = event.transform;
-
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
 
-        if (transform.k < 1.3) {
-          that.leftCornerCoord = transform.invert([0, 0]);
-          that.rightCornerCoord = transform.invert([that.width, that.height]);
-          that.simulation.restart();
-        }
+        // if (transform.k < 1.3) {
+        //   that.leftCornerCoord = transform.invert([0, 0]);
+        //   that.rightCornerCoord = transform.invert([that.width, that.height]);
+        //   that.simulation.restart();
+        // }
       }
 
       // initialize the default data

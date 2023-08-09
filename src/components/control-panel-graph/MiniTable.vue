@@ -2,8 +2,6 @@
   <div id="table-container"></div>
 </template>
 <script>
-import { flatAccessWithDatum } from "vega-lite";
-
 export default {
   data() {
     return {
