@@ -9,6 +9,7 @@ export default {
       colDict: null,
       checkedArea: null,
       hoveredArea: null,
+      clickedArea: null,
     };
   },
   getters: {
@@ -27,6 +28,9 @@ export default {
     hoveredArea(state) {
       return state.hoveredArea;
     },
+    clickedArea(state) {
+      return state.clickedArea;
+    },
   },
   mutations: {
     setTableData(state, payload) {
@@ -42,8 +46,10 @@ export default {
       state.checkedArea = payload;
     },
     setHoveredArea(state, payload) {
-      console.log(payload);
       state.hoveredArea = payload;
+    },
+    setClickedArea(state, payload) {
+      state.clickedArea = payload;
     },
   },
   actions: {
@@ -82,6 +88,7 @@ export default {
 
       if (mode === "checked") context.commit("setCheckedArea", result);
       else if (mode === "hovered") context.commit("setHoveredArea", result);
+      else if (mode === "clicked") context.commit("setClickedArea", result);
 
       function findColSpan(colName, colDict) {
         const path = colName.split("_");

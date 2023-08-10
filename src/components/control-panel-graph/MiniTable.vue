@@ -146,7 +146,8 @@ export default {
         }
       }
     },
-    addHighlightBorder(checkedArea, mode) {
+    addHighlightBorder(checkedArea, mode, clicked) {
+      const cssSuffix = clicked ? "-clicked" : "";
       if (checkedArea) {
         const tbody = d3
           .select("#table-container")
@@ -173,9 +174,15 @@ export default {
         tdGroup.each(function (d, i) {
           // 'this' is the current group
           if (i == 0)
-            d3.select(this).classed("cell-border-left-highlight", mode);
+            d3.select(this).classed(
+              "cell-border-left-highlight" + cssSuffix,
+              mode
+            );
           if (i === colWidth)
-            d3.select(this).classed("cell-border-right-highlight", mode);
+            d3.select(this).classed(
+              "cell-border-right-highlight" + cssSuffix,
+              mode
+            );
         });
       }
       function addVerticalBorder(colSpan, rowSpan, trGroup) {
@@ -188,14 +195,14 @@ export default {
               .filter(function (d, i) {
                 return i >= colSpan[0] && i <= colSpan[1];
               })
-              .classed("cell-border-top-highlight", mode);
+              .classed("cell-border-top-highlight" + cssSuffix, mode);
           } else if (i === rowWidth) {
             d3.select(this)
               .selectAll("td")
               .filter(function (d, i) {
                 return i >= colSpan[0] && i <= colSpan[1];
               })
-              .classed("cell-border-bottom-highlight", mode);
+              .classed("cell-border-bottom-highlight" + cssSuffix, mode);
           }
         });
       }
@@ -211,12 +218,22 @@ export default {
     hoveredArea() {
       return this.$store.getters["table/hoveredArea"];
     },
+    clickedArea() {
+      return this.$store.getters["table/clickedArea"];
+    },
   },
   watch: {
+    clickedArea: {
+      handler(newVal, oldVal) {
+        this.addHighlightBorder(oldVal, false, true);
+        this.addHighlightBorder(newVal, true, true);
+      },
+      deep: true,
+    },
     checkedArea: {
       handler(newVal, oldVal) {
-        this.addHighlightBorder(oldVal, false);
-        this.addHighlightBorder(newVal, true);
+        this.addHighlightBorder(oldVal, false, false);
+        this.addHighlightBorder(newVal, true, false);
       },
       deep: true,
     },
@@ -251,7 +268,7 @@ table.mini-table {
   border-collapse: collapse;
   // border-spacing: 0;
   // border-collapse: separate;
-  border: 1.5px solid #aaa;
+  border: 2px solid #aaa;
 }
 
 table.mini-table {
@@ -265,6 +282,20 @@ table.mini-table {
     box-shadow: inset 0 0 0 1px #555;
     background-color: #ddd;
   }
+  td.cell-border-left-highlight-clicked {
+    border-left: 2px dashed #aaa;
+  }
+  td.cell-border-right-highlight-clicked {
+    border-right: 2px dashed #aaa;
+  }
+
+  td.cell-border-top-highlight-clicked {
+    border-top: 2px dotted #aaa;
+  }
+  td.cell-border-bottom-highlight-clicked {
+    border-bottom: 2px dotted #aaa;
+  }
+
   td.cell-border-left-highlight {
     border-left: 2px solid #555;
   }
