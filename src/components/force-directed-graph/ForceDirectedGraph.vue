@@ -32,22 +32,113 @@
       </svg>
     </BaseCard>
     <transition name="slide">
-      <div class="more-box" v-show="showMore">
+      <div class="more-box" v-show="showMoreIcon">
         <svg
           class="more-icon"
           viewBox="0 0 1024 1024"
           width="30"
           height="30"
           xmlns="http://www.w3.org/2000/svg"
+          @click="showMorePanel = true"
         >
           <path
             d="M511.48 22.62c-270.42 0-489.62 218.96-489.62 489.09s219.2 489.09 489.62 489.09 489.61-218.96 489.61-489.09S781.89 22.62 511.48 22.62zM211.83 435.56c-0.11-0.19-0.11-0.49-0.23-0.71l-0.3-1.2c0-0.23-0.11-0.42-0.11-0.6l-0.3-1.32c0-0.3-0.11-0.49-0.11-0.68-0.08-0.42-0.08-0.94-0.19-1.32 0-0.3-0.12-0.53-0.12-0.83 0-0.37-0.11-0.79-0.11-1.2-0.07-0.26-0.07-0.68-0.07-1.01v0.04c0-0.3-0.11-0.6 0-1.13-0.11-0.6-0.11-1.32-0.11-2 0-0.71 0.11-1.32 0.11-2.03l0.07-0.98 0.11-1.02c0-0.41 0-0.83 0.12-1.2 0-0.3 0.11-0.53 0.11-0.83 0.01-0.43 0.08-0.86 0.19-1.28 0-0.34 0.11-0.53 0.11-0.71l0.3-1.31c0-0.23 0-0.42 0.11-0.6l0.3-1.2c0.11-0.19 0.11-0.49 0.22-0.68 0.07-0.34 0.3-0.75 0.41-1.13l0.3-0.83c0.11-0.3 0.3-0.68 0.38-0.98l0.38-0.9c0.07-0.3 0.26-0.6 0.37-0.91 0.08-0.3 0.23-0.71 0.45-1.02 0.19-0.22 0.26-0.53 0.38-0.68 0.11-0.45 0.3-0.75 0.53-1.13 0.17-0.17 0.31-0.38 0.41-0.6 0.19-0.42 0.42-0.71 0.64-1.13 0.16-0.17 0.28-0.36 0.38-0.56 0.22-0.42 0.53-0.75 0.75-1.13 0.08-0.22 0.3-0.42 0.42-0.6l0.83-1.13 0.49-0.6c0.23-0.3 0.41-0.6 0.72-0.9 0.22-0.3 0.53-0.49 0.75-0.79 0.22-0.19 0.42-0.53 0.6-0.71l1.47-1.51 99.24-96.46c16.73-16.11 43.23-16.11 59.96 0 16.57 16.1 16.57 42.14 0 58.24l-26.93 26.15h413.09c23.5 0 42.44 18.51 42.44 41.23 0 22.84-19.06 41.27-42.44 41.27H252.39c-0.6 0-1.32-0.12-2.07-0.12l-0.9-0.11-1.06-0.07c-0.42 0.01-0.84-0.02-1.24-0.11-0.3 0-0.53-0.11-0.83-0.11-0.44-0.02-0.89-0.08-1.32-0.19-0.34 0-0.53-0.11-0.76-0.11l-1.32-0.3c-0.34-0.08-0.53-0.08-0.75-0.19l-1.2-0.3c-0.23-0.11-0.56-0.11-0.76-0.23l-1.13-0.37-0.83-0.34-1.06-0.38-0.9-0.3-0.94-0.42c-0.3-0.08-0.71-0.19-1.02-0.42-0.22-0.19-0.53-0.26-0.75-0.37-0.38-0.11-0.76-0.3-1.13-0.53-0.19-0.16-0.41-0.29-0.64-0.38l-1.13-0.6c-0.19-0.16-0.41-0.29-0.64-0.37-0.38-0.23-0.72-0.53-1.13-0.76-0.23-0.08-0.41-0.3-0.6-0.37l-1.13-0.83-0.64-0.45-0.94-0.75c-0.3-0.19-0.49-0.49-0.79-0.68l-0.75-0.6c-0.49-0.53-1.02-0.91-1.55-1.43-0.53-0.49-0.94-1.02-1.43-1.5-0.22-0.19-0.42-0.49-0.6-0.72-0.23-0.3-0.57-0.49-0.75-0.79-0.23-0.3-0.53-0.6-0.72-0.91l-0.53-0.6c-0.3-0.37-0.64-0.71-0.86-1.13-0.07-0.19-0.27-0.37-0.38-0.56-0.22-0.41-0.53-0.75-0.75-1.13-0.19-0.22-0.3-0.41-0.38-0.6l-0.64-1.09-0.41-0.64c-0.11-0.37-0.3-0.68-0.53-1.05-0.19-0.22-0.3-0.52-0.41-0.75-0.07-0.3-0.3-0.68-0.41-0.98-0.08-0.3-0.3-0.6-0.42-0.9l-0.3-0.94-0.42-1.02-0.3-0.75c-0.22-0.35-0.3-0.76-0.41-1.14z m600.83 166.18l-0.07 1.02-0.11 1.02c0 0.38 0 0.79-0.11 1.2 0 0.3-0.12 0.49-0.12 0.79-0.01 0.44-0.08 0.89-0.19 1.32 0 0.3-0.11 0.49-0.11 0.68l-0.3 1.32c0 0.23 0 0.41-0.11 0.6l-0.3 1.2c-0.12 0.23-0.12 0.53-0.23 0.72-0.08 0.34-0.3 0.71-0.41 1.09-0.08 0.34-0.19 0.53-0.3 0.83l-0.38 1.02-0.37 0.9c-0.07 0.3-0.27 0.61-0.38 0.91-0.08 0.3-0.22 0.68-0.45 0.98-0.19 0.22-0.26 0.53-0.37 0.71-0.12 0.38-0.3 0.71-0.53 1.13-0.19 0.19-0.3 0.38-0.42 0.56-0.19 0.41-0.41 0.75-0.64 1.13-0.19 0.22-0.3 0.42-0.38 0.6-0.22 0.38-0.53 0.71-0.75 1.13-0.08 0.19-0.3 0.38-0.42 0.56-0.3 0.41-0.49 0.75-0.83 1.13l-0.49 0.6c-0.23 0.3-0.42 0.6-0.76 0.91-0.3 0.3-0.49 0.6-0.83 0.9-0.22 0.19-0.41 0.53-0.6 0.71l-1.47 1.51-99.28 96.46c-16.53 16.1-43.31 16.1-59.88 0s-16.57-42.14 0-58.24l26.89-26.15h-413.2c-23.46 0-42.41-18.51-42.41-41.23 0-22.84 19.06-41.27 42.41-41.27h515.68c0.6 0 1.32 0.11 2.07 0.11 0.3 0 0.6 0.11 0.94 0.11l1.02 0.08c0.42 0 0.87 0 1.24 0.11 0.3 0 0.53 0.12 0.83 0.12 0.44 0.01 0.89 0.08 1.32 0.19 0.38 0 0.57 0.11 0.76 0.11l1.32 0.3c0.37 0.07 0.56 0.07 0.75 0.19l1.24 0.3c0.23 0.12 0.53 0.12 0.76 0.23l1.13 0.37 0.79 0.34 1.06 0.38 0.94 0.3 0.9 0.41c0.34 0.08 0.75 0.19 1.02 0.42 0.22 0.19 0.57 0.26 0.75 0.37 0.42 0.12 0.76 0.3 1.13 0.53 0.19 0.16 0.41 0.29 0.64 0.38l1.13 0.6c0.23 0.19 0.41 0.3 0.64 0.38 0.38 0.22 0.72 0.53 1.13 0.75 0.19 0.08 0.42 0.3 0.64 0.38l1.13 0.83 0.61 0.45c0.3 0.22 0.64 0.45 0.94 0.75 0.3 0.19 0.53 0.49 0.79 0.68l0.75 0.6 1.55 1.43 1.47 1.51c0.23 0.19 0.42 0.49 0.6 0.71 0.23 0.3 0.53 0.49 0.71 0.79l0.76 0.91 0.49 0.6c0.34 0.38 0.64 0.71 0.86 1.13 0.08 0.19 0.3 0.38 0.38 0.56 0.22 0.42 0.53 0.75 0.75 1.13 0.17 0.17 0.31 0.38 0.41 0.6 0.19 0.42 0.42 0.71 0.64 1.09 0.19 0.22 0.26 0.42 0.38 0.64 0.11 0.38 0.3 0.68 0.53 1.05 0.19 0.22 0.3 0.53 0.41 0.75l0.42 0.98c0.11 0.3 0.3 0.6 0.38 0.9l0.37 0.94 0.38 1.02 0.34 0.75c0.19 0.35 0.31 0.73 0.37 1.13 0.11 0.19 0.11 0.49 0.23 0.71l0.3 1.2c0 0.23 0 0.41 0.11 0.61l0.3 1.32c0 0.3 0.11 0.49 0.11 0.68 0.11 0.42 0.11 0.94 0.19 1.32 0 0.3 0.12 0.53 0.12 0.83 0 0.37 0.11 0.79 0.11 1.2 0.11 0.3 0.11 0.68 0.11 0.98 0.07 0.41 0.07 0.71 0.07 1.01 0.11 0.6 0.11 1.28 0.11 2.03 0.01 0.66-0.11 1.26-0.11 1.97z"
           ></path>
         </svg>
+        <VegaLiteFilter
+          v-if="showMorePanel"
+          :insightList="selectedNode['insight-list']"
+          class="showMorePanelBox"
+        ></VegaLiteFilter>
       </div>
     </transition>
 
-    <div id="svg-container"></div>
+    <div id="svg-container">
+      <svg xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <symbol
+            id="defs-dominance"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+          >
+            <image
+              href="/pic/dominance.png"
+              :width="insightIconSize"
+              :height="insightIconSize"
+            ></image>
+          </symbol>
+          <symbol
+            id="defs-outlier"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+          >
+            <image
+              href="/pic/outlier.png"
+              :width="insightIconSize"
+              :height="insightIconSize"
+            ></image>
+          </symbol>
+          <symbol
+            id="defs-top2"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+          >
+            <image
+              href="/pic/top2.png"
+              :width="insightIconSize"
+              :height="insightIconSize"
+            ></image>
+          </symbol>
+          <symbol
+            id="defs-evenness"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+          >
+            <image
+              href="/pic/evenness.png"
+              :width="insightIconSize"
+              :height="insightIconSize"
+            ></image>
+          </symbol>
+          <symbol
+            id="defs-trend"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+          >
+            <image
+              href="/pic/trend.png"
+              :width="insightIconSize"
+              :height="insightIconSize"
+            ></image>
+          </symbol>
+          <symbol
+            id="defs-skewness"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+          >
+            <image
+              href="/pic/skewness.png"
+              :width="insightIconSize"
+              :height="insightIconSize"
+            ></image>
+          </symbol>
+          <symbol
+            id="defs-kurtosis"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+          >
+            <image
+              href="/pic/kurtosis.png"
+              :width="insightIconSize"
+              :height="insightIconSize"
+            ></image>
+          </symbol>
+          <symbol
+            id="defs-correlation"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+          >
+            <image
+              href="/pic/correlation.png"
+              :width="insightIconSize"
+              :height="insightIconSize"
+            ></image>
+          </symbol>
+        </defs>
+      </svg>
+    </div>
     <defs style="display: none">
       <svg
         viewBox="0 0 1024 1024"
@@ -82,69 +173,17 @@
           d="M1002.88 321.92L405.76 935.04a32 32 0 0 1-45.76 0L21.12 612.48a32 32 0 0 1 0-44.8L160 433.6a32 32 0 0 1 45.76 0L359.04 576 796.16 120.64a32 32 0 0 1 46.08 0l160 156.48a32 32 0 0 1 0.64 44.8z"
         ></path>
       </svg>
-
-      <svg id="defs-dominance" xmlns="http://www.w3.org/2000/svg">
-        <image
-          href="/pic/dominance.png"
-          :width="insightIconSize"
-          :height="insightIconSize"
-        ></image>
-      </svg>
-      <svg id="defs-outlier" xmlns="http://www.w3.org/2000/svg">
-        <image
-          href="/pic/outlier.png"
-          :width="insightIconSize"
-          :height="insightIconSize"
-        ></image>
-      </svg>
-      <svg id="defs-top2" xmlns="http://www.w3.org/2000/svg">
-        <image
-          href="/pic/top2.png"
-          :width="insightIconSize"
-          :height="insightIconSize"
-        ></image>
-      </svg>
-      <svg id="defs-evenness" xmlns="http://www.w3.org/2000/svg">
-        <image
-          href="/pic/evenness.png"
-          :width="insightIconSize"
-          :height="insightIconSize"
-        ></image>
-      </svg>
-      <svg id="defs-trend" xmlns="http://www.w3.org/2000/svg">
-        <image
-          href="/pic/trend.png"
-          :width="insightIconSize"
-          :height="insightIconSize"
-        ></image>
-      </svg>
-      <svg id="defs-skewness" xmlns="http://www.w3.org/2000/svg">
-        <image
-          href="/pic/skewness.png"
-          :width="insightIconSize"
-          :height="insightIconSize"
-        ></image>
-      </svg>
-      <svg id="defs-kurtosis" xmlns="http://www.w3.org/2000/svg">
-        <image
-          href="/pic/kurtosis.png"
-          :width="insightIconSize"
-          :height="insightIconSize"
-        ></image>
-      </svg>
-      <svg id="defs-correlation" xmlns="http://www.w3.org/2000/svg">
-        <image
-          href="/pic/correlation.png"
-          :width="insightIconSize"
-          :height="insightIconSize"
-        ></image>
-      </svg>
+      <!-- insight icon -->
     </defs>
   </div>
 </template>
 
 <script>
+import VegaLiteFilter from "@/components/force-directed-graph/VegaLiteFilter.vue";
 export default {
+  components: {
+    VegaLiteFilter,
+  },
   computed: {
     selectedData() {
       return this.$store.getters["force/selectedData"];
@@ -158,12 +197,6 @@ export default {
       defaultLinkColor: "#999",
       defaultNodeColor: "#aaa",
       circleHoveredColor: "#e6fcf5",
-
-      // graph set
-      width: null,
-      height: null,
-      leftCornerCoord: null,
-      rightCornerCoord: null,
 
       circleR: 12,
       circleFocusR: 24,
@@ -209,8 +242,9 @@ export default {
         col: null,
         row: null,
       },
-      // showMore
-      showMore: false,
+      // showMoreIcon
+      showMoreIcon: false,
+      showMorePanel: false,
 
       simulation: null,
       zoom: null,
@@ -292,7 +326,7 @@ export default {
       if (newVal) {
         this.neighborHighligt(
           this.selectedNode.id,
-          this.neighborMap.get(this.selectedNode),
+          this.neighborMap.get(this.selectedNode.id),
           "selected",
           false
         );
@@ -322,7 +356,6 @@ export default {
         this.neighborHighligt(newVal.id, neighborSet, "selected", true);
 
         if (newVal.id) {
-          this.showMore = true;
           this.$store.dispatch("table/convertCheckSelection", {
             mode: "clicked",
             data: new Map().set(newVal.id, {
@@ -330,8 +363,9 @@ export default {
               row: newVal.row,
             }),
           });
+          if (newVal["insight-list"].length > 1) this.showMoreIcon = true;
         } else {
-          this.showMore = false;
+          this.showMoreIcon = false;
           this.$store.dispatch("table/convertCheckSelection", {
             mode: "clicked",
             data: null,
@@ -413,6 +447,7 @@ export default {
     },
     setDomAttributes(linkG, circleG) {
       const that = this;
+
       circleG
         .attr("opacity", 0)
         .transition()
@@ -443,24 +478,6 @@ export default {
         .attr("stroke-width", 1);
 
       const linkContainerGroup = linkG;
-      // const linkTextGroup = linkContainerGroup
-      //   .append("text")
-      //   .attr("class", "link-label")
-      //   .text((d) => {
-      //     switch (d.type) {
-      //       case "parent-child":
-      //         return "P-C";
-      //       case "siblings":
-      //         return "S";
-      //       case "same-name":
-      //         return "S-A";
-      //     }
-      //   })
-      //   .attr("dy", ".35em")
-      //   .attr("fill", "#555")
-      //   .style("opacity", 0.5)
-      //   .style("user-select", "none")
-      //   .attr("font-size", "8px");
 
       //画nodes
       const circleGroup = circleG
@@ -470,11 +487,13 @@ export default {
           const gData = d3.select(this.parentNode).datum();
           return gData.showDetail;
         })
-        .attr("r", that.circleR)
+        .attr("r", function () {
+          return d3.select(this.parentNode).datum().circleR;
+        })
         .attr("stroke", this.defaultNodeColor)
         .attr("fill", "#fff")
         .attr("stroke-width", 1.5)
-        .style("transition", "r 0.2s,transform 0.2s")
+        .style("transition", "transform 0.2s")
 
         .on("mouseover", function (event) {
           const d = d3.select(this.parentNode).datum();
@@ -486,8 +505,8 @@ export default {
           if (!d.showDetail) {
             d3.select(this)
               .attr("fill", that.circleHoveredColor)
-              .attr("r", that.circleFocusR)
-              .style("cursor", "pointer");
+              .style("cursor", "pointer")
+              .attr("transform", "scale(2)");
 
             d3.select(this.parentNode)
               .select(".insight-icon")
@@ -497,7 +516,7 @@ export default {
         .on("mouseout", function (event) {
           const d = d3.select(this.parentNode).datum();
           if (!d.showDetail) {
-            d3.select(this).attr("r", that.circleR).attr("fill", "#FFF");
+            d3.select(this).attr("transform", "scale(1)").attr("fill", "#FFF");
           }
           d3.select(this.parentNode)
             .select(".insight-icon")
@@ -562,7 +581,7 @@ export default {
                 rectText.classed("not-show", true);
                 circle
                   .classed("not-show", false)
-                  .attr("r", that.circleR)
+                  .attr("transform", "scale(1)")
                   .attr("fill", "#FFF");
                 insightIcon.classed("not-show", false);
                 that.simulation.alphaDecay(that.restartAlphaDecay);
@@ -626,8 +645,18 @@ export default {
           return "#defs-" + insightType;
         })
         .attr("class", "insight-icon")
-        .attr("x", -this.insightIconSize / 2)
-        .attr("y", -this.insightIconSize / 2)
+        .attr("width", function () {
+          return d3.select(this.parentNode).datum().iconSize;
+        })
+        .attr("height", function () {
+          return d3.select(this.parentNode).datum().iconSize;
+        })
+        .attr("x", function () {
+          return -d3.select(this.parentNode).datum().iconSize / 2;
+        })
+        .attr("y", function () {
+          return -d3.select(this.parentNode).datum().iconSize / 2;
+        })
         .attr("pointer-events", "none")
         .style("transition", "transform 0.2s");
 
@@ -911,6 +940,7 @@ export default {
           // oldNode.view = null;
           // oldNode.img = null;
           // oldNode.rect = null;
+
           return oldNode;
         });
       }
@@ -1248,69 +1278,89 @@ export default {
     //   return Math.floor(Math.random() * (max - min + 1)) + min;
     // },
 
-    createObserver(svgElement) {
-      // 创建 ResizeObserver 实例
-      const observer = new ResizeObserver((entries) => {
-        // 遍历所有被观察的元素
-        for (let entry of entries) {
-          const { width, height } = entry.contentRect;
-          this.width = width;
-          this.height = height;
-          this.rightCornerCoord = [width, height];
+    // createObserver(svgElement) {
+    //   // 创建 ResizeObserver 实例
+    //   const observer = new ResizeObserver((entries) => {
+    //     // 遍历所有被观察的元素
+    //     for (let entry of entries) {
+    //       const { width, height } = entry.contentRect;
+    //       this.width = width;
+    //       this.height = height;
+    //       this.rightCornerCoord = [width, height];
 
-          this.zoom.translateExtent([
-            [-width, -height],
-            [width * 2, height * 2],
-          ]);
-          const defaultForceConfig = this.defaultForceConfig;
-          this.simulation
-            .force(
-              "center",
-              d3
-                .forceCenter(width / 2, height / 2)
-                .strength(defaultForceConfig.center.Strength)
-            )
-            .force(
-              "x",
-              d3
-                .forceX()
-                .x(width / 2)
-                .strength(defaultForceConfig.x.Strength)
-            )
-            .force(
-              "y",
-              d3
-                .forceY()
-                .y(height / 2)
-                .strength(defaultForceConfig.y.Strength)
-            );
+    //       this.zoom.translateExtent([
+    //         [-width, -height],
+    //         [width * 2, height * 2],
+    //       ]);
+    //       const defaultForceConfig = this.defaultForceConfig;
+    //       this.simulation
+    //         .force(
+    //           "center",
+    //           d3
+    //             .forceCenter(width / 2, height / 2)
+    //             .strength(defaultForceConfig.center.Strength)
+    //         )
+    //         .force(
+    //           "x",
+    //           d3
+    //             .forceX()
+    //             .x(width / 2)
+    //             .strength(defaultForceConfig.x.Strength)
+    //         )
+    //         .force(
+    //           "y",
+    //           d3
+    //             .forceY()
+    //             .y(height / 2)
+    //             .strength(defaultForceConfig.y.Strength)
+    //         );
 
-          this.restart(false);
-        }
-      });
-      // 开始观察 SVG 元素
-      observer.observe(svgElement);
-    },
+    //       this.restart(false);
+    //     }
+    //   });
+    //   // 开始观察 SVG 元素
+    //   observer.observe(svgElement);
+    // },
     // initial drawing, create DOM elements and sim system
     drawGraph(newVal) {
       const that = this;
       // 获取绘画数据
       const data = newVal;
-
-      // const links = data.links.map((d) => ({
-      //   ...d,
-      // }));
       const links = data.links.map((d) => ({ ...d }));
+
+      // 创建每个node insight num到 circleR & insight icon size的映射
+      let maxVegaLiteNum = 0;
+      data.nodes.forEach((node) => {
+        const vegaLiteNum = node["insight-list"].length;
+        if (vegaLiteNum > maxVegaLiteNum) maxVegaLiteNum = vegaLiteNum;
+      });
+
+      const circleRScale = d3
+        .scaleLog([1, maxVegaLiteNum], [this.circleR, this.circleR * 2])
+        .base(2);
+      const insightSizeScale = d3
+        .scaleLog(
+          [1, maxVegaLiteNum],
+          [this.insightIconSize, this.insightIconSize * 2]
+        )
+        .base(2);
+
       // 加入更多属性，控制vega-lite图的显示
-      const nodes = data.nodes.map((d) => ({
-        ...d,
-        showDetail: false,
-        pinned: false,
-        checked: false,
-        view: null,
-        img: null,
-        rect: null,
-      }));
+      const nodes = data.nodes.map((d) => {
+        const insightNum = d["insight-list"].length;
+
+        return {
+          ...d,
+          circleR: circleRScale(insightNum),
+          iconSize: insightSizeScale(insightNum),
+          showDetail: false,
+          pinned: false,
+          checked: false,
+          view: null,
+          img: null,
+          rect: null,
+        };
+      });
       const nodeIdMap = new Map();
       nodes.forEach((node) => {
         nodeIdMap.set(node.id, node);
@@ -1326,22 +1376,16 @@ export default {
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
 
-      this.width = width;
-      this.height = height;
-      this.leftCornerCoord = [0, 0];
-      this.rightCornerCoord = [width, height];
       // 先把svg图和nodes+links 元素画出来
-      // 随便设置一个种类的颜色映射
-      const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-      // 创建svg
+      // 选择svg
       const svg = svgContainer
-        .append("svg")
-        .attr("style", "width: 100%; height: 100%;")
-        .attr("viewbox", [0, 0, width, height]);
+        .select("svg")
+        .attr("style", "width: 100%;height:100% ")
+        .attr("viewBox", [0, 0, width, height]);
 
       this.createInsetFilter(svg.node());
-      this.createObserver(svg.node());
+      // this.createObserver(svg.node());
       //data binding
       const linkG = svg
         .append("g")
@@ -1380,14 +1424,38 @@ export default {
             .distance(function (d) {
               const sourceId = d.source.id;
               const targetId = d.target.id;
+
+              const neighbor1 = that.neighborMap.get(sourceId);
+              const neighbor2 = that.neighborMap.get(targetId);
+              let neighborCount1 = 0;
+              let neighborCount2 = 0;
+              if (neighbor1) neighborCount1 = neighbor1.length;
+              if (neighbor2) neighborCount2 = neighbor2.length;
+
+              let distanceIncrease = 5;
+              if (neighborCount1 > 3 && neighborCount2 > 3) {
+                distanceIncrease = 20;
+              } else if (neighborCount1 > 3 || neighborCount2 > 3) {
+                distanceIncrease = 0;
+              }
+
+              const circleR1 = d.source.circleR;
+              const circleR2 = d.target.circleR;
+              const middleR = that.circleR * 1.5;
+              if (circleR1 > middleR || circleR2 > middleR) {
+                distanceIncrease += 25;
+                if (circleR1 > middleR && circleR2 > middleR)
+                  distanceIncrease += 25;
+              }
+
               if (that.showIndex.size > 0) {
                 const show1 = that.showIndex.has(d.source.id);
                 const show2 = that.showIndex.has(d.target.id);
                 if (show1 || show2) {
                   if (show1 && show2) {
-                    return that.vegaLiteLongLink;
+                    return that.vegaLiteLongLink + distanceIncrease;
                   } else {
-                    return that.vegaLiteLink;
+                    return that.vegaLiteLink + distanceIncrease;
                   }
                 }
 
@@ -1402,25 +1470,11 @@ export default {
                         (sourceId === neighbor &&
                           secondNeighbor.includes(targetId))
                       ) {
-                        return that.circleNeighborLink;
+                        return that.circleNeighborLink + distanceIncrease;
                       }
                     }
                   }
                 }
-              }
-
-              let neighbor1 = that.neighborMap.get(sourceId);
-              let neighbor2 = that.neighborMap.get(targetId);
-              let neighborCount1 = 0;
-              let neighborCount2 = 0;
-              if (neighbor1) neighborCount1 = neighbor1.length;
-              if (neighbor2) neighborCount2 = neighbor2.length;
-
-              let distanceIncrease = 5;
-              if (neighborCount1 > 3 && neighborCount2 > 3) {
-                distanceIncrease = 20;
-              } else if (neighborCount1 > 3 || neighborCount2 > 3) {
-                distanceIncrease = 0;
               }
 
               return that.circleLink + distanceIncrease;
@@ -1433,6 +1487,13 @@ export default {
           d3
             .forceManyBody()
             .strength(function (d) {
+              let forceIncrease = 0;
+              const circleR = d.circleR;
+              const middleR = that.circleR * 1.5;
+              if (circleR > middleR) {
+                forceIncrease = -100;
+              }
+
               let strength = that.circleStrength;
               if (d.showDetail) {
                 strength = that.vegaLiteStrength;
@@ -1445,7 +1506,7 @@ export default {
                       for (const neighbor of directNeighbor) {
                         const secondNeighbor = that.neighborMap.get(neighbor);
                         if (secondNeighbor.includes(id)) {
-                          return that.circleNeighborStrength;
+                          return that.circleNeighborStrength + forceIncrease;
                         }
                       }
                     }
@@ -1453,7 +1514,7 @@ export default {
                 }
               }
 
-              return strength;
+              return strength + forceIncrease;
             })
             .theta(defaultForceConfig.manyBody.Theta)
             .distanceMin(defaultForceConfig.manyBody.DistanceMin)
@@ -1462,7 +1523,7 @@ export default {
         .force(
           "center",
           d3
-            .forceCenter(that.width / 2, that.height / 2)
+            .forceCenter(width / 2, height / 2)
             .strength(defaultForceConfig.center.Strength)
         )
         .force(
@@ -1470,7 +1531,7 @@ export default {
 
           d3
             .forceX()
-            .x(that.width / 2)
+            .x(width / 2)
             .strength(defaultForceConfig.x.Strength)
         )
         .force(
@@ -1478,7 +1539,7 @@ export default {
 
           d3
             .forceY()
-            .y(that.height / 2)
+            .y(height / 2)
             .strength(defaultForceConfig.y.Strength)
         )
         .force(
@@ -1488,7 +1549,7 @@ export default {
               if (d.showDetail) {
                 return d.rect.r;
               } else {
-                return that.circleR;
+                return d.circleR;
               }
             })
             .strength(defaultForceConfig.collide.Strength)
@@ -1512,32 +1573,6 @@ export default {
           .select(".node-group")
           .selectChildren("g")
           .style("transform", (d) => {
-            // let offsetWidth = 0;
-            // let offsetHeight = 0;
-
-            // if (d.showDetail) {
-            //   offsetWidth = d.rect.width / 2;
-            //   offsetHeight = d.rect.height / 2;
-            // } else {
-            //   offsetWidth = offsetHeight = that.circleR;
-            // }
-            // const x = d.x;
-            // const y = d.y;
-            // if (x - offsetWidth < that.leftCornerCoord[0]) {
-            //   // d.vx = Math.abs(d.vx);
-            //   d.x = that.leftCornerCoord[0] + offsetWidth;
-            // } else if (x + offsetWidth > that.rightCornerCoord[0]) {
-            //   //d.vx = -Math.abs(d.vx);
-            //   d.x = that.rightCornerCoord[0] - offsetWidth;
-            // }
-
-            // if (y - offsetHeight < that.leftCornerCoord[1]) {
-            //   // d.vy = Math.abs(d.vy);
-            //   d.y = that.leftCornerCoord[1] + offsetHeight;
-            // } else if (y + offsetHeight > that.rightCornerCoord[1]) {
-            //   //  d.vy = -Math.abs(d.vy);
-            //   d.y = that.rightCornerCoord[1] - offsetHeight;
-            // }
             return `translate(${d.x}px,${d.y}px)`;
           });
 
@@ -1583,10 +1618,10 @@ export default {
       // 创建缩放函数
       const zoom = d3
         .zoom()
-        .scaleExtent([0.5, 5]) // 设置缩放的范围
+        .scaleExtent([0.5, 8]) // 设置缩放的范围
         .translateExtent([
-          [-that.width, -that.height],
-          [that.width * 2, that.height * 2],
+          [-width * 1.5, -height * 1.5],
+          [width * 2.5, height * 2.5],
         ])
         .on("zoom", zoomed)
         .filter((event) => event.target === svg.node());
@@ -1599,12 +1634,6 @@ export default {
         const transform = event.transform;
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
-
-        // if (transform.k < 1.3) {
-        //   that.leftCornerCoord = transform.invert([0, 0]);
-        //   that.rightCornerCoord = transform.invert([that.width, that.height]);
-        //   that.simulation.restart();
-        // }
       }
 
       // initialize the default data
@@ -1618,7 +1647,6 @@ export default {
         this.defaultForceConfig.y.Y =
         this.defaultForceConfig.radial.Y =
           height / 2;
-      this.defaultForceConfig.collide.Radius = this.circleR;
     },
   },
 };
@@ -1634,6 +1662,7 @@ export default {
 #svg-container {
   height: 100%;
   width: 100%;
+  max-height: 100vh;
 }
 
 .edit-panel {
@@ -1686,6 +1715,11 @@ export default {
 .more-box {
   position: fixed;
   top: 33%;
+  right: 2.5%;
+}
+.showMorePanelBox {
+  position: fixed;
+  top: 40%;
   right: 2.5%;
 }
 .ticks-card {

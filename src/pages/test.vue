@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <!-- <ForceDirectedGraphOld></ForceDirectedGraphOld> -->
-    <MiniTable></MiniTable>
+    <BarChart></BarChart>
   </div>
 </template>
 

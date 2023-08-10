@@ -138,8 +138,7 @@ export default {
 }
 
 .force-graph-box {
-  height: 99%;
-
+  height: 100%;
   grid-column: 2;
 }
 .control-panel-box {

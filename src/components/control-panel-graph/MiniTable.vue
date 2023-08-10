@@ -2,6 +2,8 @@
   <div id="table-container"></div>
 </template>
 <script>
+import { flatGroup } from "d3";
+
 export default {
   data() {
     return {
@@ -253,7 +255,8 @@ export default {
     this.colDepth = data.colDepth;
 
     this.createTable();
-    this.addHighlightBorder(this.checkedArea, true);
+    this.addHighlightBorder(this.checkedArea, true, false);
+    this.addHighlightBorder(this.clickedArea, true, true);
   },
 };
 </script>
