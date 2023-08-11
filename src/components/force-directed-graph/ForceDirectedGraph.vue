@@ -46,9 +46,11 @@
           ></path>
         </svg>
         <VegaLiteFilter
-          v-if="showMorePanel"
+          v-if="showMorePanel && showMoreIcon"
           :insightList="selectedNode['insight-list']"
+          :insightIndex="selectedNode['insightIndex']"
           class="showMorePanelBox"
+          @insightIndexChange="changeInsightIndex"
         ></VegaLiteFilter>
       </div>
     </transition>
@@ -238,6 +240,7 @@ export default {
       // id
       selectedNode: {
         id: null,
+        insightIndex: null,
         "insight-list": null,
         col: null,
         row: null,
@@ -332,6 +335,7 @@ export default {
         );
         this.selectedNode = {
           id: null,
+          insightIndex: null,
           "insight-list": null,
           col: null,
           row: null,
@@ -379,6 +383,78 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    changeInsightIndex(selectedIndex) {
+      const id = this.selectedNode.id;
+      const oldIndex = this.selectedNode.insightIndex;
+      // change index record of selectedNode
+      this.selectedNode.insightIndex = selectedIndex;
+      const nodeData = this.nodeIdMap.get(id);
+      // change data record in force graph
+      nodeData.insightIndex = selectedIndex;
+      const oldType = nodeData["insight-list"][oldIndex]["insight-type"];
+      const newType = nodeData["insight-list"][selectedIndex]["insight-type"];
+      const g = d3
+        .select("#svg-container")
+        .select("svg")
+        .select(".node-group")
+        .selectChildren("g")
+        .filter((d) => d.id === id);
+
+      //change insight icon
+      g.select(".insight-icon").attr("href", function () {
+        const gData = d3.select(this.parentNode).datum();
+        const group = gData["insight-list"][gData.insightIndex]["insight-type"];
+
+        let insightType = null;
+        switch (group) {
+          case "dominance":
+            insightType = "dominance";
+            break;
+          case "outlier":
+            insightType = "outlier";
+            break;
+          case "top2":
+            insightType = "top2";
+            break;
+          case "evenness":
+            insightType = "evenness";
+            break;
+          case "trend":
+            insightType = "trend";
+            break;
+          case "skewness":
+            insightType = "skewness";
+            break;
+          case "kurtosis":
+            insightType = "kurtosis";
+            break;
+          case "correlation":
+          case "correlation-temporal":
+            insightType = "correlation";
+            break;
+        }
+        return "#defs-" + insightType;
+      });
+      // change vega-lite graph
+      this.showIndex.get(id).finalize();
+      g.selectAll(".vega-lite-graph").remove();
+      g.datum().view = null;
+      g.datum().img = null;
+      this.drawVegaLite(g, this.pinnedIndex.get(id) ? "svg" : "img");
+
+      // change data of statistic graph
+      this.$store.getters["force/statisticNodeIdMap"].get(id).insightIndex =
+        selectedIndex;
+
+      const oldNodeDataGroup = this.$store.getters["force/nodeDataGroup"];
+      const newNodeDataGroup = oldNodeDataGroup.map((d) => {
+        if (d.name === oldType) d.value -= 1;
+        if (d.name === newType) d.value += 1;
+        return d;
+      });
+
+      this.$store.commit("force/setNodeDataGroup", newNodeDataGroup);
+    },
     createInsetFilter(svg) {
       let svgNamespace = "http://www.w3.org/2000/svg";
 
@@ -523,11 +599,13 @@ export default {
             .select(".insight-icon")
             .attr("transform", "scale(1)");
         })
-        .on("click", function (event, d) {
+        .on("click", function () {
           // 获取选择circle对应的container - g元素
           const g = d3.select(this.parentNode);
+
           that.selectedNode = {
             id: g.datum().id,
+            insightIndex: g.datum().insightIndex,
             "insight-list": g.datum()["insight-list"],
             col: g.datum().col,
             row: g.datum().row,
@@ -560,6 +638,7 @@ export default {
                 g.datum().fy = null;
                 that.selectedNode = {
                   id: null,
+                  insightIndex: null,
                   "insight-list": null,
                   col: null,
                   row: null,
@@ -611,9 +690,10 @@ export default {
       const iconGroup = containerGroup
         .append("use")
         .attr("href", function () {
-          const g = d3.select(this.parentNode);
-          //const group = g.datum().group % that.insightNum;
-          const group = g.datum()["insight-list"][0]["insight-type"];
+          const gData = d3.select(this.parentNode).datum();
+
+          const group =
+            gData["insight-list"][gData.insightIndex]["insight-type"];
 
           let insightType = null;
           switch (group) {
@@ -702,8 +782,10 @@ export default {
         .on("click", function () {
           // 获取对应的container - g元素
           const g = d3.select(this.parentNode);
+
           that.selectedNode = {
             id: g.datum().id,
+            insightIndex: g.datum().insightIndex,
             "insight-list": g.datum()["insight-list"],
             row: g.datum().row,
             col: g.datum().col,
@@ -1053,6 +1135,7 @@ export default {
       const rectTitle = g.select(".rect-title");
       const rectTitleName = g.selectChild(".title-name");
       const rectTitleDescription = g.selectChild(".title-description");
+      const gData = g.datum();
 
       if (preView) {
         // reset the view
@@ -1061,7 +1144,7 @@ export default {
           case "img":
             // 创建反应新状态的img
             svg.classed("not-show", true);
-            const imgInfo = g.datum().img;
+            const imgInfo = gData.img;
             preView.toCanvas(5).then((canvas) => {
               // Access the canvas element and export as an image
               const image = document.createElementNS(
@@ -1082,7 +1165,9 @@ export default {
             break;
         }
       } else {
-        let yourVlSpec = JSON.parse(g.datum()["insight-list"][0]["vega-lite"]);
+        let yourVlSpec = JSON.parse(
+          gData["insight-list"][gData.insightIndex]["vega-lite"]
+        );
 
         // add some options
         yourVlSpec["width"] = this.vegaLiteWidth;
@@ -1094,7 +1179,7 @@ export default {
           const view = result.view.background("transparent");
           // record the view
           g.datum().view = view;
-          that.showIndex.set(g.datum().id, view);
+          that.showIndex.set(gData.id, view);
 
           const linkForce = that.simulation.force("link");
           if (linkForce) linkForce.initialize(that.simulation.nodes());
@@ -1168,14 +1253,14 @@ export default {
 
           rectTitleName
             .text(function () {
-              return g.datum()["insight-list"][0]["insight-type"];
+              return gData["insight-list"][gData.insightIndex]["insight-type"];
             })
             .attr("x", -translateX + that.iconOffset)
             .attr("y", -translateY + that.iconSize + that.iconOffset / 2)
             .attr("font-size", that.iconSize - 2);
           rectTitleDescription
             .text(function () {
-              const rowName = g.datum().row;
+              const rowName = gData.row;
 
               return `row: ${rowName}`;
             })
@@ -1187,7 +1272,7 @@ export default {
             .attr("dy", "1.2em")
             .style("text-align", "left")
             .text(function () {
-              const colName = g.datum().col;
+              const colName = gData.col;
               return `col: ${colName}`;
             });
           removeIcon.attr(
@@ -1214,7 +1299,7 @@ export default {
             case "img":
               // 创建反应新状态的img
               svg.classed("not-show", true);
-              const imgInfo = g.datum().img;
+              const imgInfo = gData.img;
               view.toCanvas(5).then((canvas) => {
                 // Access the canvas element and export as an image
                 const image = document.createElementNS(
@@ -1237,11 +1322,11 @@ export default {
             case "svg":
               // 初始就设置为 pinned 状态
               pinIcon.classed("icon-pinned", true);
-              that.pinnedIndex.set(g.datum().id, g);
+              that.pinnedIndex.set(gData.id, g);
               g.datum().pinned = true;
               g.classed("pinned", true);
-              g.datum().fx = g.datum().x;
-              g.datum().fy = g.datum().y;
+              g.datum().fx = gData.x;
+              g.datum().fy = gData.y;
               container.node().appendChild(svg.node());
               break;
           }
@@ -1349,7 +1434,6 @@ export default {
       // 加入更多属性，控制vega-lite图的显示
       const nodes = data.nodes.map((d) => {
         const insightNum = d["insight-list"].length;
-
         return {
           ...d,
           circleR: circleRScale(insightNum),

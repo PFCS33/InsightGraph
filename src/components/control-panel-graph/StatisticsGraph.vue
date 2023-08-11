@@ -259,7 +259,8 @@ export default {
             : that.totalData.links;
 
           const selectedNodeData = filteredNodes.filter(
-            (d) => params.selected[d["insight-list"][0]["insight-type"]]
+            (d) =>
+              params.selected[d["insight-list"][d.insightIndex]["insight-type"]]
           );
 
           const idMap = new Set();
@@ -271,6 +272,7 @@ export default {
           );
 
           that.$store.dispatch("force/groupByLinkType", filteredLinks);
+          that.$store.dispatch("force/groupByNodeType", selectedNodeData);
           that.$store.commit("force/setSelectedData", {
             nodes: selectedNodeData,
             links: filteredLinks,

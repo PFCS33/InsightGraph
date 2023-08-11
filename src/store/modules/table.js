@@ -1,5 +1,3 @@
-import { resetTitleFormatter } from "vega-lite/build/src/channeldef";
-
 export default {
   namespaced: true,
   state() {

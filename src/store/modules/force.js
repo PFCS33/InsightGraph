@@ -6,6 +6,7 @@ export default {
       selectedData: null,
       linkDataGroup: null,
       nodeDataGroup: null,
+      statisticNodeIdMap: null,
     };
   },
   getters: {
@@ -21,6 +22,9 @@ export default {
     nodeDataGroup(state) {
       return state.nodeDataGroup;
     },
+    statisticNodeIdMap(state) {
+      return state.statisticNodeIdMap;
+    },
   },
   mutations: {
     setTotalData(state, payload) {
@@ -34,6 +38,9 @@ export default {
     },
     setNodeDataGroup(state, payload) {
       state.nodeDataGroup = payload;
+    },
+    setStatisticNodeIdMap(state, payload) {
+      state.statisticNodeIdMap = payload;
     },
   },
   actions: {
@@ -54,7 +61,7 @@ export default {
       if (payload.length > 0) {
         const groups = d3.group(
           payload,
-          (d) => d["insight-list"][0]["insight-type"]
+          (d) => d["insight-list"][d.insightIndex]["insight-type"]
         );
 
         groups.forEach((group, type) => {
@@ -89,6 +96,14 @@ export default {
       const file = "test_data/result_0807.json";
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
+        // 增加insight-index属性
+        data.nodes.forEach((d) => (d.insightIndex = 0));
+        const statisticNodeIdMap = new Map();
+
+        data.nodes.forEach((d) => {
+          statisticNodeIdMap.set(d.id, d);
+        });
+        context.commit("setStatisticNodeIdMap", statisticNodeIdMap);
         context.commit("setTotalData", data);
         context.commit("setSelectedData", data);
         context.dispatch("groupByLinkType", data.links);
