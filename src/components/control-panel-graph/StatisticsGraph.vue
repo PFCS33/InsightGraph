@@ -311,7 +311,7 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1vw;
+  gap: 0.5vw;
   background: #f1f3f5;
   /* background: #e9ecef; */
 }

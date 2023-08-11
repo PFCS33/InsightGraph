@@ -286,10 +286,10 @@ table.mini-table {
     background-color: #ddd;
   }
   td.cell-border-left-highlight-clicked {
-    border-left: 2px dashed #aaa;
+    border-left: 3px dashed #aaa;
   }
   td.cell-border-right-highlight-clicked {
-    border-right: 2px dashed #aaa;
+    border-right: 3px dashed #aaa;
   }
 
   td.cell-border-top-highlight-clicked {

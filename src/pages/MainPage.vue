@@ -7,46 +7,50 @@
       <div :class="['control-panel-box', { 'no-padding': !editMode }]">
         <BaseCard
           inset
-          class="control-panel-button-box"
-          v-show="editMode || !animationDone"
-        >
-          <div class="button-box-content" v-show="animationDone && editMode">
-            <BaseButton
-              inset
-              :class="['btn', { 'active-btn': controlPanelMode === 'base' }]"
-              @click="controlPanelMode = 'base'"
-              >Base</BaseButton
-            >
-            <BaseButton
-              inset
-              :class="['btn', { 'active-btn': controlPanelMode === 'table' }]"
-              @click="controlPanelMode = 'table'"
-              >Table</BaseButton
-            >
-          </div>
-        </BaseCard>
-        <BaseCard
-          inset
           class="control-panel"
           v-show="editMode || !animationDone"
         >
-          <div
-            class="base-mode"
-            v-show="controlPanelMode === 'base' && animationDone && editMode"
-          >
-            <div class="button-box">
-              <BaseButton inset @click="restart" class="btn"
-                >ReStart</BaseButton
-              >
-              <BaseButton inset @click="stop" class="btn">Stop</BaseButton>
-            </div>
-            <StatisticsGraph></StatisticsGraph>
+          <div class="button-box-content" v-show="animationDone && editMode">
+            <button
+              :class="[
+                'tab-btn',
+                { 'active-tab-btn': controlPanelMode === 'base' },
+              ]"
+              @click="controlPanelMode = 'base'"
+            >
+              Base
+            </button>
+
+            <button
+              :class="[
+                'tab-btn',
+                { 'active-tab-btn': controlPanelMode === 'table' },
+              ]"
+              @click="controlPanelMode = 'table'"
+            >
+              Table
+            </button>
           </div>
-          <div
-            class="table-mode"
-            v-if="controlPanelMode === 'table' && animationDone && editMode"
-          >
-            <MiniTable></MiniTable>
+
+          <div class="control-panel-content">
+            <div
+              class="base-mode"
+              v-show="controlPanelMode === 'base' && animationDone && editMode"
+            >
+              <div class="button-box">
+                <BaseButton inset @click="restart" class="btn"
+                  >ReStart</BaseButton
+                >
+                <BaseButton inset @click="stop" class="btn">Stop</BaseButton>
+              </div>
+              <StatisticsGraph></StatisticsGraph>
+            </div>
+            <div
+              class="table-mode"
+              v-if="controlPanelMode === 'table' && animationDone && editMode"
+            >
+              <MiniTable></MiniTable>
+            </div>
           </div>
         </BaseCard>
       </div>
@@ -145,43 +149,58 @@ export default {
   grid-column: 1;
   width: 100%;
   height: 100%;
-  padding: 0.5vw;
-
-  display: flex;
-  flex-direction: column;
-  gap: 0.5vw;
-}
-.control-panel-button-box {
-  flex: 0.1;
-
-  background: #f1f3f5;
-}
-.button-box-content {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1vw;
+  padding: 0.3vw;
 }
 .control-panel {
-  flex: 0.9;
   background: #f1f3f5;
-  /* width: 100%;
-  height: 100%; */
-}
-.base-mode {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1vw;
+
+  overflow: hidden;
+}
+
+.button-box-content {
+  flex: 0.05;
+  width: 100%;
+  /* height: 100%; */
+  display: flex;
+  gap: 0;
+}
+.tab-btn {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+  color: #30a882;
+  cursor: pointer;
+  padding-top: 1.5%;
+}
+
+.tab-btn:active,
+.tab-btn:hover {
+  box-shadow: 0 5px 0px -3px rgba(0, 0, 0, 0.2);
+}
+.active-tab-btn {
+  box-shadow: 0 5px 0px -3px rgba(0, 0, 0, 0.2);
+}
+.control-panel-content {
+  flex: 0.95;
+  overflow: hidden;
   padding: 1vw;
+}
+.base-mode {
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1vw;
 }
 .table-mode {
   width: 100%;
   height: 100%;
-  padding: 1vw;
 }
 
 .button-box {
