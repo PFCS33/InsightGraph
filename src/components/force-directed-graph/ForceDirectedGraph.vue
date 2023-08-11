@@ -1703,7 +1703,7 @@ export default {
       // 创建缩放函数
       const zoom = d3
         .zoom()
-        .scaleExtent([0.5, 8]) // 设置缩放的范围
+        .scaleExtent([0.3, 8]) // 设置缩放的范围
         .translateExtent([
           [-width * 1.5, -height * 1.5],
           [width * 2.5, height * 2.5],

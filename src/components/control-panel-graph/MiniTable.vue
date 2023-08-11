@@ -198,7 +198,8 @@ export default {
                 return i >= colSpan[0] && i <= colSpan[1];
               })
               .classed("cell-border-top-highlight" + cssSuffix, mode);
-          } else if (i === rowWidth) {
+          }
+          if (i === rowWidth) {
             d3.select(this)
               .selectAll("td")
               .filter(function (d, i) {
