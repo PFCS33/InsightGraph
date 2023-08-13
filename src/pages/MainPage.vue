@@ -6,28 +6,16 @@
     >
       <div :class="['control-panel-box']" v-show="editMode">
         <BaseCard mode="flat" class="control-panel" v-show="animationDone">
-          <div class="button-box-content">
-            <button
-              :class="[
-                'tab-btn',
-                { 'active-tab-btn': controlPanelMode === 'base' },
-              ]"
-              @click="controlPanelMode = 'base'"
+          <div style="flex: 0.05">
+            <el-tabs
+              v-model="controlPanelMode"
+              :stretch="true"
+              class="config-panel-tab"
             >
-              Base
-            </button>
-
-            <button
-              :class="[
-                'tab-btn',
-                { 'active-tab-btn': controlPanelMode === 'table' },
-              ]"
-              @click="controlPanelMode = 'table'"
-            >
-              Table
-            </button>
+              <el-tab-pane label="Base" name="base"></el-tab-pane>
+              <el-tab-pane label="Table" name="table"></el-tab-pane>
+            </el-tabs>
           </div>
-
           <div class="control-panel-content" v-show="animationDone">
             <div class="base-mode" v-show="controlPanelMode === 'base'">
               <div class="button-box">
@@ -258,5 +246,25 @@ export default {
   background-color: #aaa;
   fill: #fff;
   border: none;
+}
+</style>
+
+<style lang="less">
+.config-panel-tab {
+  height: 100%;
+  --el-tabs-header-height: none;
+  --el-color-primary: #ad89c6;
+  padding: 0 1vw;
+
+  .el-tabs__header {
+    margin: 0;
+  }
+
+  .el-tabs__nav,
+  .el-tabs__nav-scroll,
+  .el-tabs__nav-wrap,
+  .el-tabs__header {
+    height: 100%;
+  }
 }
 </style>
