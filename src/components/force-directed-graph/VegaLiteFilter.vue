@@ -51,6 +51,7 @@ export default {
     },
     insightList() {
       this.currentIndex = this.insightIndex;
+
       if (this.selectedIndex !== this.currentIndex) {
         this.selectedIndex = this.currentIndex;
       } else {
@@ -64,6 +65,7 @@ export default {
       const that = this;
       const container = d3.select("#vega-lite-filtered-container");
       container.selectAll("*").remove();
+
       let yourVlSpec = JSON.parse(this.insightList[index]["vega-lite"]);
       yourVlSpec["width"] = "container";
       yourVlSpec["height"] = "container";
