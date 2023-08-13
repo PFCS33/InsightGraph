@@ -272,12 +272,12 @@ table.mini-table {
   border-collapse: collapse;
   // border-spacing: 0;
   // border-collapse: separate;
-  border: 2px solid #aaa;
+  border: 2px solid #545b77;
 }
 
 table.mini-table {
   th {
-    border: 1.5px solid #aaa;
+    border: 1.5px solid #545b77;
   }
   td {
     border: 1px dashed #ccc;
@@ -287,31 +287,31 @@ table.mini-table {
     background-color: #ddd;
   }
   td.cell-border-left-highlight-clicked {
-    border-left: 3px dashed #aaa;
+    border-left: 3px dashed #ad89c6;
   }
   td.cell-border-right-highlight-clicked {
-    border-right: 3px dashed #aaa;
+    border-right: 3px dashed #ad89c6;
   }
 
   td.cell-border-top-highlight-clicked {
-    border-top: 2px dotted #aaa;
+    border-top: 2px dotted #ad89c6;
   }
   td.cell-border-bottom-highlight-clicked {
-    border-bottom: 2px dotted #aaa;
+    border-bottom: 2px dotted #ad89c6;
   }
 
   td.cell-border-left-highlight {
-    border-left: 2px solid #555;
+    border-left: 2px solid #b42c97;
   }
   td.cell-border-right-highlight {
-    border-right: 2px solid #555;
+    border-right: 2px solid #b42c97;
   }
 
   td.cell-border-top-highlight {
-    border-top: 2px solid #555;
+    border-top: 2px solid #b42c97;
   }
   td.cell-border-bottom-highlight {
-    border-bottom: 2px solid #555;
+    border-bottom: 2px solid #b42c97;
   }
   td.cell-background-highlight {
     background-color: #ddd;
@@ -325,5 +325,6 @@ table.mini-table {
   width: fit-content;
   height: fit-content;
   position: fixed;
+  z-index: 10;
 }
 </style>

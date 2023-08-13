@@ -1,7 +1,20 @@
 <template>
   <div class="container">
+    <nav class="navBar">
+      <div class="nav-title">NavBar</div>
+      <BaseButton
+        inset
+        @click="toggleEditMode"
+        class="edit-btn btn"
+        :class="{ 'active-btn': editMode }"
+      >
+        <el-icon size="large" class="icon">
+          <Tools />
+        </el-icon>
+      </BaseButton>
+    </nav>
     <div
-      :class="['content-box', 'container', { notEditMode: !editMode }]"
+      :class="['content-box', { notEditMode: !editMode }]"
       @transitionend="handleTransitionEnd"
     >
       <div :class="['control-panel-box']" v-show="editMode">
@@ -57,17 +70,6 @@
         <ForceDirectedGraph ref="forceGraph"></ForceDirectedGraph>
       </div>
     </div>
-
-    <BaseButton
-      inset
-      @click="toggleEditMode"
-      class="edit-btn btn"
-      :class="{ 'active-btn': editMode }"
-    >
-      <el-icon size="large" class="icon">
-        <Tools />
-      </el-icon>
-    </BaseButton>
   </div>
 </template>
 <script>
@@ -126,13 +128,38 @@ export default {
   height: 100%;
   width: 100%;
   background-color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+.navBar {
+  flex: 0.05;
+  width: 100%;
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
+  margin-bottom: 0.4vw;
+  transition: box-shadow 0.3s;
+  z-index: 5;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1vw;
+}
+.navBar:hover {
+  box-shadow: 0px 2px 5px 0px #545b7785;
+}
+.nav-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #545b77;
+  font-style: italic;
 }
 .content-box {
   /* display: flex; */
-
+  flex: 0.95;
   display: grid;
   grid-template-columns: 2.3fr 7.7fr;
   transition: all 0.2s ease-in-out;
+  max-height: 95vh;
 }
 
 .content-box.notEditMode {
@@ -140,7 +167,7 @@ export default {
 }
 
 .force-graph-box {
-  height: 100%;
+  max-height: 94vh;
   grid-column: 2;
 }
 .control-panel-box {
@@ -148,6 +175,8 @@ export default {
   width: 100%;
   height: 100%;
   padding: 0.3vw;
+  padding-top: 0;
+  padding-left: 0;
 }
 .control-panel {
   width: 100%;
@@ -156,16 +185,13 @@ export default {
   flex-direction: column;
 
   overflow: hidden;
-  background-color: #fafafa;
+  background-color: #fff;
 }
 
 .button-box-content {
   flex: 0.05;
   width: 100%;
   /* height: 100%; */
-  display: flex;
-
-  gap: 0;
 }
 .tab-btn {
   width: 100%;
@@ -204,7 +230,7 @@ export default {
 
 .button-box {
   display: flex;
-  gap: 0;
+  gap: 0px;
   justify-content: left;
 }
 .no-padding {
@@ -218,11 +244,9 @@ export default {
   box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.26);
 }
 .edit-btn {
-  position: fixed;
-  bottom: 5%;
-  right: 3%;
   display: flex;
   align-items: center;
+  padding: 0.3rem 0.3rem;
 }
 .active-btn {
   background-color: #545b77 !important;
@@ -233,17 +257,18 @@ export default {
 
 .panel-icon {
   cursor: pointer;
-  fill: #888;
+  fill: #545b77;
   padding: 0.2rem;
 
   border-radius: 4px;
   width: 25px;
   height: 25px;
+  transition: background-color 0.3s, fill 0.3s;
 }
 
 .panel-icon:hover,
 .panel-icon:active {
-  background-color: #aaa;
+  background-color: #545b77;
   fill: #fff;
   border: none;
 }
@@ -259,7 +284,15 @@ export default {
   .el-tabs__header {
     margin: 0;
   }
-
+  .el-tabs__item {
+    color: #545b77;
+  }
+  .el-tabs__item.is-active {
+    color: var(--el-color-primary);
+  }
+  .el-tabs__item:hover {
+    color: var(--el-color-primary);
+  }
   .el-tabs__nav,
   .el-tabs__nav-scroll,
   .el-tabs__nav-wrap,

@@ -1688,10 +1688,10 @@ export default {
       const zoom = d3
         .zoom()
         .scaleExtent([0.3, 8]) // 设置缩放的范围
-        .translateExtent([
-          [-width * 1.5, -height * 1.5],
-          [width * 2.5, height * 2.5],
-        ])
+        // .translateExtent([
+        //   [-width * 1.5, -height * 1.5],
+        //   [width * 2.5, height * 2.5],
+        // ])
         .on("zoom", zoomed)
         .filter((event) => event.target === svg.node());
 
@@ -1731,7 +1731,6 @@ export default {
 #svg-container {
   height: 100%;
   width: 100%;
-  max-height: 100vh;
 }
 
 .edit-panel {
@@ -1768,8 +1767,8 @@ export default {
 
 .more-box {
   position: fixed;
-  top: 33%;
-  right: 2.5%;
+  top: 7%;
+  right: 1%;
 }
 .showMorePanelBox {
   position: fixed;

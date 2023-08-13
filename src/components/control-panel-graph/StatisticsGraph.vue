@@ -65,7 +65,7 @@ export default {
             icon: "circle",
             textStyle: {
               fontSize: 10,
-              color: "#888",
+              color: "#555",
             },
             itemWidth: 10,
             itemGap: 5,
@@ -199,7 +199,7 @@ export default {
 
             textStyle: {
               fontSize: 10,
-              color: "#888",
+              color: "#555",
             },
             itemWidth: 18,
             itemGap: 5,
@@ -314,16 +314,27 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5vw;
+
   background-color: #fff;
 }
 #barchart-box {
   width: 100%;
   height: 100%;
   flex: 0.4;
+  background-color: #fff;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
+
 #piechart-box {
   width: 100%;
   height: 100%;
   flex: 0.6;
+  background-color: #fff;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#piechart-box:hover,
+#barchart-box:hover {
+  box-shadow: 1px 4px 6px 1px rgba(0, 0, 0, 0.26);
 }
 </style>

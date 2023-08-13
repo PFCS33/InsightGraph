@@ -76,6 +76,6 @@ button:active.inset {
   background-color: #545b77;
   color: #fff;
   box-shadow: 0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(0, 0, 0, 0),
-    inset 0.3rem 0.5rem 0.4rem #353a4a;
+    inset 0.3rem 0.5rem 0.4rem #3a415b;
 }
 </style>
