@@ -4,13 +4,9 @@
       :class="['content-box', 'container', { notEditMode: !editMode }]"
       @transitionend="handleTransitionEnd"
     >
-      <div :class="['control-panel-box', { 'no-padding': !editMode }]">
-        <BaseCard
-          inset
-          class="control-panel"
-          v-show="editMode || !animationDone"
-        >
-          <div class="button-box-content" v-show="animationDone && editMode">
+      <div :class="['control-panel-box']" v-show="editMode">
+        <BaseCard mode="flat" class="control-panel" v-show="animationDone">
+          <div class="button-box-content">
             <button
               :class="[
                 'tab-btn',
@@ -32,23 +28,37 @@
             </button>
           </div>
 
-          <div class="control-panel-content">
-            <div
-              class="base-mode"
-              v-show="controlPanelMode === 'base' && animationDone && editMode"
-            >
+          <div class="control-panel-content" v-show="animationDone">
+            <div class="base-mode" v-show="controlPanelMode === 'base'">
               <div class="button-box">
-                <BaseButton inset @click="restart" class="btn"
-                  >ReStart</BaseButton
-                >
-                <BaseButton inset @click="stop" class="btn">Stop</BaseButton>
+                <div>
+                  <svg
+                    viewBox="0 0 1024 1024"
+                    xmlns="http://www.w3.org/2000/svg"
+                    @click="restart"
+                    class="panel-icon"
+                  >
+                    <path
+                      d="M512 938.666667C276.352 938.666667 85.333333 747.648 85.333333 512S276.352 85.333333 512 85.333333s426.666667 191.018667 426.666667 426.666667-191.018667 426.666667-426.666667 426.666667z m205.653333-210.090667a298.666667 298.666667 0 1 0-79.018666 54.016l-41.6-74.88A213.333333 213.333333 0 1 1 725.333333 512h-128l120.32 216.576z"
+                    ></path>
+                  </svg>
+                </div>
+                <div>
+                  <svg
+                    viewBox="-38 -38 1062 1062"
+                    xmlns="http://www.w3.org/2000/svg"
+                    @click="stop"
+                    class="panel-icon"
+                  >
+                    <path
+                      d="M512 0C229.216 0 0 229.216 0 512s229.216 512 512 512 512-229.216 512-512S794.784 0 512 0z m0 928C282.24 928 96 741.76 96 512S282.24 96 512 96s416 186.24 416 416-186.24 416-416 416z m-192-608h384v384H320z"
+                    ></path>
+                  </svg>
+                </div>
               </div>
               <StatisticsGraph></StatisticsGraph>
             </div>
-            <div
-              class="table-mode"
-              v-if="controlPanelMode === 'table' && animationDone && editMode"
-            >
+            <div class="table-mode" v-if="controlPanelMode === 'table'">
               <MiniTable></MiniTable>
             </div>
           </div>
@@ -56,10 +66,7 @@
       </div>
 
       <div class="force-graph-box">
-        <ForceDirectedGraph
-          ref="forceGraph"
-          v-show="animationDone"
-        ></ForceDirectedGraph>
+        <ForceDirectedGraph ref="forceGraph"></ForceDirectedGraph>
       </div>
     </div>
 
@@ -114,7 +121,10 @@ export default {
     },
 
     handleTransitionEnd(event) {
-      this.animationDone = true;
+      console.log(event);
+      if (event.propertyName === "grid-template-columns") {
+        this.animationDone = true;
+      }
     },
   },
   created() {
@@ -127,7 +137,7 @@ export default {
 .container {
   height: 100%;
   width: 100%;
-  background: #fff;
+  background-color: #fff;
 }
 .content-box {
   /* display: flex; */
@@ -152,13 +162,13 @@ export default {
   padding: 0.3vw;
 }
 .control-panel {
-  background: #f1f3f5;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
 
   overflow: hidden;
+  background-color: #fafafa;
 }
 
 .button-box-content {
@@ -166,6 +176,7 @@ export default {
   width: 100%;
   /* height: 100%; */
   display: flex;
+
   gap: 0;
 }
 .tab-btn {
@@ -173,7 +184,7 @@ export default {
   height: 100%;
   border: none;
   background-color: transparent;
-  color: #30a882;
+  color: #545b77;
   cursor: pointer;
   padding-top: 1.5%;
 }
@@ -205,8 +216,8 @@ export default {
 
 .button-box {
   display: flex;
-  gap: 1vw;
-  justify-content: center;
+  gap: 0;
+  justify-content: left;
 }
 .no-padding {
   padding: 0 !important;
@@ -226,14 +237,26 @@ export default {
   align-items: center;
 }
 .active-btn {
-  background: linear-gradient(
-    119.06deg,
-    #3fdfac 10.71%,
-    #44e1bf 60.37%,
-    #46dfc3 103.14%
-  ) !important;
+  background-color: #545b77 !important;
   color: #fff !important;
   box-shadow: 0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(0, 0, 0, 0),
-    inset 0.4rem 0.3rem 0.4rem rgba(56, 175, 149, 0.6);
+    inset 0.4rem 0.3rem 0.4rem #474c5e;
+}
+
+.panel-icon {
+  cursor: pointer;
+  fill: #888;
+  padding: 0.2rem;
+
+  border-radius: 4px;
+  width: 25px;
+  height: 25px;
+}
+
+.panel-icon:hover,
+.panel-icon:active {
+  background-color: #aaa;
+  fill: #fff;
+  border: none;
 }
 </style>

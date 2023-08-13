@@ -1,36 +1,7 @@
 <template>
   <div class="container">
     <!-- <transition name="slide"> -->
-    <BaseCard inset class="ticks-card"> {{ ticks }} </BaseCard>
-    <BaseCard inset class="camera-card">
-      <svg
-        viewBox="0 0 1024 1024"
-        xmlns="http://www.w3.org/2000/svg"
-        width="30"
-        height="30"
-        class="camera-icon"
-      >
-        <path
-          d="M832 192 512 192c0-52.928-43.072-96-96-96l-64 0C299.072 96 256 139.072 256 192L160 192C107.072 192 64 235.072 64 288l0 512c0 52.928 43.072 96 96 96l417.888 0c9.088 0 17.792-3.872 23.84-10.656s8.96-15.84 7.968-24.864c-0.928-8.416-1.568-16.864-1.568-25.536 0-141.664 132.192-254.688 279.904-216.672 9.568 2.4 19.744 0.352 27.584-5.728C923.424 606.496 928 597.152 928 587.296L928 288C928 235.072 884.928 192 832 192zM480 736c-105.888 0-192-86.112-192-192s86.112-192 192-192 192 86.112 192 192S585.888 736 480 736zM784 416c-26.496 0-48-21.504-48-48s21.504-48 48-48 48 21.504 48 48S810.496 416 784 416z"
-        ></path>
-        <path
-          d="M832 673.984c-88.384 0-160 71.616-160 160s71.616 160 160 160 160-71.616 160-160S920.384 673.984 832 673.984zM896 864l-32 0 0 32c0 17.696-14.304 32-32 32s-32-14.304-32-32l0-32-32 0c-17.696 0-32-14.304-32-32s14.304-32 32-32l32 0 0-32c0-17.696 14.304-32 32-32s32 14.304 32 32l0 32 32 0c17.696 0 32 14.304 32 32S913.696 864 896 864z"
-        ></path>
-      </svg>
-    </BaseCard>
-    <BaseCard inset class="warehouse-card"
-      ><svg
-        class="warehouse-icon"
-        viewBox="0 0 1280 1024"
-        xmlns="http://www.w3.org/2000/svg"
-        width="30"
-        height="30"
-      >
-        <path
-          d="M1221 234L676.8 7.4a96.3 96.3 0 0 0-73.8 0L59 234C23.4 249 0 283.8 0 322.6V1008c0 8.8 7.2 16 16 16h96c8.8 0 16-7.2 16-16V416c0-17.6 14.4-32 32-32h960c17.6 0 32 14.4 32 32v592c0 8.8 7.2 16 16 16h96c8.8 0 16-7.2 16-16V322.6c0-38.8-23.4-73.6-59-88.6zM608 832H288c-17.6 0-32 14.4-32 32v128c0 17.6 14.4 32 32 32h320c17.6 0 32-14.4 32-32v-128c0-17.6-14.4-32-32-32z m384 0H736c-17.6 0-32 14.4-32 32v128c0 17.6 14.4 32 32 32h256c17.6 0 32-14.4 32-32v-128c0-17.6-14.4-32-32-32zM608 576H288c-17.6 0-32 14.4-32 32v128c0 17.6 14.4 32 32 32h320c17.6 0 32-14.4 32-32v-128c0-17.6-14.4-32-32-32z"
-        ></path>
-      </svg>
-    </BaseCard>
+
     <transition name="slide">
       <div class="more-box" v-show="showMoreIcon">
         <svg
@@ -376,7 +347,7 @@ export default {
             this.$nextTick(() => {
               setTimeout(() => {
                 this.showMoreIcon = true;
-              }, 200);
+              }, 150);
             });
           } else {
             this.showMoreIcon = true;
@@ -552,8 +523,8 @@ export default {
 
       const linkTypeColor = d3.scaleOrdinal(
         ["parent-child", "siblings", "same-name"],
-        //     d3.schemePaired
-        ["#15aabf", "#e64980", "#f59f00"]
+
+        ["#F7A69F", "#C69DE9", "#53C4B6"]
       );
 
       // 画links
@@ -1480,9 +1451,8 @@ export default {
       // 选择svg
       const svg = svgContainer
         .select("svg")
-        .attr("style", "width: 100%;height:100% ")
+        .attr("style", "width: 100%;height:100% ;")
         .attr("viewBox", [0, 0, width, height]);
-
       this.createInsetFilter(svg.node());
       // this.createObserver(svg.node());
       //data binding
@@ -1791,26 +1761,11 @@ export default {
   right: 3%;
 }
 
-.camera-icon,
-.warehouse-icon,
 .more-icon {
   fill: #555;
   cursor: pointer;
 }
 
-.camera-card {
-  padding: 0.5vw;
-  position: fixed;
-  top: 13%;
-  right: 2%;
-}
-
-.warehouse-card {
-  padding: 0.5vw;
-  position: fixed;
-  top: 22%;
-  right: 2%;
-}
 .more-box {
   position: fixed;
   top: 33%;
@@ -1867,39 +1822,6 @@ export default {
 .slide-leave-from {
   opacity: 1;
   transform: translateX(0); /* 平移隐藏 */
-}
-</style>
-
-<!-- form -->
-<style scoped>
-.el-menu-item {
-  height: fit-content;
-}
-.form {
-  padding: 0.8vw 2vw 1vw 2vw;
-}
-
-.form-item-control {
-  margin-bottom: 10px;
-}
-.config-btn {
-  font-size: 100%;
-  flex: 1 1 50%;
-}
-
-.form-btn-control {
-  display: flex;
-  gap: 0.5vw;
-  width: 100%;
-}
-.btn-label {
-  width: 85%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.input-control {
-  /* width: 90%; */
 }
 </style>
 

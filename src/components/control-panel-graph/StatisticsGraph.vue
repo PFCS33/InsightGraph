@@ -1,7 +1,7 @@
 <template>
   <div class="statistics-graph-box">
-    <BaseCard inset id="barchart-box"></BaseCard>
-    <BaseCard inset id="piechart-box"></BaseCard>
+    <BaseCard mode="flat" id="barchart-box"></BaseCard>
+    <BaseCard mode="flat" id="piechart-box"></BaseCard>
   </div>
 </template>
 <script>
@@ -89,7 +89,7 @@ export default {
             type: "category",
             axisLabel: { show: false }, // 隐藏 Y 轴的标签,
           },
-          color: ["#e64980", "#15aabf", "#f59f00"],
+          color: ["#F7A69F", "#C69DE9", "#53C4B6"],
 
           series: newVal.map((item) => ({
             name: item.type,
@@ -314,19 +314,16 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5vw;
-  background: #f1f3f5;
-  /* background: #e9ecef; */
+  background-color: #fff;
 }
 #barchart-box {
   width: 100%;
   height: 100%;
   flex: 0.4;
-  background: #fff;
 }
 #piechart-box {
   width: 100%;
   height: 100%;
   flex: 0.6;
-  background: #fff;
 }
 </style>
