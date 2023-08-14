@@ -111,7 +111,6 @@ export default {
     },
 
     handleTransitionEnd(event) {
-      console.log(event);
       if (event.propertyName === "grid-template-columns") {
         this.animationDone = true;
       }
@@ -278,14 +277,14 @@ export default {
 .config-panel-tab {
   height: 100%;
   --el-tabs-header-height: none;
-  --el-color-primary: #ad89c6;
+  --el-color-primary: #545b77;
   padding: 0 1vw;
 
   .el-tabs__header {
     margin: 0;
   }
   .el-tabs__item {
-    color: #545b77;
+    color: #aaa;
   }
   .el-tabs__item.is-active {
     color: var(--el-color-primary);

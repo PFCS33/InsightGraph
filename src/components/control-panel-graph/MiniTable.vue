@@ -314,7 +314,7 @@ table.mini-table {
     border-bottom: 2px solid #b42c97;
   }
   td.cell-background-highlight {
-    background-color: #ddd;
+    background-color: #e8e8e8d5;
   }
 }
 .tooltip {

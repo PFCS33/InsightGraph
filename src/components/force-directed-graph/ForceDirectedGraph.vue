@@ -1,16 +1,16 @@
 <template>
   <div class="container">
-    <!-- <transition name="slide"> -->
-
     <transition name="slide">
       <div class="more-box" v-show="showMoreIcon">
         <svg
           class="more-icon"
           viewBox="0 0 1024 1024"
-          width="30"
-          height="30"
           xmlns="http://www.w3.org/2000/svg"
-          @click="showMorePanel = !showMorePanel"
+          @click="
+            showMoreIcon = !showMoreIcon;
+            showMorePanel = !showMorePanel;
+            hidePanelMode = !hidePanelMode;
+          "
         >
           <path
             d="M511.48 22.62c-270.42 0-489.62 218.96-489.62 489.09s219.2 489.09 489.62 489.09 489.61-218.96 489.61-489.09S781.89 22.62 511.48 22.62zM211.83 435.56c-0.11-0.19-0.11-0.49-0.23-0.71l-0.3-1.2c0-0.23-0.11-0.42-0.11-0.6l-0.3-1.32c0-0.3-0.11-0.49-0.11-0.68-0.08-0.42-0.08-0.94-0.19-1.32 0-0.3-0.12-0.53-0.12-0.83 0-0.37-0.11-0.79-0.11-1.2-0.07-0.26-0.07-0.68-0.07-1.01v0.04c0-0.3-0.11-0.6 0-1.13-0.11-0.6-0.11-1.32-0.11-2 0-0.71 0.11-1.32 0.11-2.03l0.07-0.98 0.11-1.02c0-0.41 0-0.83 0.12-1.2 0-0.3 0.11-0.53 0.11-0.83 0.01-0.43 0.08-0.86 0.19-1.28 0-0.34 0.11-0.53 0.11-0.71l0.3-1.31c0-0.23 0-0.42 0.11-0.6l0.3-1.2c0.11-0.19 0.11-0.49 0.22-0.68 0.07-0.34 0.3-0.75 0.41-1.13l0.3-0.83c0.11-0.3 0.3-0.68 0.38-0.98l0.38-0.9c0.07-0.3 0.26-0.6 0.37-0.91 0.08-0.3 0.23-0.71 0.45-1.02 0.19-0.22 0.26-0.53 0.38-0.68 0.11-0.45 0.3-0.75 0.53-1.13 0.17-0.17 0.31-0.38 0.41-0.6 0.19-0.42 0.42-0.71 0.64-1.13 0.16-0.17 0.28-0.36 0.38-0.56 0.22-0.42 0.53-0.75 0.75-1.13 0.08-0.22 0.3-0.42 0.42-0.6l0.83-1.13 0.49-0.6c0.23-0.3 0.41-0.6 0.72-0.9 0.22-0.3 0.53-0.49 0.75-0.79 0.22-0.19 0.42-0.53 0.6-0.71l1.47-1.51 99.24-96.46c16.73-16.11 43.23-16.11 59.96 0 16.57 16.1 16.57 42.14 0 58.24l-26.93 26.15h413.09c23.5 0 42.44 18.51 42.44 41.23 0 22.84-19.06 41.27-42.44 41.27H252.39c-0.6 0-1.32-0.12-2.07-0.12l-0.9-0.11-1.06-0.07c-0.42 0.01-0.84-0.02-1.24-0.11-0.3 0-0.53-0.11-0.83-0.11-0.44-0.02-0.89-0.08-1.32-0.19-0.34 0-0.53-0.11-0.76-0.11l-1.32-0.3c-0.34-0.08-0.53-0.08-0.75-0.19l-1.2-0.3c-0.23-0.11-0.56-0.11-0.76-0.23l-1.13-0.37-0.83-0.34-1.06-0.38-0.9-0.3-0.94-0.42c-0.3-0.08-0.71-0.19-1.02-0.42-0.22-0.19-0.53-0.26-0.75-0.37-0.38-0.11-0.76-0.3-1.13-0.53-0.19-0.16-0.41-0.29-0.64-0.38l-1.13-0.6c-0.19-0.16-0.41-0.29-0.64-0.37-0.38-0.23-0.72-0.53-1.13-0.76-0.23-0.08-0.41-0.3-0.6-0.37l-1.13-0.83-0.64-0.45-0.94-0.75c-0.3-0.19-0.49-0.49-0.79-0.68l-0.75-0.6c-0.49-0.53-1.02-0.91-1.55-1.43-0.53-0.49-0.94-1.02-1.43-1.5-0.22-0.19-0.42-0.49-0.6-0.72-0.23-0.3-0.57-0.49-0.75-0.79-0.23-0.3-0.53-0.6-0.72-0.91l-0.53-0.6c-0.3-0.37-0.64-0.71-0.86-1.13-0.07-0.19-0.27-0.37-0.38-0.56-0.22-0.41-0.53-0.75-0.75-1.13-0.19-0.22-0.3-0.41-0.38-0.6l-0.64-1.09-0.41-0.64c-0.11-0.37-0.3-0.68-0.53-1.05-0.19-0.22-0.3-0.52-0.41-0.75-0.07-0.3-0.3-0.68-0.41-0.98-0.08-0.3-0.3-0.6-0.42-0.9l-0.3-0.94-0.42-1.02-0.3-0.75c-0.22-0.35-0.3-0.76-0.41-1.14z m600.83 166.18l-0.07 1.02-0.11 1.02c0 0.38 0 0.79-0.11 1.2 0 0.3-0.12 0.49-0.12 0.79-0.01 0.44-0.08 0.89-0.19 1.32 0 0.3-0.11 0.49-0.11 0.68l-0.3 1.32c0 0.23 0 0.41-0.11 0.6l-0.3 1.2c-0.12 0.23-0.12 0.53-0.23 0.72-0.08 0.34-0.3 0.71-0.41 1.09-0.08 0.34-0.19 0.53-0.3 0.83l-0.38 1.02-0.37 0.9c-0.07 0.3-0.27 0.61-0.38 0.91-0.08 0.3-0.22 0.68-0.45 0.98-0.19 0.22-0.26 0.53-0.37 0.71-0.12 0.38-0.3 0.71-0.53 1.13-0.19 0.19-0.3 0.38-0.42 0.56-0.19 0.41-0.41 0.75-0.64 1.13-0.19 0.22-0.3 0.42-0.38 0.6-0.22 0.38-0.53 0.71-0.75 1.13-0.08 0.19-0.3 0.38-0.42 0.56-0.3 0.41-0.49 0.75-0.83 1.13l-0.49 0.6c-0.23 0.3-0.42 0.6-0.76 0.91-0.3 0.3-0.49 0.6-0.83 0.9-0.22 0.19-0.41 0.53-0.6 0.71l-1.47 1.51-99.28 96.46c-16.53 16.1-43.31 16.1-59.88 0s-16.57-42.14 0-58.24l26.89-26.15h-413.2c-23.46 0-42.41-18.51-42.41-41.23 0-22.84 19.06-41.27 42.41-41.27h515.68c0.6 0 1.32 0.11 2.07 0.11 0.3 0 0.6 0.11 0.94 0.11l1.02 0.08c0.42 0 0.87 0 1.24 0.11 0.3 0 0.53 0.12 0.83 0.12 0.44 0.01 0.89 0.08 1.32 0.19 0.38 0 0.57 0.11 0.76 0.11l1.32 0.3c0.37 0.07 0.56 0.07 0.75 0.19l1.24 0.3c0.23 0.12 0.53 0.12 0.76 0.23l1.13 0.37 0.79 0.34 1.06 0.38 0.94 0.3 0.9 0.41c0.34 0.08 0.75 0.19 1.02 0.42 0.22 0.19 0.57 0.26 0.75 0.37 0.42 0.12 0.76 0.3 1.13 0.53 0.19 0.16 0.41 0.29 0.64 0.38l1.13 0.6c0.23 0.19 0.41 0.3 0.64 0.38 0.38 0.22 0.72 0.53 1.13 0.75 0.19 0.08 0.42 0.3 0.64 0.38l1.13 0.83 0.61 0.45c0.3 0.22 0.64 0.45 0.94 0.75 0.3 0.19 0.53 0.49 0.79 0.68l0.75 0.6 1.55 1.43 1.47 1.51c0.23 0.19 0.42 0.49 0.6 0.71 0.23 0.3 0.53 0.49 0.71 0.79l0.76 0.91 0.49 0.6c0.34 0.38 0.64 0.71 0.86 1.13 0.08 0.19 0.3 0.38 0.38 0.56 0.22 0.42 0.53 0.75 0.75 1.13 0.17 0.17 0.31 0.38 0.41 0.6 0.19 0.42 0.42 0.71 0.64 1.09 0.19 0.22 0.26 0.42 0.38 0.64 0.11 0.38 0.3 0.68 0.53 1.05 0.19 0.22 0.3 0.53 0.41 0.75l0.42 0.98c0.11 0.3 0.3 0.6 0.38 0.9l0.37 0.94 0.38 1.02 0.34 0.75c0.19 0.35 0.31 0.73 0.37 1.13 0.11 0.19 0.11 0.49 0.23 0.71l0.3 1.2c0 0.23 0 0.41 0.11 0.61l0.3 1.32c0 0.3 0.11 0.49 0.11 0.68 0.11 0.42 0.11 0.94 0.19 1.32 0 0.3 0.12 0.53 0.12 0.83 0 0.37 0.11 0.79 0.11 1.2 0.11 0.3 0.11 0.68 0.11 0.98 0.07 0.41 0.07 0.71 0.07 1.01 0.11 0.6 0.11 1.28 0.11 2.03 0.01 0.66-0.11 1.26-0.11 1.97z"
@@ -20,11 +20,12 @@
     </transition>
     <transition name="slide">
       <VegaLiteFilter
-        v-if="showMorePanel && showMoreIcon"
+        v-if="showMorePanel"
         :insightList="selectedNode['insight-list']"
         :insightIndex="selectedNode['insightIndex']"
         class="showMorePanelBox"
         @insightIndexChange="changeInsightIndex"
+        @hideMoreBox="hideMoreBox"
       ></VegaLiteFilter>
     </transition>
     <div id="svg-container">
@@ -154,7 +155,7 @@
 
 <script>
 import VegaLiteFilter from "@/components/force-directed-graph/VegaLiteFilter.vue";
-import { flatAccessWithDatum } from "vega-lite";
+
 export default {
   components: {
     VegaLiteFilter,
@@ -222,6 +223,7 @@ export default {
       // showMoreIcon
       showMoreIcon: false,
       showMorePanel: false,
+      hidePanelMode: false,
 
       simulation: null,
       zoom: null,
@@ -341,20 +343,34 @@ export default {
               row: newVal.row,
             }),
           });
-          if (this.showMoreIcon) {
-            this.showMoreIcon = false;
+          if (this.hidePanelMode) {
+            if (this.showMoreIcon) {
+              this.showMoreIcon = false;
 
-            this.$nextTick(() => {
-              setTimeout(() => {
-                this.showMoreIcon = true;
-              }, 150);
-            });
+              this.$nextTick(() => {
+                setTimeout(() => {
+                  this.showMoreIcon = true;
+                }, 150);
+              });
+            } else {
+              this.showMoreIcon = true;
+            }
           } else {
-            this.showMoreIcon = true;
+            if (this.showMorePanel) {
+              this.showMorePanel = false;
+
+              this.$nextTick(() => {
+                setTimeout(() => {
+                  this.showMorePanel = true;
+                }, 150);
+              });
+            } else {
+              this.showMorePanel = true;
+            }
           }
         } else {
-          this.showMoreIcon = false;
           this.showMorePanel = false;
+          this.showMoreIcon = false;
 
           this.$store.dispatch("table/convertCheckSelection", {
             mode: "clicked",
@@ -368,6 +384,11 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    hideMoreBox() {
+      this.hidePanelMode = true;
+      this.showMorePanel = false;
+      this.showMoreIcon = true;
+    },
     changeInsightIndex(selectedIndex) {
       const id = this.selectedNode.id;
       const oldIndex = this.selectedNode.insightIndex;
@@ -1761,8 +1782,10 @@ export default {
 }
 
 .more-icon {
-  fill: #555;
+  fill: #545b77;
   cursor: pointer;
+  width: 25px;
+  height: 25px;
 }
 
 .more-box {
@@ -1771,9 +1794,9 @@ export default {
   right: 1%;
 }
 .showMorePanelBox {
-  position: fixed;
-  top: 40%;
-  right: 2.5%;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 .ticks-card {
   position: fixed;
@@ -1801,29 +1824,6 @@ export default {
 }
 </style>
 
-<!-- Animation -->
-<style scoped>
-.slide-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-leave-active {
-  transition: all 0.3s ease-in;
-}
-
-.slide-enter-from,
-.slide-leave-to {
-  opacity: 0;
-  transform: translateX(-200px); /* 初始状态和最终状态 */
-}
-
-.slide-enter-to,
-.slide-leave-from {
-  opacity: 1;
-  transform: translateX(0); /* 平移隐藏 */
-}
-</style>
-
 <style lang="less" scoped>
 .el-slider {
   width: 100%;
@@ -1836,11 +1836,11 @@ export default {
 <!-- Animation -->
 <style scoped>
 .slide-enter-active {
-  transition: all 0.1s ease-out;
+  transition: all 80ms ease-out;
 }
 
 .slide-leave-active {
-  transition: all 0.1s ease-in;
+  transition: all 70ms ease-in;
 }
 
 .slide-enter-from,
