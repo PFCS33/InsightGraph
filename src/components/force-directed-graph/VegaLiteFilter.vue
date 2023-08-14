@@ -17,7 +17,7 @@
             <label>Score</label>
             <div class="score-box">
               <div class="font-box">
-                {{ insight["insight-score"] }}
+                {{ insight["insight-score"].toFixed(3) }}
               </div>
 
               <svg
@@ -200,7 +200,7 @@ export default {
   flex-direction: column;
 }
 .insight-box {
-  flex: 0 33%;
+  flex: 0 33.5%;
   display: flex;
   flex-direction: column;
   gap: 0.2vw;
@@ -228,7 +228,7 @@ export default {
 }
 
 .font-box {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: normal;
 }
 

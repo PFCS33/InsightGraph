@@ -1836,7 +1836,7 @@ export default {
 <!-- Animation -->
 <style scoped>
 .slide-enter-active {
-  transition: all 80ms ease-out;
+  transition: all 70ms ease-out;
 }
 
 .slide-leave-active {
