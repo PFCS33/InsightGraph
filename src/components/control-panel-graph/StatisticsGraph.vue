@@ -136,6 +136,9 @@ export default {
               .on("mouseover", mouseover)
               .on("mousemove", mousemove)
               .on("mouseleave", mouseleave)
+              .transition()
+              .duration(300)
+
               .attr("cursor", "pointer")
               .attr("fill", (d) => config.colorScale(d.type))
               .attr("x", (d) => x(0))
@@ -157,8 +160,9 @@ export default {
           (exit) => {
             exit
               .attr("opacity", 1)
+              .attr("pointer-events", "none")
               .transition()
-              .duration(150)
+              .duration(100)
               .attr("opacity", 0)
               .remove();
           }
