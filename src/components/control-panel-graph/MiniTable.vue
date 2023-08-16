@@ -281,6 +281,7 @@ table.mini-table {
   }
   td {
     border: 1px dashed #ccc;
+    transition: background-color 0.3s;
   }
   th.cell-border-tooltip-highlight {
     box-shadow: inset 0 0 0 1px #555;
@@ -326,5 +327,7 @@ table.mini-table {
   height: fit-content;
   position: fixed;
   z-index: 10;
+
+  transition: opacity 0.15s;
 }
 </style>

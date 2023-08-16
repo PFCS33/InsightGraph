@@ -343,30 +343,35 @@ export default {
               row: newVal.row,
             }),
           });
-          if (this.hidePanelMode) {
-            if (this.showMoreIcon) {
-              this.showMoreIcon = false;
+          if (newVal["insight-list"].length > 1) {
+            if (this.hidePanelMode) {
+              if (this.showMoreIcon) {
+                this.showMoreIcon = false;
 
-              this.$nextTick(() => {
-                setTimeout(() => {
-                  this.showMoreIcon = true;
-                }, 150);
-              });
+                this.$nextTick(() => {
+                  setTimeout(() => {
+                    this.showMoreIcon = true;
+                  }, 150);
+                });
+              } else {
+                this.showMoreIcon = true;
+              }
             } else {
-              this.showMoreIcon = true;
+              if (this.showMorePanel) {
+                this.showMorePanel = false;
+
+                this.$nextTick(() => {
+                  setTimeout(() => {
+                    this.showMorePanel = true;
+                  }, 150);
+                });
+              } else {
+                this.showMorePanel = true;
+              }
             }
           } else {
-            if (this.showMorePanel) {
-              this.showMorePanel = false;
-
-              this.$nextTick(() => {
-                setTimeout(() => {
-                  this.showMorePanel = true;
-                }, 150);
-              });
-            } else {
-              this.showMorePanel = true;
-            }
+            this.showMorePanel = false;
+            this.showMoreIcon = false;
           }
         } else {
           this.showMorePanel = false;

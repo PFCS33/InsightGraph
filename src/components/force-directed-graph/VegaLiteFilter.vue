@@ -176,6 +176,7 @@ export default {
   border-radius: 2px 0px 2px 2px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-right: none;
+  transition: background-color 0.3s, fill 0.3s;
 }
 
 .narrow-icon:active,

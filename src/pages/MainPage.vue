@@ -127,6 +127,7 @@ export default {
   height: 100%;
   width: 100%;
   background-color: #fff;
+  /* background-color: #f8f8f8; */
   display: flex;
   flex-direction: column;
 }
@@ -138,6 +139,7 @@ export default {
   transition: box-shadow 0.3s;
   z-index: 5;
 
+  background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: space-between;
