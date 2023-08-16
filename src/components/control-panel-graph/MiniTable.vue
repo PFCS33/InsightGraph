@@ -2,8 +2,6 @@
   <div id="table-container"></div>
 </template>
 <script>
-import { flatGroup } from "d3";
-
 export default {
   data() {
     return {
@@ -72,7 +70,8 @@ export default {
         .on("mouseleave", mouseleave);
       function mouseover(event, d) {
         if (d) {
-          tooltip.style("opacity", 1);
+          tooltip.transition().duration(300).style("opacity", 1);
+
           d3.select(this).classed("cell-border-tooltip-highlight", true);
         }
       }
@@ -86,7 +85,8 @@ export default {
       }
       function mouseleave(event, d) {
         if (d) {
-          tooltip.style("opacity", 0);
+          tooltip.transition().duration(300).style("opacity", 0);
+
           d3.select(this).classed("cell-border-tooltip-highlight", false);
         }
       }
@@ -327,7 +327,7 @@ table.mini-table {
   height: fit-content;
   position: fixed;
   z-index: 10;
-
-  transition: opacity 0.15s;
+  user-select: none;
+  pointer-events: none;
 }
 </style>

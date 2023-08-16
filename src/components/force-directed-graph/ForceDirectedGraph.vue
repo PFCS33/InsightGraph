@@ -550,7 +550,7 @@ export default {
       const linkTypeColor = d3.scaleOrdinal(
         ["parent-child", "siblings", "same-name"],
 
-        ["#F7A69F", "#C69DE9", "#53C4B6"]
+        ["#C69DE9", "#F7A69F", "#53C4B6"]
       );
 
       // 画links

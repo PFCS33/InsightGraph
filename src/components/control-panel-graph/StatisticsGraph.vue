@@ -1,6 +1,31 @@
 <template>
   <div class="statistics-graph-box">
-    <BaseCard mode="flat" id="barchart-box"></BaseCard>
+    <BaseCard mode="flat" class="barchart-container">
+      <div class="title">Link Relationship</div>
+
+      <div class="link-filter-box">
+        <div v-for="link in linkType" class="link-filter">
+          <svg
+            viewBox="0 0 1024 1024"
+            xmlns="http://www.w3.org/2000/svg"
+            :class="[
+              'check-icon',
+              { 'check-icon-active': selectedLinkType[link] },
+            ]"
+            @click="toggleSelectedLink(link)"
+          >
+            <path
+              d="M433.1 657.7c12.7 17.7 39 17.7 51.7 0l210.6-292c3.8-5.3 0-12.7-6.5-12.7H642c-10.2 0-19.9 4.9-25.9 13.3L459 584.3l-71.2-98.8c-6-8.3-15.6-13.3-25.9-13.3H315c-6.5 0-10.3 7.4-6.5 12.7l124.6 172.8z"
+            ></path>
+            <path
+              d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32z m-40 728H184V184h656v656z"
+            ></path>
+          </svg>
+          <span> {{ link }}</span>
+        </div>
+      </div>
+      <div id="barchart-box"></div
+    ></BaseCard>
     <BaseCard mode="flat" id="piechart-box"></BaseCard>
   </div>
 </template>
@@ -11,9 +36,18 @@ export default {
       barchart: null,
       piechart: null,
 
+      barchartConfig: [],
+      linkType: ["siblings", "parent-child", "same-name"],
+
       filteredNodes: null,
       filterdLinks: null,
       selectedNodes: null,
+
+      selectedLinkType: {
+        siblings: true,
+        "parent-child": true,
+        "same-name": true,
+      },
     };
   },
 
@@ -30,140 +64,127 @@ export default {
   },
 
   methods: {
+    toggleSelectedLink(link) {
+      this.selectedLinkType[link] = !this.selectedLinkType[link];
+    },
     drawBarchart(newVal) {
       const that = this;
-      if (this.barchart) {
-        this.barchart.setOption({
-          series: newVal.map((item) => ({
-            name: item.type,
-            type: "bar",
-            data: [item.count],
-          })),
-          yAxis: {
-            type: "category",
-            axisLabel: { show: false }, // 隐藏 Y 轴的标签,
+
+      if (!this.barchart) {
+        const marginTop = 0;
+        const marginRight = 10;
+        const marginBottom = 20;
+        const marginLeft = 10;
+        const container = d3.select("#barchart-box");
+        const width = parseInt(container.style("width"), 10);
+        const height = parseInt(container.style("height"), 10);
+        const colorScale = d3.scaleOrdinal(this.linkType, [
+          "#F7A69F",
+          "#C69DE9",
+          "#53C4B6",
+        ]);
+
+        const tooltip = container
+          .append("div")
+          .attr("class", "tooltip")
+          .style("opacity", 0);
+        const svg = container
+          .append("svg")
+          .attr("viewBox", [0, 0, width, height])
+          .attr("style", "width: 100%; height:100%;")
+          .style("user-select", "none");
+        const rectGroup = svg.append("g").attr("class", "rect-group");
+        const xAxis = svg
+          .append("g")
+          .attr("class", "x-axis")
+          .attr("transform", `translate(0,${height - marginBottom})`);
+
+        this.barchartConfig.marginTop = marginTop;
+        this.barchartConfig.marginRight = marginRight;
+        this.barchartConfig.marginBottom = marginBottom;
+        this.barchartConfig.marginLeft = marginLeft;
+        this.barchartConfig.container = container;
+        this.barchartConfig.width = width;
+        this.barchartConfig.height = height;
+        this.barchartConfig.colorScale = colorScale;
+        this.barchartConfig.tooltip = tooltip;
+        this.barchart = true;
+      }
+      const config = this.barchartConfig;
+      const y = d3
+        .scaleBand()
+        .domain(this.linkType.filter((d) => this.selectedLinkType[d]))
+        .range([config.marginTop, config.height - config.marginBottom])
+        .padding(0.1);
+
+      const x = d3
+        .scaleLinear()
+        .domain([0, d3.max(newVal, (d) => d.count)])
+        .nice()
+        .range([config.marginLeft, config.width - config.marginRight]);
+
+      config.container
+        .select("svg")
+        .select(".rect-group")
+        .selectAll("rect")
+
+        .data(newVal, (d) => d.type)
+        .join(
+          (enter) => {
+            enter
+              .append("rect")
+              .on("mouseover", mouseover)
+              .on("mousemove", mousemove)
+              .on("mouseleave", mouseleave)
+              .attr("cursor", "pointer")
+              .attr("fill", (d) => config.colorScale(d.type))
+              .attr("x", (d) => x(0))
+              .attr("y", (d) => y(d.type))
+              .attr("width", (d) => x(d.count) - x(0))
+              .attr("height", y.bandwidth());
           },
-        });
-      } else {
-        const container = d3.select("#barchart-box").node();
-
-        const barchart = echarts.init(container, "myTheme");
-
-        const option = {
-          title: {
-            text: "Link Relationship",
-            left: "center",
-            top: "5%",
-            textStyle: {
-              color: "#555",
-              fontSize: 13,
-            },
+          (update) => {
+            update
+              .transition()
+              .duration(300)
+              .attr("cursor", "pointer")
+              .attr("fill", (d) => config.colorScale(d.type))
+              .attr("x", (d) => x(0))
+              .attr("y", (d) => y(d.type))
+              .attr("width", (d) => x(d.count) - x(0))
+              .attr("height", y.bandwidth());
           },
-          legend: {
-            top: "17%",
-            left: "5%",
-            icon: "circle",
-            textStyle: {
-              fontSize: 10,
-              color: "#555",
-            },
-            itemWidth: 10,
-            itemGap: 5,
-          },
-          tooltip: {
-            trigger: "item",
-            textStyle: {
-              color: "#555",
-              fontSize: 12,
-            },
-          },
-          grid: {
-            left: "10%",
-            right: "10%",
-            bottom: "10%",
-            top: "32%",
-            containLabel: true,
-          },
-          xAxis: {},
-          yAxis: {
-            type: "category",
-            axisLabel: { show: false }, // 隐藏 Y 轴的标签,
-          },
-          color: ["#F7A69F", "#C69DE9", "#53C4B6"],
+          (exit) => {
+            exit
+              .attr("opacity", 1)
+              .transition()
+              .duration(150)
+              .attr("opacity", 0)
+              .remove();
+          }
+        );
+      config.container
+        .select("svg")
+        .select(".x-axis")
+        .transition()
+        .duration(300)
+        .call(d3.axisBottom(x).ticks(8))
+        .select(".domain")
+        .attr("stroke-opacity", 0);
 
-          series: newVal.map((item) => ({
-            name: item.type,
-            type: "bar",
-            data: [
-              {
-                name: "number",
-                value: item.count,
-              },
-            ],
-            itemStyle: {
-              borderRadius: 3,
-            },
-
-            emphasis: {
-              itemStyle: {
-                shadowBlur: 4,
-                shadowOffsetX: 0,
-                shadowColor: "rgba(0, 0, 0, 0.5)",
-              },
-            },
-          })),
-        };
-
-        barchart.setOption(option);
-        this.barchart = barchart;
-        barchart.on("legendselectchanged", function (params) {
-          const totalLinks = that.totalData.links;
-          const totalNodes = that.totalData.nodes;
-
-          const selectedLinkData = totalLinks.filter(
-            (d) => params.selected[d.type]
-          );
-
-          const selectedId = new Set();
-          selectedLinkData.forEach((link) => {
-            const sourceId = link.source;
-            const targetId = link.target;
-            selectedId.add(sourceId);
-            selectedId.add(targetId);
-          });
-
-          const unSelectedId = new Set();
-          const unSelectedLinkData = totalLinks.filter(
-            (d) => !params.selected[d.type]
-          );
-
-          unSelectedLinkData.forEach((link) => {
-            const sourceId = link.source;
-            const targetId = link.target;
-
-            unSelectedId.add(sourceId);
-            unSelectedId.add(targetId);
-          });
-
-          const unSelectedIdFixed = new Set(
-            [...unSelectedId].filter((x) => !selectedId.has(x))
-          );
-
-          const filteredNodes = totalNodes.filter(
-            (d) => !unSelectedIdFixed.has(d.id)
-          );
-          that.filteredNodes = filteredNodes;
-          that.filterdLinks = selectedLinkData;
-          that.$store.dispatch("force/groupByLinkType", selectedLinkData);
-          that.$store.dispatch("force/groupByNodeType", filteredNodes);
-          that.$store.commit("force/setSelectedData", {
-            nodes: filteredNodes,
-            links: selectedLinkData,
-          });
-          that.piechart.dispatchAction({
-            type: "legendAllSelect",
-          });
-        });
+      function mouseover(event, d) {
+        config.tooltip.transition().duration(250).style("opacity", 1);
+        d3.select(this).classed("barchart-hover-highlight", true);
+      }
+      function mousemove(event, d) {
+        config.tooltip
+          .html(`${d.type}: ${d.count}`)
+          .style("left", event.x + 15 + "px")
+          .style("top", event.y + "px");
+      }
+      function mouseleave(event, d) {
+        config.tooltip.transition().duration(250).style("opacity", 0);
+        d3.select(this).classed("barchart-hover-highlight", false);
       }
     },
     drawPiechart(newVal) {
@@ -301,6 +322,54 @@ export default {
         this.drawPiechart(newVal);
       }
     },
+    selectedLinkType: {
+      deep: true,
+      handler(newVal) {
+        const that = this;
+        const totalLinks = that.totalData.links;
+        const totalNodes = that.totalData.nodes;
+
+        const selectedLinkData = totalLinks.filter((d) => newVal[d.type]);
+
+        const selectedId = new Set();
+        selectedLinkData.forEach((link) => {
+          const sourceId = link.source;
+          const targetId = link.target;
+          selectedId.add(sourceId);
+          selectedId.add(targetId);
+        });
+
+        const unSelectedId = new Set();
+        const unSelectedLinkData = totalLinks.filter((d) => !newVal[d.type]);
+
+        unSelectedLinkData.forEach((link) => {
+          const sourceId = link.source;
+          const targetId = link.target;
+
+          unSelectedId.add(sourceId);
+          unSelectedId.add(targetId);
+        });
+
+        const unSelectedIdFixed = new Set(
+          [...unSelectedId].filter((x) => !selectedId.has(x))
+        );
+
+        const filteredNodes = totalNodes.filter(
+          (d) => !unSelectedIdFixed.has(d.id)
+        );
+        that.filteredNodes = filteredNodes;
+        that.filterdLinks = selectedLinkData;
+        that.$store.dispatch("force/groupByLinkType", selectedLinkData);
+        that.$store.dispatch("force/groupByNodeType", filteredNodes);
+        that.$store.commit("force/setSelectedData", {
+          nodes: filteredNodes,
+          links: selectedLinkData,
+        });
+        that.piechart.dispatchAction({
+          type: "legendAllSelect",
+        });
+      },
+    },
   },
 
   created() {},
@@ -317,24 +386,79 @@ export default {
 
   background-color: #fff;
 }
-#barchart-box {
-  width: 100%;
-  height: 100%;
-  flex: 0.4;
+.barchart-container {
+  flex: 0.3;
   background-color: #fff;
   transition: border-color 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vw;
 }
-
+.link-filter-box {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 1vw;
+  flex-grow: 0;
+  user-select: none;
+}
+.link-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+#barchart-box {
+  flex-grow: 1;
+}
 #piechart-box {
   width: 100%;
   height: 100%;
-  flex: 0.6;
+  flex: 0.7;
   background-color: #fff;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 #piechart-box:hover,
-#barchart-box:hover {
+.barchart-container:hover {
   box-shadow: 1px 4px 6px 1px rgba(0, 0, 0, 0.26);
+}
+
+.title {
+  font-weight: bold;
+  font-size: 16px;
+  text-align: center;
+  color: #545b77;
+  margin: 0.2vw 0;
+  margin-top: 0.6vw;
+  flex-grow: 0;
+}
+.check-icon {
+  cursor: pointer;
+
+  width: 15px;
+  height: 15px;
+
+  border-radius: 2px;
+  fill: #545b77;
+  background-color: #fff;
+  transition: background-color 0.2s, fill 0.2s;
+}
+
+.check-icon:hover,
+.check-icon:active {
+  background-color: #545b77;
+  fill: #fff;
+}
+.check-icon-active {
+  background-color: #858eb5;
+  fill: #fff;
+}
+</style>
+
+<style>
+.barchart-hover-highlight {
+  filter: brightness(110%);
+
+  transition: filter 0.2s;
 }
 </style>

@@ -73,8 +73,7 @@
   </div>
 </template>
 <script>
-// import BarChart from "@/components/vega-lite-graph/BarChart.vue";
-import ForceDirectedGraph from "../components/force-directed-graph/ForceDirectedGraph.vue";
+import ForceDirectedGraph from "@/components/force-directed-graph/ForceDirectedGraph.vue";
 import StatisticsGraph from "@/components/control-panel-graph/StatisticsGraph.vue";
 import MiniTable from "@/components/control-panel-graph/MiniTable.vue";
 import { Tools } from "@element-plus/icons-vue";
@@ -222,7 +221,7 @@ export default {
 
   display: flex;
   flex-direction: column;
-  gap: 1vw;
+  gap: 0.3vw;
 }
 .table-mode {
   width: 100%;

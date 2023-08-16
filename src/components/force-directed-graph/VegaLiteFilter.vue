@@ -24,7 +24,6 @@
                 @click="setInsightIndex(index)"
                 viewBox="0 0 1024 1024"
                 xmlns="http://www.w3.org/2000/svg"
-                p-id="5491"
                 :class="[
                   'check-icon',
                   { 'check-icon-active': selectedIndex === index },

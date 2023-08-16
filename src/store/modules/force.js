@@ -75,20 +75,20 @@ export default {
       context.commit("setNodeDataGroup", counts);
     },
     groupByLinkType(context, payload) {
-      const counts = [
-        { type: "siblings", count: 0 },
-        { type: "parent-child", count: 0 },
-        { type: "same-name", count: 0 },
-      ];
+      let counts = [];
       if (payload.length > 0) {
-        const groups = d3.group(payload, (d) => d.type);
-        groups.forEach((group, type) => {
-          const index = counts.findIndex((c) => c.type === type);
-          if (index !== -1) {
-            counts[index].count = group.length;
-          }
-        });
+        counts = d3
+          .rollups(
+            payload,
+            (D) => D.length,
+            (d) => d.type
+          )
+          .map((d) => ({
+            type: d[0],
+            count: d[1],
+          }));
       }
+
       context.commit("setLinkDataGroup", counts);
     },
     // load test data
