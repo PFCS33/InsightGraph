@@ -78,6 +78,7 @@ export default {
         const container = d3.select("#barchart-box");
         const width = parseInt(container.style("width"), 10);
         const height = parseInt(container.style("height"), 10);
+
         const colorScale = d3.scaleOrdinal(this.linkType, [
           "#F7A69F",
           "#C69DE9",
@@ -441,7 +442,7 @@ export default {
 <style scoped>
 .statistics-graph-box {
   width: 100%;
-  flex-grow: 1;
+  height: fit-content;
   display: flex;
   flex-direction: column;
   gap: 0.5vw;
@@ -449,7 +450,8 @@ export default {
   background-color: #fff;
 }
 .barchart-container {
-  flex: 0.3;
+  height: 25vh;
+  width: 100%;
   background-color: #fff;
   transition: border-color 0.3s, box-shadow 0.3s;
   display: flex;
@@ -458,8 +460,8 @@ export default {
 }
 #histogram-box {
   width: 100%;
-
-  flex: 0.7;
+  height: 100vh;
+  margin-bottom: 0.3vw;
   background-color: #fff;
   transition: border-color 0.3s, box-shadow 0.3s;
 }

@@ -129,12 +129,13 @@ export default {
   /* background-color: #f8f8f8; */
   display: flex;
   flex-direction: column;
+  gap: 0.4vw;
 }
 .navBar {
-  flex: 0.05;
+  flex: 5%;
   width: 100%;
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
-  margin-bottom: 0.4vw;
+  /* margin-bottom: 0.4vw; */
   transition: box-shadow 0.3s;
   z-index: 5;
 
@@ -154,12 +155,10 @@ export default {
   font-style: italic;
 }
 .content-box {
-  /* display: flex; */
-  flex: 0.95;
+  flex: 0 0 95%;
   display: grid;
   grid-template-columns: 2fr 8fr;
   transition: all 0.2s ease-in-out;
-  max-height: 95vh;
 }
 
 .content-box.notEditMode {
@@ -174,27 +173,35 @@ export default {
   grid-column: 1;
   width: 100%;
   height: 100%;
-  max-height: 100%;
+
   padding: 0.3vw;
   padding-top: 0;
   padding-left: 0;
+  max-height: 95vh;
 }
 .control-panel {
   width: 100%;
   height: 100%;
-  max-height: 100%;
   display: flex;
   flex-direction: column;
 
   background-color: #fff;
 }
 .control-panel-content {
-  flex: 0.95;
-  overflow: hidden;
+  flex: 0 0 95%;
   padding: 1vw;
+  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.control-panel-content::-webkit-scrollbar {
+  /* WebKit */
+  width: 0;
+  height: 0;
 }
 .button-box-content {
-  flex: 0.05;
+  flex: 0 0 5%;
   width: 100%;
   /* height: 100%; */
 }
@@ -206,22 +213,14 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.3vw;
-
-  /* overflow: auto; */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 .button-box {
-  height: fit-content;
+  flex: fit-content;
   display: flex;
   gap: 0px;
   justify-content: left;
 }
-.base-mode::-webkit-scrollbar {
-  /* WebKit */
-  width: 0;
-  height: 0;
-}
+
 .table-mode {
   width: 100%;
   height: 100%;
