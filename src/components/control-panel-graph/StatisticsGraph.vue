@@ -26,7 +26,7 @@
       </div>
       <div id="barchart-box"></div
     ></BaseCard>
-    <BaseCard mode="flat" id="piechart-box"></BaseCard>
+    <BaseCard mode="flat" id="histogram-box"></BaseCard>
   </div>
 </template>
 <script>
@@ -34,7 +34,7 @@ export default {
   data() {
     return {
       barchart: null,
-      piechart: null,
+      histogram: null,
 
       barchartConfig: [],
       linkType: ["siblings", "parent-child", "same-name"],
@@ -138,7 +138,6 @@ export default {
               .on("mouseleave", mouseleave)
               .transition()
               .duration(300)
-
               .attr("cursor", "pointer")
               .attr("fill", (d) => config.colorScale(d.type))
               .attr("x", (d) => x(0))
@@ -191,118 +190,177 @@ export default {
         d3.select(this).classed("barchart-hover-highlight", false);
       }
     },
-    drawPiechart(newVal) {
+    drawHistogram(newVal) {
       const that = this;
-      if (this.piechart) {
+      if (this.histogram) {
         // update data
-        this.piechart.setOption({
-          series: [
-            {
-              data: newVal.sort(function (a, b) {
-                return a.value - b.value;
-              }),
-            },
-          ],
-        });
       } else {
-        // initialization
-        const container = d3.select("#piechart-box").node();
-        const piechart = echarts.init(container, "myTheme");
-        const option = {
-          title: {
-            text: "Insight Type",
-            left: "center",
-            top: "4%",
-            textStyle: {
-              color: "#555",
-              fontSize: 13,
-            },
-          },
-          legend: {
-            top: "13%",
-            left: "5%",
+        const container = d3.select("#histogram-box");
+        // 获取总宽和高
+        const width = parseInt(container.style("width"), 10);
+        const height = parseInt(container.style("height"), 10);
+        // 获取 总insight-type 类型
+        const types = Array.from(newVal.keys());
+        // 获取每个子图的高
+        const subHeight = Math.floor(height / types.length);
+        // 设置每个子图的margin
+        const marginTop = 0;
+        const marginRight = 10;
+        const marginBottom = 15;
+        const marginLeft = width * 0.2;
+        // 创建svg画布
+        const svg = container
+          .append("svg")
+          .attr("viewBox", [0, 0, width, height])
+          .attr("style", "width: 100%; height:100%;")
+          .style("user-select", "none");
+        // 创建分箱器，使用FreedmanDiaconis公式
+        const bin = d3.bin().value((d) => d.score);
+        // .thresholds(d3.thresholdFreedmanDiaconis);
+        types.forEach((type, index) => {
+          const value = newVal.get(type);
+          const bins = bin(value.scores);
+          console.log(bins);
+          const g = svg
+            .append("g")
+            .attr("class", `${type}-box`)
+            .attr("transform", `translate(0,${index * subHeight})`);
 
-            textStyle: {
-              fontSize: 10,
-              color: "#555",
-            },
-            itemWidth: 18,
-            itemGap: 5,
-          },
-          tooltip: {
-            trigger: "item",
-            textStyle: {
-              color: "#555",
-              fontSize: 12,
-            },
-          },
-          grid: {
-            left: "5%",
-            right: "10%",
-            bottom: "10%",
-            top: "33%",
-            containLabel: true,
-          },
+          const x = d3
+            .scaleLinear()
+            .domain([bins[0].x0, bins[bins.length - 1].x1])
+            .range([marginLeft, width - marginRight]);
 
-          series: [
-            {
-              name: "insight-type",
-              stillShowZeroSum: false,
-              type: "pie",
-              data: newVal.sort(function (a, b) {
-                return a.value - b.value;
-              }),
-              radius: ["5%", "55%"],
-              center: ["50%", "70%"],
-              roseType: "area",
-              itemStyle: {
-                borderRadius: 4,
-              },
-              labelLine: {
-                smooth: 0.2,
-                length: 5,
-                length2: 10,
-              },
-              emphasis: {
-                itemStyle: {
-                  shadowBlur: 10,
-                  shadowOffsetX: 0,
-                  shadowColor: "rgba(0, 0, 0, 0.5)",
-                },
-              },
-            },
-          ],
-        };
-        piechart.setOption(option);
-        this.piechart = piechart;
-        piechart.on("legendselectchanged", function (params) {
-          const filteredNodes = that.filteredNodes
-            ? that.filteredNodes
-            : that.totalData.nodes;
-          const selectedLinks = that.filterdLinks
-            ? that.filterdLinks
-            : that.totalData.links;
-
-          const selectedNodeData = filteredNodes.filter(
-            (d) =>
-              params.selected[d["insight-list"][d.insightIndex]["insight-type"]]
-          );
-
-          const idMap = new Set();
-          selectedNodeData.forEach((node) => {
-            idMap.add(node.id);
-          });
-          const filteredLinks = selectedLinks.filter(
-            (d) => idMap.has(d.source) && idMap.has(d.target)
-          );
-
-          that.$store.dispatch("force/groupByLinkType", filteredLinks);
-          that.$store.dispatch("force/groupByNodeType", selectedNodeData);
-          that.$store.commit("force/setSelectedData", {
-            nodes: selectedNodeData,
-            links: filteredLinks,
-          });
+          const y = d3
+            .scaleLinear()
+            .domain([0, d3.max(bins, (d) => d.length)])
+            .range([subHeight - marginBottom, marginTop]);
+          g.append("g")
+            .attr("fill", "steelblue")
+            .attr("class", "rect-group")
+            .selectAll()
+            .data(bins)
+            .join("rect")
+            .attr("x", (d) => {
+              if (d.x0 === 1) {
+                return marginLeft;
+              } else {
+                return x(d.x0) + 1;
+              }
+            })
+            .attr("width", (d) => {
+              const rectWidth = x(d.x1) - x(d.x0);
+              if (rectWidth === 0) {
+                return width - marginLeft - marginRight;
+              } else {
+                return rectWidth - 1;
+              }
+            })
+            .attr("y", (d) => y(d.length))
+            .attr("height", (d) => y(0) - y(d.length));
+          g.append("g")
+            .attr("class", "x-axis")
+            .attr("transform", `translate(0,${subHeight - marginBottom})`)
+            .call(d3.axisBottom(x).ticks(5).tickSizeOuter(0).tickSize(4))
+            .call((g) => g.attr("font-size", "0.8rem"));
         });
+
+        //    const piechart = echarts.init(container, "myTheme");
+        // const option = {
+        //   title: {
+        //     text: "Insight Type",
+        //     left: "center",
+        //     top: "4%",
+        //     textStyle: {
+        //       color: "#555",
+        //       fontSize: 13,
+        //     },
+        //   },
+        //   legend: {
+        //     top: "13%",
+        //     left: "5%",
+
+        //     textStyle: {
+        //       fontSize: 10,
+        //       color: "#555",
+        //     },
+        //     itemWidth: 18,
+        //     itemGap: 5,
+        //   },
+        //   tooltip: {
+        //     trigger: "item",
+        //     textStyle: {
+        //       color: "#555",
+        //       fontSize: 12,
+        //     },
+        //   },
+        //   grid: {
+        //     left: "5%",
+        //     right: "10%",
+        //     bottom: "10%",
+        //     top: "33%",
+        //     containLabel: true,
+        //   },
+
+        //   series: [
+        //     {
+        //       name: "insight-type",
+        //       stillShowZeroSum: false,
+        //       type: "pie",
+        //       data: newVal.sort(function (a, b) {
+        //         return a.value - b.value;
+        //       }),
+        //       radius: ["5%", "55%"],
+        //       center: ["50%", "70%"],
+        //       roseType: "area",
+        //       itemStyle: {
+        //         borderRadius: 4,
+        //       },
+        //       labelLine: {
+        //         smooth: 0.2,
+        //         length: 5,
+        //         length2: 10,
+        //       },
+        //       emphasis: {
+        //         itemStyle: {
+        //           shadowBlur: 10,
+        //           shadowOffsetX: 0,
+        //           shadowColor: "rgba(0, 0, 0, 0.5)",
+        //         },
+        //       },
+        //     },
+        //   ],
+        // };
+        // piechart.setOption(option);
+        // this.piechart = piechart;
+        // piechart.on("legendselectchanged", function (params) {
+        //   const filteredNodes = that.filteredNodes
+        //     ? that.filteredNodes
+        //     : that.totalData.nodes;
+        //   const selectedLinks = that.filterdLinks
+        //     ? that.filterdLinks
+        //     : that.totalData.links;
+
+        //   const selectedNodeData = filteredNodes.filter(
+        //     (d) =>
+        //       params.selected[d["insight-list"][d.insightIndex]["insight-type"]]
+        //   );
+
+        //   const idMap = new Set();
+        //   selectedNodeData.forEach((node) => {
+        //     idMap.add(node.id);
+        //   });
+        //   const filteredLinks = selectedLinks.filter(
+        //     (d) => idMap.has(d.source) && idMap.has(d.target)
+        //   );
+
+        //   that.$store.dispatch("force/groupByLinkType", filteredLinks);
+        //   that.$store.dispatch("force/groupByNodeType", selectedNodeData);
+        //   that.$store.commit("force/setSelectedData", {
+        //     nodes: selectedNodeData,
+        //     links: filteredLinks,
+        //   });
+        // });
       }
     },
   },
@@ -323,7 +381,7 @@ export default {
     },
     nodeGroup(newVal) {
       if (newVal) {
-        this.drawPiechart(newVal);
+        this.drawHistogram(newVal);
       }
     },
     selectedLinkType: {
@@ -398,11 +456,18 @@ export default {
   flex-direction: column;
   gap: 0.3vw;
 }
+#histogram-box {
+  width: 100%;
+
+  flex: 0.7;
+  background-color: #fff;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
 .link-filter-box {
   display: flex;
   width: 100%;
   justify-content: center;
-  gap: 1vw;
+  gap: 4%;
   flex-grow: 0;
   user-select: none;
 }
@@ -414,15 +479,8 @@ export default {
 #barchart-box {
   flex-grow: 1;
 }
-#piechart-box {
-  width: 100%;
-  height: 100%;
-  flex: 0.7;
-  background-color: #fff;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
 
-#piechart-box:hover,
+#histogram-box:hover,
 .barchart-container:hover {
   box-shadow: 1px 4px 6px 1px rgba(0, 0, 0, 0.26);
 }

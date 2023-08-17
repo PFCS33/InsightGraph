@@ -45,34 +45,51 @@ export default {
   },
   actions: {
     groupByNodeType(context, payload) {
-      const counts = [
-        { name: "trend", value: 0 },
-        { name: "correlation", value: 0 },
-        { name: "dominance", value: 0 },
-        { name: "correlation-temporal", value: 0 },
-        { name: "outlier", value: 0 },
-        { name: "top2", value: 0 },
-        { name: "skewness", value: 0 },
-        {
-          name: "kurtosis",
-          value: 0,
-        },
-      ];
+      // const counts = [
+      //   { type: "trend", count: 0, score:[] },
+      //   { type: "correlation", count: 0 },
+      //   { type: "dominance", count: 0 },
+      //   { type: "correlation-temporal", count: 0 },
+      //   { type: "outlier", count: 0 },
+      //   { type: "top2", count: 0 },
+      //   { type: "skewness", count: 0 },
+      //   {
+      //     type: "kurtosis",
+      //     count: 0,
+      //   },
+      // ];
+      const scoreMap = new Map();
       if (payload.length > 0) {
-        const groups = d3.group(
-          payload,
-          (d) => d["insight-list"][d.insightIndex]["insight-type"]
-        );
-
-        groups.forEach((group, type) => {
-          const index = counts.findIndex((c) => c.name === type);
-          if (index !== -1) {
-            counts[index].value = group.length;
-          }
+        payload.forEach((node) => {
+          const id = node.id;
+          node["insight-list"].forEach((insight, index) => {
+            const type = insight["insight-type"];
+            const score = insight["insight-score"];
+            if (scoreMap.has(type)) {
+              const value = scoreMap.get(type);
+              value.count += 1;
+              value.scores.push({
+                id: id,
+                index: index,
+                score: score,
+              });
+            } else {
+              const value = {
+                count: 1,
+                scores: [
+                  {
+                    id: id,
+                    index: index,
+                    score: score,
+                  },
+                ],
+              };
+              scoreMap.set(type, value);
+            }
+          });
         });
       }
-
-      context.commit("setNodeDataGroup", counts);
+      context.commit("setNodeDataGroup", scoreMap);
     },
     groupByLinkType(context, payload) {
       let counts = [];

@@ -157,7 +157,7 @@ export default {
   /* display: flex; */
   flex: 0.95;
   display: grid;
-  grid-template-columns: 2.3fr 7.7fr;
+  grid-template-columns: 2fr 8fr;
   transition: all 0.2s ease-in-out;
   max-height: 95vh;
 }
@@ -222,6 +222,16 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.3vw;
+
+  /* overflow: auto; */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.base-mode::-webkit-scrollbar {
+  /* WebKit */
+  width: 0;
+  height: 0;
 }
 .table-mode {
   width: 100%;
