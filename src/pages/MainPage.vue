@@ -19,7 +19,7 @@
     >
       <div :class="['control-panel-box']" v-show="editMode">
         <BaseCard mode="flat" class="control-panel" v-show="animationDone">
-          <div style="flex: 0.05">
+          <div class="button-box-content">
             <el-tabs
               v-model="controlPanelMode"
               :stretch="true"
@@ -174,6 +174,7 @@ export default {
   grid-column: 1;
   width: 100%;
   height: 100%;
+  max-height: 100%;
   padding: 0.3vw;
   padding-top: 0;
   padding-left: 0;
@@ -181,40 +182,23 @@ export default {
 .control-panel {
   width: 100%;
   height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
 
-  overflow: hidden;
   background-color: #fff;
-}
-
-.button-box-content {
-  flex: 0.05;
-  width: 100%;
-  /* height: 100%; */
-}
-.tab-btn {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background-color: transparent;
-  color: #545b77;
-  cursor: pointer;
-  padding-top: 1.5%;
-}
-
-.tab-btn:active,
-.tab-btn:hover {
-  box-shadow: 0 5px 0px -3px rgba(0, 0, 0, 0.2);
-}
-.active-tab-btn {
-  box-shadow: 0 5px 0px -3px rgba(0, 0, 0, 0.2);
 }
 .control-panel-content {
   flex: 0.95;
   overflow: hidden;
   padding: 1vw;
 }
+.button-box-content {
+  flex: 0.05;
+  width: 100%;
+  /* height: 100%; */
+}
+
 .base-mode {
   height: 100%;
   width: 100%;
@@ -227,7 +211,12 @@ export default {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
-
+.button-box {
+  height: fit-content;
+  display: flex;
+  gap: 0px;
+  justify-content: left;
+}
 .base-mode::-webkit-scrollbar {
   /* WebKit */
   width: 0;
@@ -237,12 +226,23 @@ export default {
   width: 100%;
   height: 100%;
 }
-
-.button-box {
-  display: flex;
-  gap: 0px;
-  justify-content: left;
+.tab-btn {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+  color: #545b77;
+  cursor: pointer;
+  padding-top: 1.5%;
 }
+.tab-btn:active,
+.tab-btn:hover {
+  box-shadow: 0 5px 0px -3px rgba(0, 0, 0, 0.2);
+}
+.active-tab-btn {
+  box-shadow: 0 5px 0px -3px rgba(0, 0, 0, 0.2);
+}
+
 .no-padding {
   padding: 0 !important;
 }
