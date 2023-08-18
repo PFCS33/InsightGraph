@@ -204,24 +204,36 @@ export default {
         const types = Array.from(newVal.keys());
         // 获取每个子图的高
         const subHeight = Math.floor(height / types.length);
+        // slider的高
+        const sliderHeight = 25;
+        const sliderRectHeight = 15;
         // 设置每个子图的margin
-        const marginTop = 0;
+        const marginTop = 5 + sliderHeight;
         const marginRight = 10;
         const marginBottom = 15;
-        const marginLeft = width * 0.2;
+        const marginLeft = width * 0.25;
+        // slider的宽
+        const sliderWidth = width - marginLeft - marginRight;
+        //创建tooltip
+        const tooltip = container
+          .append("div")
+          .attr("class", "tooltip")
+          .style("opacity", 0);
         // 创建svg画布
         const svg = container
           .append("svg")
           .attr("viewBox", [0, 0, width, height])
           .attr("style", "width: 100%; height:100%;")
           .style("user-select", "none");
-        // 创建分箱器，使用FreedmanDiaconis公式
+        // 创建分箱器
         const bin = d3.bin().value((d) => d.score);
         // .thresholds(d3.thresholdFreedmanDiaconis);
         types.forEach((type, index) => {
           const value = newVal.get(type);
+          // 连续值分箱
           const bins = bin(value.scores);
-          console.log(bins);
+
+          // 创建当前种类子图的g
           const g = svg
             .append("g")
             .attr("class", `${type}-box`)
@@ -236,12 +248,79 @@ export default {
             .scaleLinear()
             .domain([0, d3.max(bins, (d) => d.length)])
             .range([subHeight - marginBottom, marginTop]);
+
+          // slider矩形框
+          const sliderRect = g
+            .append("rect")
+            .attr("x", marginLeft)
+            .attr("y", 0)
+            .attr("width", sliderWidth)
+            .attr("height", sliderRectHeight)
+            .attr("fill", "#edd2ff")
+            .attr("stroke", "#fff");
+
+          // 添加slider的背景线
+          bins.forEach((d, index) => {
+            if (index !== 0)
+              g.append("line")
+                .attr("x1", x(d.x0))
+                .attr("x2", x(d.x0))
+                .attr("y1", 0)
+                .attr("y2", sliderRectHeight)
+                .attr("stroke", "#fff");
+          });
+          // 获取坐标轴刻度
+          const all_ticks = [
+            ...bins.map((bin) => bin.x0),
+            bins[bins.length - 1].x1,
+          ];
+
+          // 添加brush
+          const brush = d3
+            .brushX()
+            .extent([
+              [marginLeft, 0],
+              [marginLeft + sliderWidth, sliderRectHeight],
+            ])
+            .on("end", brushended);
+          g.append("g").attr("class", "brush").call(brush);
+
+          function brushended(event) {
+            // 获取选择的两端坐标
+            const selection = event.selection;
+
+            if (!event.sourceEvent || !selection) return;
+            // 反解坐标，得到原值
+            const [x0_selected, x1_selected] = selection.map((d) =>
+              x.invert(d)
+            );
+            // 寻找最近的bins
+            const x0 = all_ticks.reduce((acc, tick) => {
+              return Math.abs(tick - x0_selected) < Math.abs(acc - x0_selected)
+                ? tick
+                : acc;
+            }, all_ticks[0]);
+
+            const x1 = all_ticks.reduce((acc, tick) => {
+              return Math.abs(tick - x1_selected) < Math.abs(acc - x1_selected)
+                ? tick
+                : acc;
+            }, all_ticks[0]);
+            d3.select(this)
+              .transition()
+              .call(brush.move, x1 > x0 ? [x0, x1].map(x) : null);
+          }
+          // 直方图矩形框
           g.append("g")
-            .attr("fill", "steelblue")
+            .attr("fill", "#b67dc1")
             .attr("class", "rect-group")
+            .style("cursor", "pointer")
             .selectAll()
             .data(bins)
             .join("rect")
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
             .attr("x", (d) => {
               if (d.x0 === 1) {
                 return marginLeft;
@@ -259,6 +338,7 @@ export default {
             })
             .attr("y", (d) => y(d.length))
             .attr("height", (d) => y(0) - y(d.length));
+          // x轴
           g.append("g")
             .attr("class", "x-axis")
             .attr("transform", `translate(0,${subHeight - marginBottom})`)
@@ -266,6 +346,20 @@ export default {
             .call((g) => g.attr("font-size", "0.8rem"));
         });
 
+        function mouseover(event, d) {
+          tooltip.transition().duration(250).style("opacity", 1);
+          d3.select(this).classed("barchart-hover-highlight", true);
+        }
+        function mousemove(event, d) {
+          tooltip
+            .html(`${d.length}`)
+            .style("left", event.x + 15 + "px")
+            .style("top", event.y + "px");
+        }
+        function mouseleave(event, d) {
+          tooltip.transition().duration(250).style("opacity", 0);
+          d3.select(this).classed("barchart-hover-highlight", false);
+        }
         //    const piechart = echarts.init(container, "myTheme");
         // const option = {
         //   title: {
@@ -423,14 +517,14 @@ export default {
         that.filteredNodes = filteredNodes;
         that.filterdLinks = selectedLinkData;
         that.$store.dispatch("force/groupByLinkType", selectedLinkData);
-        that.$store.dispatch("force/groupByNodeType", filteredNodes);
+        //  that.$store.dispatch("force/groupByNodeType", filteredNodes);
         that.$store.commit("force/setSelectedData", {
           nodes: filteredNodes,
           links: selectedLinkData,
         });
-        that.piechart.dispatchAction({
-          type: "legendAllSelect",
-        });
+        // that.piechart.dispatchAction({
+        //   type: "legendAllSelect",
+        // });
       },
     },
   },
@@ -460,7 +554,7 @@ export default {
 }
 #histogram-box {
   width: 100%;
-  height: 100vh;
+  height: 120vh;
   margin-bottom: 0.3vw;
   background-color: #fff;
   transition: border-color 0.3s, box-shadow 0.3s;

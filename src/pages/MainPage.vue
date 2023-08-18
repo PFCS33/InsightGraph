@@ -166,7 +166,7 @@ export default {
 }
 
 .force-graph-box {
-  max-height: 94vh;
+  max-height: 95vh;
   grid-column: 2;
 }
 .control-panel-box {
