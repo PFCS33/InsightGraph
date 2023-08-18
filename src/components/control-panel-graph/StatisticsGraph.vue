@@ -205,12 +205,12 @@ export default {
         // 获取每个子图的高
         const subHeight = Math.floor(height / types.length);
         // slider的高
-        const sliderHeight = 25;
+        const sliderHeight = 20;
         const sliderRectHeight = 15;
         // 设置每个子图的margin
-        const marginTop = 5 + sliderHeight;
+        const marginTop = 5;
         const marginRight = 10;
-        const marginBottom = 15;
+        const marginBottom = 15 + sliderHeight;
         const marginLeft = width * 0.25;
         // slider的宽
         const sliderWidth = width - marginLeft - marginRight;
@@ -253,7 +253,7 @@ export default {
           const sliderRect = g
             .append("rect")
             .attr("x", marginLeft)
-            .attr("y", 0)
+            .attr("y", subHeight - sliderHeight)
             .attr("width", sliderWidth)
             .attr("height", sliderRectHeight)
             .attr("fill", "#edd2ff")
@@ -265,8 +265,8 @@ export default {
               g.append("line")
                 .attr("x1", x(d.x0))
                 .attr("x2", x(d.x0))
-                .attr("y1", 0)
-                .attr("y2", sliderRectHeight)
+                .attr("y1", subHeight - sliderHeight)
+                .attr("y2", subHeight - sliderHeight + sliderRectHeight)
                 .attr("stroke", "#fff");
           });
           // 获取坐标轴刻度
@@ -279,8 +279,11 @@ export default {
           const brush = d3
             .brushX()
             .extent([
-              [marginLeft, 0],
-              [marginLeft + sliderWidth, sliderRectHeight],
+              [marginLeft, subHeight - sliderHeight],
+              [
+                marginLeft + sliderWidth,
+                subHeight - sliderHeight + sliderRectHeight,
+              ],
             ])
             .on("end", brushended);
           g.append("g").attr("class", "brush").call(brush);
