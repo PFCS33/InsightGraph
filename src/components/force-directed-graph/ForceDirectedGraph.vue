@@ -394,8 +394,9 @@ export default {
       this.showMorePanel = false;
       this.showMoreIcon = true;
     },
-    changeInsightIndex(selectedIndex) {
-      const id = this.selectedNode.id;
+    changeInsightIndex(selectedIndex, targetId) {
+      let id = targetId;
+      if (!id) id = this.selectedNode.id;
       const oldIndex = this.selectedNode.insightIndex;
       // change index record of selectedNode
       this.selectedNode.insightIndex = selectedIndex;
@@ -457,14 +458,14 @@ export default {
       this.$store.getters["force/statisticNodeIdMap"].get(id).insightIndex =
         selectedIndex;
 
-      const oldNodeDataGroup = this.$store.getters["force/nodeDataGroup"];
-      const newNodeDataGroup = oldNodeDataGroup.map((d) => {
-        if (d.name === oldType) d.value -= 1;
-        if (d.name === newType) d.value += 1;
-        return d;
-      });
+      // const oldNodeDataGroup = this.$store.getters["force/nodeDataGroup"];
+      // const newNodeDataGroup = oldNodeDataGroup.map((d) => {
+      //   if (d.name === oldType) d.value -= 1;
+      //   if (d.name === newType) d.value += 1;
+      //   return d;
+      // });
 
-      this.$store.commit("force/setNodeDataGroup", newNodeDataGroup);
+      // this.$store.commit("force/setNodeDataGroup", newNodeDataGroup);
     },
     createInsetFilter(svg) {
       let svgNamespace = "http://www.w3.org/2000/svg";
@@ -1010,7 +1011,9 @@ export default {
 
     // rebind data of dom element(nodes and links) and sim system
     restart(newVal) {
+      const that = this;
       this.ticks = 0;
+
       // 获取原始绘画数据
       const data = this.selectedData;
 
@@ -1018,6 +1021,7 @@ export default {
       const links = data.links.map((d) => ({ ...d }));
       let nodes = null;
       if (!newVal) {
+        // simple restart
         nodes = preNodes.map(function (d) {
           delete d.x;
           delete d.y;
@@ -1026,16 +1030,56 @@ export default {
           return d;
         });
       } else {
+        const statisticNodeIdMap =
+          this.$store.getters["force/statisticNodeIdMap"];
+        const scoreSelectionMap =
+          this.$store.getters["force/scoreSelectionMap"];
+        // newly filtered value
         nodes = data.nodes.map((d) => {
+          const id = d.id;
+          // get force data
           const oldNode = this.nodeIdMap.get(d.id);
-          // oldNode.showDetail = false;
-          // oldNode.pinned = false;
-          // oldNode.checked = false;
-          // oldNode.view = null;
-          // oldNode.img = null;
-          // oldNode.rect = null;
+          // get total insight-list data
+          const originInsightList = statisticNodeIdMap.get(id)["insight-list"];
 
+          oldNode["insight-list"] = originInsightList.filter((insight) => {
+            const type = insight["insight-type"];
+            const score = insight["insight-score"];
+            const selection = scoreSelectionMap.get(type);
+            if (
+              selection === "all" ||
+              (score >= selection[0] && score < selection[1])
+            )
+              return true;
+            else return false;
+          });
+
+          // reset insight index
+          oldNode.insightIndex = 0;
           return oldNode;
+        });
+
+        // 重算每个node insight num到 circleR & insight icon size的映射
+        let maxVegaLiteNum = 0;
+        nodes.forEach((node) => {
+          const vegaLiteNum = node["insight-list"].length;
+          if (vegaLiteNum > maxVegaLiteNum) maxVegaLiteNum = vegaLiteNum;
+        });
+
+        const circleRScale = d3
+          .scaleLog([1, maxVegaLiteNum], [this.circleR, this.circleR * 2])
+          .base(2);
+        const insightSizeScale = d3
+          .scaleLog(
+            [1, maxVegaLiteNum],
+            [this.insightIconSize, this.insightIconSize * 2]
+          )
+          .base(2);
+
+        nodes.forEach((d) => {
+          const insightNum = d["insight-list"].length;
+          d.circleR = circleRScale(insightNum);
+          d.iconSize = insightSizeScale(insightNum);
         });
       }
 
@@ -1081,10 +1125,78 @@ export default {
         .join(
           (enter) => {
             nodeG = enter.append("g");
-
-            return nodeG;
           },
-          (update) => update,
+          (update) => {
+            console.log(update);
+            // update vega-lite graph
+            update.each(function (d) {
+              const g = d3.select(this);
+              const id = d.id;
+              const view = that.showIndex.get(id);
+              if (view) {
+                view.finalize();
+                g.selectAll(".vega-lite-graph").remove();
+                g.datum().view = null;
+                g.datum().img = null;
+                that.drawVegaLite(g, that.pinnedIndex.get(id) ? "svg" : "img");
+              }
+            });
+
+            // updata circle R
+            update.select(".circle").attr("r", function () {
+              return d3.select(this.parentNode).datum().circleR;
+            });
+            // update icon
+            update
+              .select(".insight-icon")
+              .attr("href", function () {
+                const gData = d3.select(this.parentNode).datum();
+                const group =
+                  gData["insight-list"][gData.insightIndex]["insight-type"];
+                let insightType = null;
+                switch (group) {
+                  case "dominance":
+                    insightType = "dominance";
+                    break;
+                  case "outlier":
+                    insightType = "outlier";
+                    break;
+                  case "top2":
+                    insightType = "top2";
+                    break;
+                  case "evenness":
+                    insightType = "evenness";
+                    break;
+                  case "trend":
+                    insightType = "trend";
+                    break;
+                  case "skewness":
+                    insightType = "skewness";
+                    break;
+                  case "kurtosis":
+                    insightType = "kurtosis";
+                    break;
+                  case "correlation":
+                  case "correlation-temporal":
+                    insightType = "correlation";
+                    break;
+                }
+                return "#defs-" + insightType;
+              })
+              .attr("class", "insight-icon")
+              .attr("width", function () {
+                return d3.select(this.parentNode).datum().iconSize;
+              })
+              .attr("height", function () {
+                return d3.select(this.parentNode).datum().iconSize;
+              })
+              .attr("x", function () {
+                return -d3.select(this.parentNode).datum().iconSize / 2;
+              })
+              .attr("y", function () {
+                return -d3.select(this.parentNode).datum().iconSize / 2;
+              });
+          },
           (exit) => {
             exit
               .each((data) => {

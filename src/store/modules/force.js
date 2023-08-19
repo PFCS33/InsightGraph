@@ -126,7 +126,6 @@ export default {
         });
         context.commit("setStatisticNodeIdMap", statisticNodeIdMap);
         context.commit("setTotalData", data);
-        context.commit("setSelectedData", data);
         context.dispatch("groupByLinkType", data.links);
         context.dispatch("groupByNodeType", data.nodes);
       });

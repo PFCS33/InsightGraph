@@ -234,10 +234,12 @@ export default {
         // 创建分箱器
         const bin = d3.bin().value((d) => d.score);
         // .thresholds(d3.thresholdFreedmanDiaconis);
+
         types.forEach((type, index) => {
           const value = newVal.get(type);
           // 连续值分箱
           const bins = bin(value.scores);
+
           // 获取坐标轴刻度
           const all_ticks = [
             ...bins.map((bin) => bin.x0),
@@ -255,6 +257,7 @@ export default {
             .scaleLinear()
             .domain([all_ticks[0], all_ticks[all_ticks.length - 1]])
             .range([marginLeft, width - marginRight]);
+
           this.histogramConfig.xFuncs[type] = x;
           const y = d3
             .scaleLinear()
@@ -348,7 +351,7 @@ export default {
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
             .attr("x", (d) => {
-              if (d.x0 === 1) {
+              if (d.x0 === d.x1) {
                 return marginLeft;
               } else {
                 return x(d.x0) + 1;
@@ -455,7 +458,7 @@ export default {
                   .transition()
                   .duration(300)
                   .attr("x", (d) => {
-                    if (d.x0 === 1) {
+                    if (d.x0 === d.x1) {
                       return this.histogramConfig.marginLeft;
                     } else {
                       return x(d.x0) + 1;
@@ -481,7 +484,7 @@ export default {
                   .transition()
                   .duration(300)
                   .attr("x", (d) => {
-                    if (d.x0 === 1) {
+                    if (d.x0 === d.x1) {
                       return this.histogramConfig.marginLeft;
                     } else {
                       return x(d.x0) + 1;
@@ -547,7 +550,6 @@ export default {
         this.drawHistogram(newVal);
       }
     },
-
     scoreSelectionMap: {
       deep: true,
       handler(newVal) {
@@ -560,7 +562,22 @@ export default {
             ? that.filterdLinks
             : that.totalData.links;
           // 根据 score selection 筛选出新的selectedNodeData
-          const selectedNodeData = [];
+          const selectedNodeData = filteredNodes.filter((node) => {
+            let select = false;
+            for (let insight of node["insight-list"]) {
+              const type = insight["insight-type"];
+              const score = insight["insight-score"];
+              const selection = newVal.get(type);
+              if (selection === "all") {
+                select = true;
+                break;
+              } else if (score >= selection[0] && score < selection[1]) {
+                select = true;
+                break;
+              }
+            }
+            return select;
+          });
 
           const idMap = new Set();
           selectedNodeData.forEach((node) => {
@@ -569,6 +586,12 @@ export default {
           const filteredLinks = selectedLinks.filter(
             (d) => idMap.has(d.source) && idMap.has(d.target)
           );
+          //   that.$store.dispatch("force/groupByLinkType", filteredLinks);
+          //   that.$store.dispatch("force/groupByNodeType", selectedNodeData);
+          that.$store.commit("force/setSelectedData", {
+            nodes: selectedNodeData,
+            links: filteredLinks,
+          });
         }
       },
     },
