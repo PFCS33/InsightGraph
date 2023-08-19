@@ -7,6 +7,7 @@ export default {
       linkDataGroup: null,
       nodeDataGroup: null,
       statisticNodeIdMap: null,
+      scoreSelectionMap: null,
     };
   },
   getters: {
@@ -25,6 +26,9 @@ export default {
     statisticNodeIdMap(state) {
       return state.statisticNodeIdMap;
     },
+    scoreSelectionMap(state) {
+      return state.scoreSelectionMap;
+    },
   },
   mutations: {
     setTotalData(state, payload) {
@@ -42,22 +46,15 @@ export default {
     setStatisticNodeIdMap(state, payload) {
       state.statisticNodeIdMap = payload;
     },
+    setScoreSelectionMap(state, payload) {
+      state.scoreSelectionMap = payload;
+    },
   },
   actions: {
+    changeTypeSelection(context, payload) {
+      context.getters.scoreSelectionMap.set(payload.type, payload.selection);
+    },
     groupByNodeType(context, payload) {
-      // const counts = [
-      //   { type: "trend", count: 0, score:[] },
-      //   { type: "correlation", count: 0 },
-      //   { type: "dominance", count: 0 },
-      //   { type: "correlation-temporal", count: 0 },
-      //   { type: "outlier", count: 0 },
-      //   { type: "top2", count: 0 },
-      //   { type: "skewness", count: 0 },
-      //   {
-      //     type: "kurtosis",
-      //     count: 0,
-      //   },
-      // ];
       const scoreMap = new Map();
       if (payload.length > 0) {
         payload.forEach((node) => {
@@ -89,6 +86,13 @@ export default {
           });
         });
       }
+
+      const types = new Map();
+      for (let type of scoreMap.keys()) {
+        types.set(type, "all");
+      }
+
+      context.commit("setScoreSelectionMap", types);
       context.commit("setNodeDataGroup", scoreMap);
     },
     groupByLinkType(context, payload) {

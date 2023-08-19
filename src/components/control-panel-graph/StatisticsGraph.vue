@@ -33,10 +33,8 @@
 export default {
   data() {
     return {
-      barchart: null,
-      histogram: null,
-
-      barchartConfig: [],
+      barchartConfig: null,
+      histogramConfig: null,
       linkType: ["siblings", "parent-child", "same-name"],
 
       filteredNodes: null,
@@ -61,6 +59,9 @@ export default {
     nodeGroup() {
       return this.$store.getters["force/nodeDataGroup"];
     },
+    scoreSelectionMap() {
+      return this.$store.getters["force/scoreSelectionMap"];
+    },
   },
 
   methods: {
@@ -70,7 +71,7 @@ export default {
     drawBarchart(newVal) {
       const that = this;
 
-      if (!this.barchart) {
+      if (!this.barchartConfig) {
         const marginTop = 0;
         const marginRight = 10;
         const marginBottom = 20;
@@ -100,6 +101,7 @@ export default {
           .attr("class", "x-axis")
           .attr("transform", `translate(0,${height - marginBottom})`);
 
+        this.barchartConfig = {};
         this.barchartConfig.marginTop = marginTop;
         this.barchartConfig.marginRight = marginRight;
         this.barchartConfig.marginBottom = marginBottom;
@@ -109,7 +111,6 @@ export default {
         this.barchartConfig.height = height;
         this.barchartConfig.colorScale = colorScale;
         this.barchartConfig.tooltip = tooltip;
-        this.barchart = true;
       }
       const config = this.barchartConfig;
       const y = d3
@@ -128,7 +129,6 @@ export default {
         .select("svg")
         .select(".rect-group")
         .selectAll("rect")
-
         .data(newVal, (d) => d.type)
         .join(
           (enter) => {
@@ -193,15 +193,21 @@ export default {
     },
     drawHistogram(newVal) {
       const that = this;
-      if (this.histogram) {
-        // update data
-      } else {
+
+      if (!this.histogramConfig) {
+        // initialization
+        this.histogramConfig = {};
+        this.histogramConfig.xTicks = {};
+        this.histogramConfig.xFuncs = {};
+
+        // 获取 总insight-type 类型
+        const types = Array.from(newVal.keys());
+
         const container = d3.select("#histogram-box");
         // 获取总宽和高
         const width = parseInt(container.style("width"), 10);
         const height = parseInt(container.style("height"), 10);
-        // 获取 总insight-type 类型
-        const types = Array.from(newVal.keys());
+
         // 获取每个子图的高
         const subHeight = Math.floor(height / types.length);
         // slider的高
@@ -232,6 +238,12 @@ export default {
           const value = newVal.get(type);
           // 连续值分箱
           const bins = bin(value.scores);
+          // 获取坐标轴刻度
+          const all_ticks = [
+            ...bins.map((bin) => bin.x0),
+            bins[bins.length - 1].x1,
+          ];
+          this.histogramConfig.xTicks[type] = all_ticks;
 
           // 创建当前种类子图的g
           const g = svg
@@ -241,9 +253,9 @@ export default {
 
           const x = d3
             .scaleLinear()
-            .domain([bins[0].x0, bins[bins.length - 1].x1])
+            .domain([all_ticks[0], all_ticks[all_ticks.length - 1]])
             .range([marginLeft, width - marginRight]);
-
+          this.histogramConfig.xFuncs[type] = x;
           const y = d3
             .scaleLinear()
             .domain([0, d3.max(bins, (d) => d.length)])
@@ -260,20 +272,15 @@ export default {
             .attr("stroke", "#fff");
 
           // 添加slider的背景线
-          bins.forEach((d, index) => {
+          all_ticks.forEach((d, index) => {
             if (index !== 0)
               g.append("line")
-                .attr("x1", x(d.x0))
-                .attr("x2", x(d.x0))
+                .attr("x1", x(d))
+                .attr("x2", x(d))
                 .attr("y1", subHeight - sliderHeight)
                 .attr("y2", subHeight - sliderHeight + sliderRectHeight)
                 .attr("stroke", "#fff");
           });
-          // 获取坐标轴刻度
-          const all_ticks = [
-            ...bins.map((bin) => bin.x0),
-            bins[bins.length - 1].x1,
-          ];
 
           // 添加brush
           const brush = d3
@@ -285,14 +292,24 @@ export default {
                 subHeight - sliderHeight + sliderRectHeight,
               ],
             ])
-            .on("end", brushended);
+            .on("end", function (event) {
+              brushended(this, event, type);
+            });
           g.append("g").attr("class", "brush").call(brush);
 
-          function brushended(event) {
-            // 获取选择的两端坐标
+          function brushended(brushContainer, event, type) {
+            // 获取选择的两端的svg坐标
             const selection = event.selection;
 
-            if (!event.sourceEvent || !selection) return;
+            if (!event.sourceEvent) return;
+            if (!selection) {
+              // 选择为空时 （默认全选）
+              that.$store.dispatch("force/changeTypeSelection", {
+                type: type,
+                selection: "all",
+              });
+              return;
+            }
             // 反解坐标，得到原值
             const [x0_selected, x1_selected] = selection.map((d) =>
               x.invert(d)
@@ -309,17 +326,23 @@ export default {
                 ? tick
                 : acc;
             }, all_ticks[0]);
-            d3.select(this)
+
+            d3.select(brushContainer)
               .transition()
               .call(brush.move, x1 > x0 ? [x0, x1].map(x) : null);
+
+            that.$store.dispatch("force/changeTypeSelection", {
+              type: type,
+              selection: x1 > x0 ? [x0, x1] : "all",
+            });
           }
           // 直方图矩形框
           g.append("g")
             .attr("fill", "#b67dc1")
             .attr("class", "rect-group")
             .style("cursor", "pointer")
-            .selectAll()
-            .data(bins)
+            .selectAll("rect")
+            .data(bins, (d, index) => index)
             .join("rect")
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
@@ -349,88 +372,16 @@ export default {
             .call((g) => g.attr("font-size", "0.8rem"));
         });
 
-        function mouseover(event, d) {
-          tooltip.transition().duration(250).style("opacity", 1);
-          d3.select(this).classed("barchart-hover-highlight", true);
-        }
-        function mousemove(event, d) {
-          tooltip
-            .html(`${d.length}`)
-            .style("left", event.x + 15 + "px")
-            .style("top", event.y + "px");
-        }
-        function mouseleave(event, d) {
-          tooltip.transition().duration(250).style("opacity", 0);
-          d3.select(this).classed("barchart-hover-highlight", false);
-        }
-        //    const piechart = echarts.init(container, "myTheme");
-        // const option = {
-        //   title: {
-        //     text: "Insight Type",
-        //     left: "center",
-        //     top: "4%",
-        //     textStyle: {
-        //       color: "#555",
-        //       fontSize: 13,
-        //     },
-        //   },
-        //   legend: {
-        //     top: "13%",
-        //     left: "5%",
+        this.histogramConfig.container = container;
+        this.histogramConfig.width = width;
+        this.histogramConfig.marginLeft = marginLeft;
+        this.histogramConfig.marginRight = marginRight;
+        this.histogramConfig.marginTop = marginTop;
+        this.histogramConfig.marginBottom = marginBottom;
+        this.histogramConfig.subHeight = subHeight;
+        this.histogramConfig.tooltip = tooltip;
+        this.histogramConfig.types = types;
 
-        //     textStyle: {
-        //       fontSize: 10,
-        //       color: "#555",
-        //     },
-        //     itemWidth: 18,
-        //     itemGap: 5,
-        //   },
-        //   tooltip: {
-        //     trigger: "item",
-        //     textStyle: {
-        //       color: "#555",
-        //       fontSize: 12,
-        //     },
-        //   },
-        //   grid: {
-        //     left: "5%",
-        //     right: "10%",
-        //     bottom: "10%",
-        //     top: "33%",
-        //     containLabel: true,
-        //   },
-
-        //   series: [
-        //     {
-        //       name: "insight-type",
-        //       stillShowZeroSum: false,
-        //       type: "pie",
-        //       data: newVal.sort(function (a, b) {
-        //         return a.value - b.value;
-        //       }),
-        //       radius: ["5%", "55%"],
-        //       center: ["50%", "70%"],
-        //       roseType: "area",
-        //       itemStyle: {
-        //         borderRadius: 4,
-        //       },
-        //       labelLine: {
-        //         smooth: 0.2,
-        //         length: 5,
-        //         length2: 10,
-        //       },
-        //       emphasis: {
-        //         itemStyle: {
-        //           shadowBlur: 10,
-        //           shadowOffsetX: 0,
-        //           shadowColor: "rgba(0, 0, 0, 0.5)",
-        //         },
-        //       },
-        //     },
-        //   ],
-        // };
-        // piechart.setOption(option);
-        // this.piechart = piechart;
         // piechart.on("legendselectchanged", function (params) {
         //   const filteredNodes = that.filteredNodes
         //     ? that.filteredNodes
@@ -459,19 +410,133 @@ export default {
         //     links: filteredLinks,
         //   });
         // });
+      } else {
+        const types = this.histogramConfig.types;
+        const xTicks = this.histogramConfig.xTicks;
+        types.forEach((type, index) => {
+          const value = newVal.get(type);
+          // get old x
+          const x = this.histogramConfig.xFuncs[type];
+          // get new bins
+          let bins = [];
+          if (value) {
+            bins = d3
+              .bin()
+              .value((d) => d.score)
+              .domain(x.domain())
+              .thresholds(xTicks[type])(value.scores);
+          }
+          // get new y
+          const y = d3
+            .scaleLinear()
+            .domain([0, d3.max(bins, (d) => d.length)])
+            .range([
+              this.histogramConfig.subHeight -
+                this.histogramConfig.marginBottom,
+              this.histogramConfig.marginTop,
+            ]);
+
+          this.histogramConfig.container
+            .select("svg")
+            .select(`.${type}-box`)
+            .select(".rect-group")
+            .selectAll("rect")
+            .data(bins, (d, index) => index)
+            .join(
+              (enter) => {
+                enter
+                  .append("rect")
+                  .attr("y", y(0))
+                  .attr("x", x(xTicks[type][0]))
+                  .attr("height", 0)
+                  .on("mouseover", mouseover)
+                  .on("mousemove", mousemove)
+                  .on("mouseleave", mouseleave)
+                  .transition()
+                  .duration(300)
+                  .attr("x", (d) => {
+                    if (d.x0 === 1) {
+                      return this.histogramConfig.marginLeft;
+                    } else {
+                      return x(d.x0) + 1;
+                    }
+                  })
+                  .attr("width", (d) => {
+                    const rectWidth = x(d.x1) - x(d.x0);
+                    if (rectWidth === 0) {
+                      return (
+                        this.histogramConfig.width -
+                        this.histogramConfig.marginLeft -
+                        this.histogramConfig.marginRight
+                      );
+                    } else {
+                      return rectWidth - 1;
+                    }
+                  })
+                  .attr("y", (d) => y(d.length))
+                  .attr("height", (d) => y(0) - y(d.length));
+              },
+              (update) => {
+                update
+                  .transition()
+                  .duration(300)
+                  .attr("x", (d) => {
+                    if (d.x0 === 1) {
+                      return this.histogramConfig.marginLeft;
+                    } else {
+                      return x(d.x0) + 1;
+                    }
+                  })
+                  .attr("width", (d) => {
+                    const rectWidth = x(d.x1) - x(d.x0);
+                    if (rectWidth === 0) {
+                      return (
+                        this.histogramConfig.width -
+                        this.histogramConfig.marginLeft -
+                        this.histogramConfig.marginRight
+                      );
+                    } else {
+                      return rectWidth - 1;
+                    }
+                  })
+                  .attr("y", (d) => y(d.length))
+                  .attr("height", (d) => y(0) - y(d.length));
+              },
+              (exit) => {
+                exit
+                  .attr("opacity", 1)
+                  .attr("pointer-events", "none")
+                  .transition()
+                  .duration(100)
+                  .attr("opacity", 0)
+                  .remove();
+              }
+            );
+        });
+      }
+      function mouseover(event, d) {
+        that.histogramConfig.tooltip
+          .transition()
+          .duration(250)
+          .style("opacity", 1);
+        d3.select(this).classed("barchart-hover-highlight", true);
+      }
+      function mousemove(event, d) {
+        that.histogramConfig.tooltip
+          .html(`${d.length}`)
+          .style("left", event.x + 15 + "px")
+          .style("top", event.y + "px");
+      }
+      function mouseleave(event, d) {
+        that.histogramConfig.tooltip
+          .transition()
+          .duration(250)
+          .style("opacity", 0);
+        d3.select(this).classed("barchart-hover-highlight", false);
       }
     },
   },
   watch: {
-    // totalData(newVal) {
-    //   if (newVal) {
-    //     const idMap = new Set();
-    //     newVal.nodes.forEach((node) => {
-    //       idMap.add(node.id);
-    //     });
-    //     this.idMap = idMap;
-    //   }
-    // },
     linkGroup(newVal) {
       if (newVal) {
         this.drawBarchart(newVal);
@@ -482,10 +547,36 @@ export default {
         this.drawHistogram(newVal);
       }
     },
+
+    scoreSelectionMap: {
+      deep: true,
+      handler(newVal) {
+        const that = this;
+        if (newVal) {
+          const filteredNodes = that.filteredNodes
+            ? that.filteredNodes
+            : that.totalData.nodes;
+          const selectedLinks = that.filterdLinks
+            ? that.filterdLinks
+            : that.totalData.links;
+          // 根据 score selection 筛选出新的selectedNodeData
+          const selectedNodeData = [];
+
+          const idMap = new Set();
+          selectedNodeData.forEach((node) => {
+            idMap.add(node.id);
+          });
+          const filteredLinks = selectedLinks.filter(
+            (d) => idMap.has(d.source) && idMap.has(d.target)
+          );
+        }
+      },
+    },
     selectedLinkType: {
       deep: true,
       handler(newVal) {
         const that = this;
+        // 作为主选项，每次选择获取全局数据
         const totalLinks = that.totalData.links;
         const totalNodes = that.totalData.nodes;
 
@@ -520,7 +611,7 @@ export default {
         that.filteredNodes = filteredNodes;
         that.filterdLinks = selectedLinkData;
         that.$store.dispatch("force/groupByLinkType", selectedLinkData);
-        //  that.$store.dispatch("force/groupByNodeType", filteredNodes);
+        that.$store.dispatch("force/groupByNodeType", filteredNodes);
         that.$store.commit("force/setSelectedData", {
           nodes: filteredNodes,
           links: selectedLinkData,
