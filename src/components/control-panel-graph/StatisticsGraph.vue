@@ -211,6 +211,7 @@ export default {
     },
     drawHistogram(newVal) {
       const that = this;
+
       if (!this.histogramConfig) {
         // initialization
         this.histogramConfig = {};
@@ -221,6 +222,9 @@ export default {
         const types = Array.from(newVal.keys());
 
         const container = d3.select("#histogram-box");
+        // barchart图的margin
+        const marginLeftType = 3;
+        const marginRightType = 13;
         // 获取总宽和高
         const width = parseInt(container.style("width"), 10);
         const height = parseInt(container.style("height"), 10);
@@ -235,7 +239,7 @@ export default {
         const marginTop = 20;
         const marginRight = 10;
         const marginBottom = 15 + sliderHeight;
-        const marginLeft = width * 0.25;
+        const marginLeft = width * 0.3;
         // slider的宽
         const sliderWidth = width - marginLeft - marginRight;
         //创建tooltip
@@ -253,6 +257,23 @@ export default {
         const bin = d3.bin().value((d) => d.score);
         // .thresholds(d3.thresholdFreedmanDiaconis);
 
+        // 创建左半轴的bar
+        const typeColor = d3.scaleOrdinal(types, d3.schemeTableau10);
+        svg.append("g").attr("class", "type-bar");
+        const yType = d3
+          .scaleBand()
+          .domain(types)
+          .range([0, height])
+          .padding(0.1);
+        svg
+          .append("g")
+          .attr("transform", `translate(${marginLeft - marginRightType},0)`)
+          .attr("class", "y-axis")
+          .call(d3.axisRight(yType))
+          .selectAll(".tick text")
+          .remove();
+
+        // 创建右半轴的histogram
         types.forEach((type, index) => {
           const value = newVal.get(type);
           // 连续值分箱
@@ -444,7 +465,6 @@ export default {
 
           // 在最高矩形上添加文本
           g.append("g")
-
             .attr("class", "max-value")
             .selectChildren("text")
             .data([maxBin])
@@ -470,9 +490,13 @@ export default {
         this.histogramConfig.marginRight = marginRight;
         this.histogramConfig.marginTop = marginTop;
         this.histogramConfig.marginBottom = marginBottom;
+        this.histogramConfig.marginLeftType = marginLeftType;
+        this.histogramConfig.marginRightType = marginRightType;
         this.histogramConfig.subHeight = subHeight;
         this.histogramConfig.tooltip = tooltip;
         this.histogramConfig.types = types;
+        this.histogramConfig.yTypeFunc = yType;
+        this.histogramConfig.typeColor = typeColor;
 
         // piechart.on("legendselectchanged", function (params) {
         //   const filteredNodes = that.filteredNodes
@@ -639,6 +663,81 @@ export default {
             );
         });
       }
+
+      const yType = this.histogramConfig.yTypeFunc;
+      const xType = d3
+        .scaleLinear()
+        .domain([0, d3.max(Array.from(newVal.values()), (d) => d.count)])
+        .nice()
+        .range([
+          this.histogramConfig.marginLeftType,
+          this.histogramConfig.marginLeft -
+            this.histogramConfig.marginRightType,
+        ]);
+
+      this.histogramConfig.container
+        .select("svg")
+        .select(".type-bar")
+        .selectAll("rect")
+        .data(Array.from(newVal.entries()), (d) => d[0])
+        .join(
+          (enter) => {
+            enter
+              .append("rect")
+              .on("mouseover", mouseover)
+              .on("mousemove", function (event, d) {
+                that.histogramConfig.tooltip
+                  .html(`${d[1].count}`)
+                  .style("left", event.x + 15 + "px")
+                  .style("top", event.y + "px");
+              })
+              .on("mouseleave", mouseleave)
+              .attr("y", (d) => yType(d[0]))
+              .attr("height", yType.bandwidth())
+              .attr(
+                "x",
+                (d) =>
+                  this.histogramConfig.marginLeft -
+                  this.histogramConfig.marginRightType +
+                  this.histogramConfig.marginLeftType -
+                  xType(d[1].count)
+              )
+              .transition()
+              .duration(300)
+              .attr("cursor", "pointer")
+              .attr("fill", (d) => this.histogramConfig.typeColor(d[0]))
+
+              .attr("width", (d) => xType(d[1].count) - xType(0));
+          },
+          (update) => {
+            update
+              .transition()
+              .duration(300)
+              .attr("fill", (d) => this.histogramConfig.typeColor(d[0]))
+
+              .attr(
+                "x",
+                (d) =>
+                  this.histogramConfig.marginLeft -
+                  this.histogramConfig.marginRightType +
+                  this.histogramConfig.marginLeftType -
+                  xType(d[1].count)
+              )
+              .attr("y", (d) => yType(d[0]))
+              .attr("width", (d) => xType(d[1].count) - xType(0))
+              .attr("height", yType.bandwidth());
+          },
+          (exit) => {
+            exit
+              .attr("opacity", 1)
+              .attr("pointer-events", "none")
+              .transition()
+              .duration(100)
+              .attr("opacity", 0)
+              .remove();
+          }
+        );
+
       function mouseover(event, d) {
         that.histogramConfig.tooltip
           .transition()
