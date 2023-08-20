@@ -55,44 +55,59 @@ export default {
       context.getters.scoreSelectionMap.set(payload.type, payload.selection);
     },
     groupByNodeType(context, payload) {
+      const data = payload.data;
       const scoreMap = new Map();
-      if (payload.length > 0) {
-        payload.forEach((node) => {
+      const scoreSelectionMap = context.getters.scoreSelectionMap;
+      if (data.length > 0) {
+        data.forEach((node) => {
           const id = node.id;
           node["insight-list"].forEach((insight, index) => {
             const type = insight["insight-type"];
             const score = insight["insight-score"];
-            if (scoreMap.has(type)) {
-              const value = scoreMap.get(type);
-              value.count += 1;
-              value.scores.push({
-                id: id,
-                index: index,
-                score: score,
-              });
-            } else {
-              const value = {
-                count: 1,
-                scores: [
-                  {
-                    id: id,
-                    index: index,
-                    score: score,
-                  },
-                ],
-              };
-              scoreMap.set(type, value);
+            let scoreFilter = true;
+            if (
+              !payload.firstFlag &&
+              (score < scoreSelectionMap.get(type)[0] ||
+                score >= scoreSelectionMap.get(type)[1])
+            ) {
+              scoreFilter = false;
+            }
+
+            if (scoreFilter) {
+              if (scoreMap.has(type)) {
+                const value = scoreMap.get(type);
+                value.count += 1;
+                value.scores.push({
+                  id: id,
+                  index: index,
+                  score: score,
+                });
+              } else {
+                const value = {
+                  count: 1,
+                  scores: [
+                    {
+                      id: id,
+                      index: index,
+                      score: score,
+                    },
+                  ],
+                };
+                scoreMap.set(type, value);
+              }
             }
           });
         });
       }
 
-      const types = new Map();
-      for (let type of scoreMap.keys()) {
-        types.set(type, "all");
-      }
+      if (payload.firstFlag) {
+        const types = new Map();
+        for (let type of scoreMap.keys()) {
+          types.set(type, "all");
+        }
 
-      context.commit("setScoreSelectionMap", types);
+        context.commit("setScoreSelectionMap", types);
+      }
       context.commit("setNodeDataGroup", scoreMap);
     },
     groupByLinkType(context, payload) {
@@ -109,7 +124,6 @@ export default {
             count: d[1],
           }));
       }
-
       context.commit("setLinkDataGroup", counts);
     },
     // load test data
@@ -127,7 +141,10 @@ export default {
         context.commit("setStatisticNodeIdMap", statisticNodeIdMap);
         context.commit("setTotalData", data);
         context.dispatch("groupByLinkType", data.links);
-        context.dispatch("groupByNodeType", data.nodes);
+        context.dispatch("groupByNodeType", {
+          data: data.nodes,
+          firstFlag: true,
+        });
       });
     },
   },

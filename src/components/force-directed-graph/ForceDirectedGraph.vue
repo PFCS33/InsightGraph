@@ -175,6 +175,9 @@ export default {
       defaultNodeColor: "#aaa",
       circleHoveredColor: "#e6fcf5",
 
+      circleRScale: null,
+      insightSizeScale: null,
+
       circleR: 12,
       circleFocusR: 24,
       // rectWH: 125 * 0.7 + 20,
@@ -1058,28 +1061,11 @@ export default {
           oldNode.insightIndex = 0;
           return oldNode;
         });
-
-        // 重算每个node insight num到 circleR & insight icon size的映射
-        let maxVegaLiteNum = 0;
-        nodes.forEach((node) => {
-          const vegaLiteNum = node["insight-list"].length;
-          if (vegaLiteNum > maxVegaLiteNum) maxVegaLiteNum = vegaLiteNum;
-        });
-
-        const circleRScale = d3
-          .scaleLog([1, maxVegaLiteNum], [this.circleR, this.circleR * 2])
-          .base(2);
-        const insightSizeScale = d3
-          .scaleLog(
-            [1, maxVegaLiteNum],
-            [this.insightIconSize, this.insightIconSize * 2]
-          )
-          .base(2);
-
+        // recalculate the size of circle and icon
         nodes.forEach((d) => {
           const insightNum = d["insight-list"].length;
-          d.circleR = circleRScale(insightNum);
-          d.iconSize = insightSizeScale(insightNum);
+          d.circleR = this.circleRScale(insightNum);
+          d.iconSize = this.insightSizeScale(insightNum);
         });
       }
 
@@ -1127,7 +1113,6 @@ export default {
             nodeG = enter.append("g");
           },
           (update) => {
-            console.log(update);
             // update vega-lite graph
             update.each(function (d) {
               const g = d3.select(this);
@@ -1554,6 +1539,8 @@ export default {
         )
         .base(2);
 
+      this.circleRScale = circleRScale;
+      this.insightSizeScale = insightSizeScale;
       // 加入更多属性，控制vega-lite图的显示
       const nodes = data.nodes.map((d) => {
         const insightNum = d["insight-list"].length;

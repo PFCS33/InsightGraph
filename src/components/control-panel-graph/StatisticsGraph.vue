@@ -538,6 +538,34 @@ export default {
         d3.select(this).classed("barchart-hover-highlight", false);
       }
     },
+    filterByScocre(scoreSelectionMap, originLinks, originNodes) {
+      // 根据 score selection 筛选出新的selectedNodeData
+      const selectedNodeData = originNodes.filter((node) => {
+        let select = false;
+        for (let insight of node["insight-list"]) {
+          const type = insight["insight-type"];
+          const score = insight["insight-score"];
+          const selection = scoreSelectionMap.get(type);
+          if (selection === "all") {
+            select = true;
+            break;
+          } else if (score >= selection[0] && score < selection[1]) {
+            select = true;
+            break;
+          }
+        }
+        return select;
+      });
+
+      const idMap = new Set();
+      selectedNodeData.forEach((node) => {
+        idMap.add(node.id);
+      });
+      const filteredLinks = originLinks.filter(
+        (d) => idMap.has(d.source) && idMap.has(d.target)
+      );
+      return [filteredLinks, selectedNodeData];
+    },
   },
   watch: {
     linkGroup(newVal) {
@@ -561,33 +589,17 @@ export default {
           const selectedLinks = that.filterdLinks
             ? that.filterdLinks
             : that.totalData.links;
-          // 根据 score selection 筛选出新的selectedNodeData
-          const selectedNodeData = filteredNodes.filter((node) => {
-            let select = false;
-            for (let insight of node["insight-list"]) {
-              const type = insight["insight-type"];
-              const score = insight["insight-score"];
-              const selection = newVal.get(type);
-              if (selection === "all") {
-                select = true;
-                break;
-              } else if (score >= selection[0] && score < selection[1]) {
-                select = true;
-                break;
-              }
-            }
-            return select;
-          });
 
-          const idMap = new Set();
-          selectedNodeData.forEach((node) => {
-            idMap.add(node.id);
-          });
-          const filteredLinks = selectedLinks.filter(
-            (d) => idMap.has(d.source) && idMap.has(d.target)
+          const [filteredLinks, selectedNodeData] = this.filterByScocre(
+            newVal,
+            selectedLinks,
+            filteredNodes
           );
-          //   that.$store.dispatch("force/groupByLinkType", filteredLinks);
-          //   that.$store.dispatch("force/groupByNodeType", selectedNodeData);
+          that.$store.dispatch("force/groupByLinkType", filteredLinks);
+          that.$store.dispatch("force/groupByNodeType", {
+            data: selectedNodeData,
+            firstFlag: false,
+          });
           that.$store.commit("force/setSelectedData", {
             nodes: selectedNodeData,
             links: filteredLinks,
@@ -633,11 +645,21 @@ export default {
         );
         that.filteredNodes = filteredNodes;
         that.filterdLinks = selectedLinkData;
-        that.$store.dispatch("force/groupByLinkType", selectedLinkData);
-        that.$store.dispatch("force/groupByNodeType", filteredNodes);
+
+        const [links, nodes] = this.filterByScocre(
+          this.scoreSelectionMap,
+          selectedLinkData,
+          filteredNodes
+        );
+
+        that.$store.dispatch("force/groupByLinkType", links);
+        that.$store.dispatch("force/groupByNodeType", {
+          data: filteredNodes,
+          firstFlag: false,
+        });
         that.$store.commit("force/setSelectedData", {
-          nodes: filteredNodes,
-          links: selectedLinkData,
+          nodes: nodes,
+          links: links,
         });
         // that.piechart.dispatchAction({
         //   type: "legendAllSelect",
