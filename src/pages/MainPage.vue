@@ -117,7 +117,6 @@ export default {
   },
   created() {
     this.$store.dispatch("force/loadData");
-    this.$store.dispatch("table/loadHeadData");
   },
 };
 </script>

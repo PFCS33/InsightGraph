@@ -107,12 +107,11 @@ export default {
     },
 
     loadHeadData(context, payload) {
-      const path = "data/test_data/table.json";
-      d3.json(path).then(function (data) {
-        context.commit("setTableData", data.table);
-        context.commit("setRowDict", listToDict(data.table.rows));
-        context.commit("setColDict", listToDict(data.table.cols));
-      });
+      const data = payload;
+
+      context.commit("setTableData", data);
+      context.commit("setRowDict", listToDict(data.rows));
+      context.commit("setColDict", listToDict(data.cols));
 
       function listToDict(list) {
         let obj = {};

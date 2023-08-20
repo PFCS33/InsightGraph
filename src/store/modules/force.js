@@ -137,21 +137,24 @@ export default {
     },
     // load test data
     loadData(context, _payload) {
-      const file = "test_data/result_0807.json";
+      const file = "test_data/result_0809.json";
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
+        const tableData = data.table;
+        context.dispatch("table/loadHeadData", tableData, { root: true });
+        const graphData = data.graph;
         // 增加insight-index属性
-        data.nodes.forEach((d) => (d.insightIndex = 0));
+        graphData.nodes.forEach((d) => (d.insightIndex = 0));
         const statisticNodeIdMap = new Map();
 
-        data.nodes.forEach((d) => {
+        graphData.nodes.forEach((d) => {
           statisticNodeIdMap.set(d.id, d);
         });
         context.commit("setStatisticNodeIdMap", statisticNodeIdMap);
-        context.commit("setTotalData", data);
-        context.dispatch("groupByLinkType", data.links);
+        context.commit("setTotalData", graphData);
+        context.dispatch("groupByLinkType", graphData.links);
         context.dispatch("groupByNodeType", {
-          data: data.nodes,
+          data: graphData.nodes,
           firstFlag: true,
         });
       });
