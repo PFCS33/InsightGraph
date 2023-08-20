@@ -51,8 +51,13 @@ export default {
     },
   },
   actions: {
+    changeTypeSelected(context, payload) {
+      context.getters.scoreSelectionMap.get(payload.type).selected =
+        payload.selected;
+    },
     changeTypeSelection(context, payload) {
-      context.getters.scoreSelectionMap.set(payload.type, payload.selection);
+      context.getters.scoreSelectionMap.get(payload.type).selection =
+        payload.selection;
     },
     groupByNodeType(context, payload) {
       const data = payload.data;
@@ -64,13 +69,17 @@ export default {
           node["insight-list"].forEach((insight, index) => {
             const type = insight["insight-type"];
             const score = insight["insight-score"];
+
             let scoreFilter = true;
-            if (
-              !payload.firstFlag &&
-              (score < scoreSelectionMap.get(type)[0] ||
-                score >= scoreSelectionMap.get(type)[1])
-            ) {
-              scoreFilter = false;
+            if (!payload.firstFlag) {
+              const filter = scoreSelectionMap.get(type);
+              if (
+                !filter.selected ||
+                score < filter.selection[0] ||
+                score >= filter.selection[1]
+              ) {
+                scoreFilter = false;
+              }
             }
 
             if (scoreFilter) {
@@ -103,7 +112,7 @@ export default {
       if (payload.firstFlag) {
         const types = new Map();
         for (let type of scoreMap.keys()) {
-          types.set(type, "all");
+          types.set(type, { selection: "all", selected: true });
         }
 
         context.commit("setScoreSelectionMap", types);

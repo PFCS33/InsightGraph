@@ -1045,16 +1045,21 @@ export default {
           // get total insight-list data
           const originInsightList = statisticNodeIdMap.get(id)["insight-list"];
 
+          // filter insight-list data
           oldNode["insight-list"] = originInsightList.filter((insight) => {
             const type = insight["insight-type"];
             const score = insight["insight-score"];
-            const selection = scoreSelectionMap.get(type);
-            if (
-              selection === "all" ||
-              (score >= selection[0] && score < selection[1])
-            )
-              return true;
-            else return false;
+            const selection = scoreSelectionMap.get(type).selection;
+            const selected = scoreSelectionMap.get(type).selected;
+            let result = false;
+            if (selected) {
+              if (
+                selection === "all" ||
+                (score >= selection[0] && score < selection[1])
+              )
+                result = true;
+            }
+            return result;
           });
 
           // reset insight index

@@ -297,6 +297,7 @@ export default {
             .append("use")
             .datum({
               selected: true,
+              type: type,
             })
             .attr("href", "#defs-check-insight")
             .attr("transform", `translate(${width - marginRight - 15},0)`)
@@ -326,6 +327,10 @@ export default {
                   .attr("fill", "#545b77")
                   .attr("color", "transparent");
               }
+              that.$store.dispatch("force/changeTypeSelected", {
+                type: d.type,
+                selected: d.selected,
+              });
             });
 
           // slider矩形框
@@ -662,13 +667,16 @@ export default {
         for (let insight of node["insight-list"]) {
           const type = insight["insight-type"];
           const score = insight["insight-score"];
-          const selection = scoreSelectionMap.get(type);
-          if (selection === "all") {
-            select = true;
-            break;
-          } else if (score >= selection[0] && score < selection[1]) {
-            select = true;
-            break;
+          const selection = scoreSelectionMap.get(type).selection;
+          const selected = scoreSelectionMap.get(type).selected;
+          if (selected) {
+            if (selection === "all") {
+              select = true;
+              break;
+            } else if (score >= selection[0] && score < selection[1]) {
+              select = true;
+              break;
+            }
           }
         }
         return select;
@@ -784,8 +792,6 @@ export default {
       },
     },
   },
-
-  created() {},
 };
 </script>
 
