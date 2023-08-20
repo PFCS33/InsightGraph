@@ -367,6 +367,22 @@ export default {
             })
             .attr("y", (d) => y(d.length))
             .attr("height", (d) => y(0) - y(d.length));
+          // 找到最大长度的 bin
+          let maxBin = bins.reduce((acc, curr) =>
+            curr.length > acc.length ? curr : acc
+          );
+
+          // 在最高矩形上添加文本
+          g.selectChildren("text")
+            .data([maxBin])
+            .join("text")
+            .attr("class", "max-value")
+            .attr("x", (d) => x(d.x0) + (x(d.x1) - x(d.x0)) / 2)
+            .attr("y", (d) => y(d.length) + 10)
+            .attr("text-anchor", "middle")
+            .attr("fill", "#fff")
+            .attr("font-size", "10px")
+            .text((d) => d.length);
           // x轴
           g.append("g")
             .attr("class", "x-axis")
@@ -422,12 +438,17 @@ export default {
           const x = this.histogramConfig.xFuncs[type];
           // get new bins
           let bins = [];
+          let maxBin = null;
           if (value) {
             bins = d3
               .bin()
               .value((d) => d.score)
               .domain(x.domain())
               .thresholds(xTicks[type])(value.scores);
+            // 找到最大长度的 bin
+            maxBin = bins.reduce((acc, curr) =>
+              curr.length > acc.length ? curr : acc
+            );
           }
           // get new y
           const y = d3
@@ -438,6 +459,33 @@ export default {
                 this.histogramConfig.marginBottom,
               this.histogramConfig.marginTop,
             ]);
+
+          this.histogramConfig.container
+            .select("svg")
+            .select(`.${type}-box`)
+            .selectChildren("text")
+            .data(maxBin ? [maxBin] : [])
+            .join(
+              (enter) => {
+                enter
+                  .append("text")
+                  .attr("class", "max-value")
+                  .attr("x", (d) => x(d.x0) + (x(d.x1) - x(d.x0)) / 2)
+                  .attr("y", (d) => y(d.length) + 10)
+                  .attr("text-anchor", "middle")
+                  .attr("fill", "#fff")
+                  .attr("font-size", "10px")
+                  .text((d) => d.length);
+              },
+              (update) =>
+                update
+                  .attr("x", (d) => x(d.x0) + (x(d.x1) - x(d.x0)) / 2)
+                  .attr("y", (d) => y(d.length) + 10)
+                  .text((d) => d.length),
+              (exit) => {
+                exit.remove();
+              }
+            );
 
           this.histogramConfig.container
             .select("svg")
