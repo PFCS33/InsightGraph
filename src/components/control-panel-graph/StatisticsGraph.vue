@@ -26,7 +26,25 @@
       </div>
       <div id="barchart-box"></div
     ></BaseCard>
-    <BaseCard mode="flat" id="histogram-box"></BaseCard>
+    <BaseCard mode="flat" id="histogram-box">
+      <svg style="width: 100%; height: 100%">
+        <defs>
+          <symbol
+            id="defs-check-insight"
+            viewBox="0 0 1024 1024"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect width="1024" height="1024" fill="currentcolor"></rect>
+            <path
+              d="M433.1 657.7c12.7 17.7 39 17.7 51.7 0l210.6-292c3.8-5.3 0-12.7-6.5-12.7H642c-10.2 0-19.9 4.9-25.9 13.3L459 584.3l-71.2-98.8c-6-8.3-15.6-13.3-25.9-13.3H315c-6.5 0-10.3 7.4-6.5 12.7l124.6 172.8z"
+            ></path>
+            <path
+              d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32z m-40 728H184V184h656v656z"
+            ></path>
+          </symbol>
+        </defs>
+      </svg>
+    </BaseCard>
   </div>
 </template>
 <script>
@@ -193,7 +211,6 @@ export default {
     },
     drawHistogram(newVal) {
       const that = this;
-
       if (!this.histogramConfig) {
         // initialization
         this.histogramConfig = {};
@@ -210,11 +227,12 @@ export default {
 
         // 获取每个子图的高
         const subHeight = Math.floor(height / types.length);
+
         // slider的高
         const sliderHeight = 20;
         const sliderRectHeight = 15;
         // 设置每个子图的margin
-        const marginTop = 5;
+        const marginTop = 20;
         const marginRight = 10;
         const marginBottom = 15 + sliderHeight;
         const marginLeft = width * 0.25;
@@ -225,12 +243,12 @@ export default {
           .append("div")
           .attr("class", "tooltip")
           .style("opacity", 0);
-        // 创建svg画布
+        // 选择svg画布
         const svg = container
-          .append("svg")
-          .attr("viewBox", [0, 0, width, height])
-          .attr("style", "width: 100%; height:100%;")
-          .style("user-select", "none");
+          .select("svg")
+          .style("user-select", "none")
+          .attr("viewBox", [0, 0, width, height]);
+
         // 创建分箱器
         const bin = d3.bin().value((d) => d.score);
         // .thresholds(d3.thresholdFreedmanDiaconis);
@@ -263,6 +281,52 @@ export default {
             .scaleLinear()
             .domain([0, d3.max(bins, (d) => d.length)])
             .range([subHeight - marginBottom, marginTop]);
+
+          // 添加类型名和选择框
+          const subTitle = g.append("g").attr("class", "sub-title");
+          subTitle
+            .append("text")
+            .attr("class", "type-text")
+            .text(type)
+            .attr("x", marginLeft)
+            .attr("y", 0 + 12)
+            .attr("text-anchor", "start")
+            .attr("fill", "#555")
+            .attr("font-size", "12px");
+          subTitle
+            .append("use")
+            .datum({
+              selected: true,
+            })
+            .attr("href", "#defs-check-insight")
+            .attr("transform", `translate(${width - marginRight - 15},0)`)
+            .attr("width", 15)
+            .attr("height", 15)
+            .attr("cursor", "pointer")
+            .attr("color", "#858eb5")
+            .attr("fill", "#fff")
+            .on("mouseover", function () {
+              d3.select(this).attr("color", "#545b77").attr("fill", "#fff");
+            })
+            .on("mouseout", function (event, d) {
+              if (!d.selected)
+                d3.select(this)
+                  .attr("color", "transparent")
+                  .attr("fill", "#545b77");
+              else {
+                d3.select(this).attr("color", "#858eb5").attr("fill", "#fff");
+              }
+            })
+            .on("click", function (event, d) {
+              d.selected = !d.selected;
+              if (d.selected) {
+                d3.select(this).attr("color", "#858eb5").attr("fill", "#fff");
+              } else {
+                d3.select(this)
+                  .attr("fill", "#545b77")
+                  .attr("color", "transparent");
+              }
+            });
 
           // slider矩形框
           const sliderRect = g
@@ -341,6 +405,7 @@ export default {
           }
           // 直方图矩形框
           g.append("g")
+
             .attr("fill", "#b67dc1")
             .attr("class", "rect-group")
             .style("cursor", "pointer")
@@ -373,10 +438,12 @@ export default {
           );
 
           // 在最高矩形上添加文本
-          g.selectChildren("text")
+          g.append("g")
+
+            .attr("class", "max-value")
+            .selectChildren("text")
             .data([maxBin])
             .join("text")
-            .attr("class", "max-value")
             .attr("x", (d) => x(d.x0) + (x(d.x1) - x(d.x0)) / 2)
             .attr("y", (d) => y(d.length) + 10)
             .attr("text-anchor", "middle")
@@ -385,6 +452,7 @@ export default {
             .text((d) => d.length);
           // x轴
           g.append("g")
+
             .attr("class", "x-axis")
             .attr("transform", `translate(0,${subHeight - marginBottom})`)
             .call(d3.axisBottom(x).ticks(5).tickSizeOuter(0).tickSize(4))
@@ -463,6 +531,7 @@ export default {
           this.histogramConfig.container
             .select("svg")
             .select(`.${type}-box`)
+            .select(".max-value")
             .selectChildren("text")
             .data(maxBin ? [maxBin] : [])
             .join(
@@ -741,7 +810,7 @@ export default {
 }
 #histogram-box {
   width: 100%;
-  height: 120vh;
+  height: 130vh;
   margin-bottom: 0.3vw;
   background-color: #fff;
   transition: border-color 0.3s, box-shadow 0.3s;
@@ -777,9 +846,9 @@ export default {
   margin-top: 0.6vw;
   flex-grow: 0;
 }
+
 .check-icon {
   cursor: pointer;
-
   width: 15px;
   height: 15px;
 
@@ -788,7 +857,6 @@ export default {
   background-color: #fff;
   transition: background-color 0.2s, fill 0.2s;
 }
-
 .check-icon:hover,
 .check-icon:active {
   background-color: #545b77;
