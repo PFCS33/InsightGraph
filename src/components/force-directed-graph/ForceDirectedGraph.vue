@@ -1601,9 +1601,10 @@ export default {
         boudaryR * 5,
       ];
       // 选择svg
-      const svg = svgContainer
+      const svgTop = svgContainer
         .select("#total-svg")
-        .attr("viewBox", [0, 0, width, height])
+        .attr("viewBox", [0, 0, width, height]);
+      const svg = svgTop
         .append("svg")
         .attr("width", boudaryR * 2)
         .attr("height", boudaryR * 2)
@@ -1866,6 +1867,37 @@ export default {
         const transform = event.transform;
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
+      }
+
+      const zoomTop = d3
+        .zoom()
+        .scaleExtent([0.3, 8]) // 设置缩放的范围
+
+        .on("zoom", zoomedTop)
+        .filter((event) => {
+          return event.target === svgTop.node();
+        });
+      svgTop.call(zoomTop);
+      function zoomedTop(event) {
+        const transform = event.transform;
+        // 更新地理路径组的变换属性
+        svgTop.selectChildren("svg").each(function () {
+          const svg = d3.select(this);
+          // 获取当前的 width 和 height
+          const width = +svg.attr("width");
+          const height = +svg.attr("height");
+
+          // 计算新的 width 和 height
+          const newWidth = width * transform.k;
+          const newHeight = height * transform.k;
+
+          // 设置新的 x, y, width 和 height
+          svg
+            .attr("x", transform.x)
+            .attr("y", transform.y)
+            .attr("width", newWidth)
+            .attr("height", newHeight);
+        });
       }
 
       // initialize the default data

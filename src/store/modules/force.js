@@ -137,24 +137,54 @@ export default {
     },
     // load test data
     loadData(context, _payload) {
-      const file = "test_data/result_0809.json";
+      const file = "test_data/result_0817.json";
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
         const tableData = data.table;
         context.dispatch("table/loadHeadData", tableData, { root: true });
-        const graphData = data.graph;
+
+        // 获取不同state的对应的links和nodesmap
+        const allStatesNodes = d3.group(data.graph.nodes, (d) => d.state);
+        const allStatesLinks = new Map();
+        Array.from(allStatesNodes.keys()).forEach((state) =>
+          allStatesLinks.set(state, [])
+        );
+        data.graph.links.forEach((link) => {
+          for (let [state, nodes] of allStatesNodes.entries()) {
+            if (
+              nodes.find((d) => d.id === link.source || d.id === link.target)
+            ) {
+              allStatesLinks.get(state).push(link);
+              break;
+            }
+          }
+        });
+        const allStatesData = new Map();
+
+        Array.from(allStatesNodes.keys()).forEach((state) => {
+          allStatesData.set(state, {
+            links: allStatesLinks.get(state),
+            nodes: allStatesNodes.get(state),
+          });
+        });
+        const focusNodes = allStatesData.get("S0").nodes;
+        const focusLinks = allStatesData.get("S0").links;
+
         // 增加insight-index属性
-        graphData.nodes.forEach((d) => (d.insightIndex = 0));
+        focusNodes.forEach((d) => (d.insightIndex = 0));
         const statisticNodeIdMap = new Map();
 
-        graphData.nodes.forEach((d) => {
+        focusNodes.forEach((d) => {
           statisticNodeIdMap.set(d.id, d);
         });
         context.commit("setStatisticNodeIdMap", statisticNodeIdMap);
-        context.commit("setTotalData", graphData);
-        context.dispatch("groupByLinkType", graphData.links);
+        context.commit("setTotalData", {
+          nodes: focusNodes,
+          links: focusLinks,
+        });
+        context.dispatch("groupByLinkType", focusLinks);
         context.dispatch("groupByNodeType", {
-          data: graphData.nodes,
+          data: focusNodes,
           firstFlag: true,
         });
       });
