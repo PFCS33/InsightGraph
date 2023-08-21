@@ -26,24 +26,27 @@
       </div>
       <div id="barchart-box"></div
     ></BaseCard>
-    <BaseCard mode="flat" id="histogram-box">
-      <svg style="width: 100%; height: 100%">
-        <defs>
-          <symbol
-            id="defs-check-insight"
-            viewBox="0 0 1024 1024"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect width="1024" height="1024" fill="currentcolor"></rect>
-            <path
-              d="M433.1 657.7c12.7 17.7 39 17.7 51.7 0l210.6-292c3.8-5.3 0-12.7-6.5-12.7H642c-10.2 0-19.9 4.9-25.9 13.3L459 584.3l-71.2-98.8c-6-8.3-15.6-13.3-25.9-13.3H315c-6.5 0-10.3 7.4-6.5 12.7l124.6 172.8z"
-            ></path>
-            <path
-              d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32z m-40 728H184V184h656v656z"
-            ></path>
-          </symbol>
-        </defs>
-      </svg>
+    <BaseCard mode="flat" class="histogram-container">
+      <div class="title">insight type & score</div>
+      <div id="histogram-box">
+        <svg style="width: 100%; height: 100%">
+          <defs>
+            <symbol
+              id="defs-check-insight"
+              viewBox="0 0 1024 1024"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect width="1024" height="1024" fill="currentcolor"></rect>
+              <path
+                d="M433.1 657.7c12.7 17.7 39 17.7 51.7 0l210.6-292c3.8-5.3 0-12.7-6.5-12.7H642c-10.2 0-19.9 4.9-25.9 13.3L459 584.3l-71.2-98.8c-6-8.3-15.6-13.3-25.9-13.3H315c-6.5 0-10.3 7.4-6.5 12.7l124.6 172.8z"
+              ></path>
+              <path
+                d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32z m-40 728H184V184h656v656z"
+              ></path>
+            </symbol>
+          </defs>
+        </svg>
+      </div>
     </BaseCard>
   </div>
 </template>
@@ -885,9 +888,6 @@ export default {
           nodes: nodes,
           links: links,
         });
-        // that.piechart.dispatchAction({
-        //   type: "legendAllSelect",
-        // });
       },
     },
   },
@@ -913,12 +913,19 @@ export default {
   flex-direction: column;
   gap: 0.3vw;
 }
-#histogram-box {
+.histogram-container {
   width: 100%;
-  height: 130vh;
+  height: fit-content;
   margin-bottom: 0.3vw;
   background-color: #fff;
   transition: border-color 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7vw;
+}
+#histogram-box {
+  width: 100%;
+  height: 130vh;
 }
 .link-filter-box {
   display: flex;
@@ -937,7 +944,7 @@ export default {
   flex-grow: 1;
 }
 
-#histogram-box:hover,
+.histogram-container:hover,
 .barchart-container:hover {
   box-shadow: 1px 4px 6px 1px rgba(0, 0, 0, 0.26);
 }

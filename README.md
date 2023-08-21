@@ -27,19 +27,17 @@ npm run dev
 
 ## Function Description
 
-- Complete the visualization of the **numerical** configuration of the D3 force directed graph
-
-  - You can have a quick view of almost all the API of D3's directed force graph over there.
-
-    - Base on the Official Documentation: https://d3js.org/d3-force
-
-  - The params which can be set as a function is marked by \*
+- ~~Complete the visualization of the **numerical** configuration of the D3 force directed graph~~
+  - ~~You can have a quick view of almost all the API of D3's directed force graph over there~~
+    - ~~Base on the Official Documentation: https://d3js.org/d3-force~~
+    
+  - ~~The params which can be set as a function is marked by \*~~
 - Embed the **Vega-Lite graph** in the circle of D3 force directed graph
   - You can click **circles** to toggle the display of Vega-Lite graphs
-  - Note: add collision force will look better (which is not set by default config of project)
+  - three highlight mode: hover, click, select
+  - add miniTable view to imply the position of vega-lite graph
+  - support filter of link type/ insigh-type / insight score
 
-## Problems
+## Todo
 
-- performance problem: If data size of a vega-lite graph is larger than 400, the browser will become slow, and can't give instant response
-  - Because there are too many dom element in a vega-lite svg, and in every tick browser will redraw/reflow all of them
-  - SOLVED: make complex svg graphs can only be moved by drag, and add 'will-change: transform',  then browser will avoid the redraw of static graph?
+- Visualization of different states and relationships between states
