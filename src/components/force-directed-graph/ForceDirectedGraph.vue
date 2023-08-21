@@ -1593,7 +1593,7 @@ export default {
 
       // 先把svg图和nodes+links 元素画出来
       const boudaryR = (width > height ? height : width) / 3;
-      console.log(boudaryR);
+
       const boundary = [
         -boudaryR * 1.5,
         -boudaryR * 1.5,
@@ -1604,14 +1604,20 @@ export default {
       const svgTop = svgContainer
         .select("#total-svg")
         .attr("viewBox", [0, 0, width, height]);
+
+      const originalX = width * 0.5 - boudaryR;
+      const originalY = height * 0.5 - boudaryR;
+      const originalWidth = boudaryR * 2;
+      const originalHeight = originalWidth;
       const svg = svgTop
         .append("svg")
-        .attr("width", boudaryR * 2)
-        .attr("height", boudaryR * 2)
-        .attr("x", width * 0.5 - boudaryR)
-        .attr("y", height * 0.5 - boudaryR)
+        .attr("width", originalWidth)
+        .attr("height", originalWidth)
+        .attr("x", originalX)
+        .attr("y", originalY)
         .attr("viewBox", boundary)
         .attr("class", "focus-state");
+
       const backgroundShape = svg
         .append("rect")
         .attr("class", "backgroud-shape")
@@ -1856,7 +1862,7 @@ export default {
 
         .on("zoom", zoomed)
         .filter((event) => {
-          return event.target === backgroundShape.node();
+          return event.shiftKey && event.target === backgroundShape.node();
         });
 
       this.zoom = zoom;
@@ -1875,29 +1881,29 @@ export default {
 
         .on("zoom", zoomedTop)
         .filter((event) => {
-          return event.target === svgTop.node();
+          return (
+            event.target === svgTop.node() ||
+            (!event.shiftKey && event.target === backgroundShape.node())
+          );
         });
       svgTop.call(zoomTop);
+
       function zoomedTop(event) {
         const transform = event.transform;
-        // 更新地理路径组的变换属性
-        svgTop.selectChildren("svg").each(function () {
-          const svg = d3.select(this);
-          // 获取当前的 width 和 height
-          const width = +svg.attr("width");
-          const height = +svg.attr("height");
 
-          // 计算新的 width 和 height
-          const newWidth = width * transform.k;
-          const newHeight = height * transform.k;
+        // 根据 transform 计算新的 x, y, width 和 height
+        const newX = originalX + transform.x;
+        const newY = originalY + transform.y;
+        const newWidth = originalWidth * transform.k;
+        const newHeight = originalHeight * transform.k;
 
-          // 设置新的 x, y, width 和 height
-          svg
-            .attr("x", transform.x)
-            .attr("y", transform.y)
-            .attr("width", newWidth)
-            .attr("height", newHeight);
-        });
+        // 更新嵌套的 SVG 属性
+        svgTop
+          .selectChildren("svg")
+          .attr("x", newX)
+          .attr("y", newY)
+          .attr("width", newWidth)
+          .attr("height", newHeight);
       }
 
       // initialize the default data
