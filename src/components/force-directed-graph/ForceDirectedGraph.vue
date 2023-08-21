@@ -29,7 +29,11 @@
       ></VegaLiteFilter>
     </transition>
     <div id="svg-container">
-      <svg xmlns="http://www.w3.org/2000/svg">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        id="total-svg"
+        style="width: 100%; height: 100%"
+      >
         <defs>
           <symbol
             id="defs-dominance"
@@ -410,7 +414,8 @@ export default {
       const newType = nodeData["insight-list"][selectedIndex]["insight-type"];
       const g = d3
         .select("#svg-container")
-        .select("svg")
+        .select("#total-svg")
+        .select(".focus-state")
         .select(".node-group")
         .selectChildren("g")
         .filter((d) => d.id === id);
@@ -850,7 +855,10 @@ export default {
         .append("g")
         .attr("class", "vega-lite-container");
 
-      const svg = d3.select("#svg-container").select("svg");
+      const svg = d3
+        .select("#svg-container")
+        .select("#total-svg")
+        .select(".focus-state");
       const dragDefine = d3
         .drag()
         .container(function () {
@@ -958,11 +966,15 @@ export default {
       const className = type + "-highlight";
       const nodeGroup = d3
         .select("#svg-container")
+        .select("#total-svg")
+        .select(".focus-state")
         .select(".node-group")
         .selectChildren("g");
 
       const linkGroup = d3
         .select("#svg-container")
+        .select("#total-svg")
+        .select(".focus-state")
         .select(".link-group")
         .selectChildren("g");
       if (neighbor) {
@@ -1076,11 +1088,14 @@ export default {
 
       const nodeSingleG = d3
         .select("#svg-container")
-        .select("svg")
+
+        .select("#total-svg")
+        .select(".focus-state")
         .select("g.node-group");
       const linkSingleG = d3
         .select("#svg-container")
-        .select("svg")
+        .select("#total-svg")
+        .select(".focus-state")
         .select("g.link-group");
 
       // rebind data of dom elements
@@ -1577,12 +1592,36 @@ export default {
       const height = parseInt(svgContainer.style("height"), 10);
 
       // 先把svg图和nodes+links 元素画出来
-
+      const boudaryR = (width > height ? height : width) / 3;
+      console.log(boudaryR);
+      const boundary = [
+        -boudaryR * 1.5,
+        -boudaryR * 1.5,
+        boudaryR * 5,
+        boudaryR * 5,
+      ];
       // 选择svg
       const svg = svgContainer
-        .select("svg")
-        .attr("style", "width: 100%;height:100% ;")
-        .attr("viewBox", [0, 0, width, height]);
+        .select("#total-svg")
+        .attr("viewBox", [0, 0, width, height])
+        .append("svg")
+        .attr("width", boudaryR * 2)
+        .attr("height", boudaryR * 2)
+        .attr("x", width * 0.5 - boudaryR)
+        .attr("y", height * 0.5 - boudaryR)
+        .attr("viewBox", boundary)
+        .attr("class", "focus-state");
+      const backgroundShape = svg
+        .append("rect")
+        .attr("class", "backgroud-shape")
+        .attr("x", boundary[0])
+        .attr("y", boundary[1])
+        .attr("width", boundary[2])
+        .attr("height", boundary[3])
+        .attr("stroke", "#000")
+        .attr("fill", "transparent");
+      // .style("background-color", "#000");
+
       this.createInsetFilter(svg.node());
       // this.createObserver(svg.node());
       //data binding
@@ -1722,24 +1761,18 @@ export default {
         .force(
           "center",
           d3
-            .forceCenter(width / 2, height / 2)
+            .forceCenter(boudaryR, boudaryR)
             .strength(defaultForceConfig.center.Strength)
         )
         .force(
           "x",
 
-          d3
-            .forceX()
-            .x(width / 2)
-            .strength(defaultForceConfig.x.Strength)
+          d3.forceX().x(boudaryR).strength(defaultForceConfig.x.Strength)
         )
         .force(
           "y",
 
-          d3
-            .forceY()
-            .y(height / 2)
-            .strength(defaultForceConfig.y.Strength)
+          d3.forceY().y(boudaryR).strength(defaultForceConfig.y.Strength)
         )
         .force(
           "collide",
@@ -1813,17 +1846,17 @@ export default {
 
       // 设置整体zoom行为,只选择最顶层的2个g即可
       const group = svg.selectChildren("g");
+      const totalSvg = svgContainer.select("#total-svg");
 
       // 创建缩放函数
       const zoom = d3
         .zoom()
         .scaleExtent([0.3, 8]) // 设置缩放的范围
-        // .translateExtent([
-        //   [-width * 1.5, -height * 1.5],
-        //   [width * 2.5, height * 2.5],
-        // ])
+
         .on("zoom", zoomed)
-        .filter((event) => event.target === svg.node());
+        .filter((event) => {
+          return event.target === backgroundShape.node();
+        });
 
       this.zoom = zoom;
       // 仅将缩放行为应用到顶层元素
@@ -1840,12 +1873,12 @@ export default {
       this.defaultForceConfig.center.X =
         this.defaultForceConfig.x.X =
         this.defaultForceConfig.radial.X =
-          width / 2;
+          boudaryR;
 
       this.defaultForceConfig.center.Y =
         this.defaultForceConfig.y.Y =
         this.defaultForceConfig.radial.Y =
-          height / 2;
+          boudaryR;
     },
   },
 };

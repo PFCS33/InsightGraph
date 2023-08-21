@@ -27,7 +27,7 @@
       <div id="barchart-box"></div
     ></BaseCard>
     <BaseCard mode="flat" class="histogram-container">
-      <div class="title">insight type & score</div>
+      <div class="title">Insight Type & Score</div>
       <div id="histogram-box">
         <svg style="width: 100%; height: 100%">
           <defs>
