@@ -422,6 +422,7 @@ export default {
       const g = d3
         .select("#svg-container")
         .select("#total-svg")
+        .selectChild("g")
         .select(".focus-state")
         .select(".node-group")
         .selectChildren("g")
@@ -866,6 +867,7 @@ export default {
       const svg = d3
         .select("#svg-container")
         .select("#total-svg")
+        .selectChild("g")
         .select(".focus-state");
       const dragDefine = d3
         .drag()
@@ -975,6 +977,7 @@ export default {
       const nodeGroup = d3
         .select("#svg-container")
         .select("#total-svg")
+        .selectChild("g")
         .select(".focus-state")
         .select(".node-group")
         .selectChildren("g");
@@ -982,6 +985,7 @@ export default {
       const linkGroup = d3
         .select("#svg-container")
         .select("#total-svg")
+        .selectChild("g")
         .select(".focus-state")
         .select(".link-group")
         .selectChildren("g");
@@ -1096,13 +1100,14 @@ export default {
 
       const nodeSingleG = d3
         .select("#svg-container")
-
         .select("#total-svg")
+        .selectChild("g")
         .select(".focus-state")
         .select("g.node-group");
       const linkSingleG = d3
         .select("#svg-container")
         .select("#total-svg")
+        .selectChild("g")
         .select(".focus-state")
         .select("g.link-group");
 
@@ -1496,9 +1501,9 @@ export default {
     // other
     /* -------------------------------------------------------------------------- */
 
-    // getRandomInt(min, max) {
-    //   return Math.floor(Math.random() * (max - min + 1)) + min;
-    // },
+    getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
 
     // createObserver(svgElement) {
     //   // 创建 ResizeObserver 实例
@@ -1609,14 +1614,18 @@ export default {
         boudaryR * 5,
       ];
       // 选择top svg
-      const svgTop = svgContainer.select("#total-svg");
+      const gTop = svgContainer.select("#total-svg").selectChild("g");
 
       const originalX = width * 0.5 - boudaryR;
       const originalY = height * 0.5 - boudaryR;
       const originalWidth = boudaryR * 2;
       const originalHeight = originalWidth;
-      const svg = svgTop
+      const svg = gTop
         .append("svg")
+        .datum({
+          width: originalWidth,
+          height: originalHeight,
+        })
         .attr("width", originalWidth)
         .attr("height", originalWidth)
         .attr("x", originalX)
@@ -1859,7 +1868,6 @@ export default {
 
       // 设置整体zoom行为,只选择最顶层的2个g即可
       const group = svg.selectChildren("g");
-      const totalSvg = svgContainer.select("#total-svg");
 
       // 创建缩放函数
       const zoom = d3
@@ -1881,38 +1889,6 @@ export default {
         group.attr("transform", transform);
       }
 
-      const zoomTop = d3
-        .zoom()
-        .scaleExtent([0.3, 8]) // 设置缩放的范围
-
-        .on("zoom", zoomedTop)
-        .filter((event) => {
-          return (
-            event.target === svgTop.node() ||
-            (!event.shiftKey && event.target === backgroundShape.node())
-          );
-        });
-      svgTop.call(zoomTop);
-
-      function zoomedTop(event) {
-        const transform = event.transform;
-
-        // apply new transform
-        const k = transform.k;
-        const newX = k * originalX + transform.x;
-        const newY = k * originalY + transform.y;
-        const newWidth = originalWidth * k;
-        const newHeight = originalHeight * k;
-
-        // 更新嵌套的 SVG 属性
-        svgTop
-          .selectChildren("svg")
-          .attr("x", newX)
-          .attr("y", newY)
-          .attr("width", newWidth)
-          .attr("height", newHeight);
-      }
-
       // initialize the default data
 
       this.defaultForceConfig.center.X =
@@ -1925,7 +1901,43 @@ export default {
         this.defaultForceConfig.radial.Y =
           boudaryR;
     },
+    drawSubGraph(graphInfo) {
+      const state = graphInfo.state;
+      const data = graphInfo.data;
+      // 选择svg container
+      const svgContainer = d3.select("#svg-container");
+      const gTop = svgContainer.select("#total-svg").selectChild("g");
+      // 获取container的宽和高
+      const width = parseInt(svgContainer.style("width"), 10);
+      const height = parseInt(svgContainer.style("height"), 10);
+      const originalX = this.getRandomInt(0, width);
+      const originalY = this.getRandomInt(0, height);
+      const originalWidth = 40;
+      const originalHeight = originalWidth;
+      const boundary = [0, 0, originalWidth, originalHeight];
 
+      const svg = gTop
+        .append("svg")
+        .datum({
+          width: originalWidth,
+          height: originalHeight,
+        })
+        .attr("width", originalWidth)
+        .attr("height", originalHeight)
+        .attr("x", originalX)
+        .attr("y", originalY)
+        .attr("viewBox", boundary)
+        .attr("class", `${state}-state`);
+      const backgroundShape = svg
+        .append("rect")
+        .attr("class", "backgroud-shape")
+        .attr("x", boundary[0])
+        .attr("y", boundary[1])
+        .attr("width", boundary[2])
+        .attr("height", boundary[3])
+        .attr("stroke", "#000")
+        .attr("fill", "transparent");
+    },
     drawGlobalGraph(newVal) {
       const that = this;
       // 选择svg container
@@ -1934,15 +1946,19 @@ export default {
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
-      // 选择svg
+      // 选择svg top
       const svgTop = svgContainer
         .select("#total-svg")
         .attr("viewBox", [0, 0, width, height]);
-      // 清除之前的子svg
-      svgTop.selectAll("svg").remove();
 
+      const gTop = svgTop.append("g");
+
+      // 清除之前的子svg
+      gTop.selectAll("svg").remove();
+      // 创建子svg图
       for (let [state, data] of newVal) {
         if (state === "S0") {
+          // initilize the focus data
           const focusNodes = data.nodes;
           const focusLinks = data.links;
 
@@ -1966,7 +1982,28 @@ export default {
             firstFlag: true,
           });
           this.drawGraph(data);
+        } else {
+          this.drawSubGraph({
+            state: state,
+            data: data,
+          });
         }
+      }
+      // 创建全局zoom
+      const zoomTop = d3
+        .zoom()
+        .scaleExtent([0.3, 8]) // 设置缩放的范围
+        .on("zoom", zoomedTop)
+        .filter((event) => {
+          return event.target === svgTop.node();
+        });
+      svgTop.call(zoomTop);
+
+      function zoomedTop(event) {
+        const transform = event.transform;
+
+        // 更新地理路径组的变换属性
+        gTop.attr("transform", transform);
       }
     },
   },
