@@ -8,6 +8,7 @@ export default {
       nodeDataGroup: null,
       statisticNodeIdMap: null,
       scoreSelectionMap: null,
+      allStatesData: null,
     };
   },
   getters: {
@@ -29,6 +30,9 @@ export default {
     scoreSelectionMap(state) {
       return state.scoreSelectionMap;
     },
+    allStatesData(state) {
+      return state.allStatesData;
+    },
   },
   mutations: {
     setTotalData(state, payload) {
@@ -48,6 +52,9 @@ export default {
     },
     setScoreSelectionMap(state, payload) {
       state.scoreSelectionMap = payload;
+    },
+    setAllStatesData(state, payload) {
+      state.allStatesData = payload;
     },
   },
   actions: {
@@ -167,26 +174,30 @@ export default {
             nodes: allStatesNodes.get(state),
           });
         });
-        const focusNodes = allStatesData.get("S0").nodes;
-        const focusLinks = allStatesData.get("S0").links;
 
-        // 增加insight-index属性
-        focusNodes.forEach((d) => (d.insightIndex = 0));
-        const statisticNodeIdMap = new Map();
+        context.commit("setAllStatesData", allStatesData);
 
-        focusNodes.forEach((d) => {
-          statisticNodeIdMap.set(d.id, d);
-        });
-        context.commit("setStatisticNodeIdMap", statisticNodeIdMap);
-        context.commit("setTotalData", {
-          nodes: focusNodes,
-          links: focusLinks,
-        });
-        context.dispatch("groupByLinkType", focusLinks);
-        context.dispatch("groupByNodeType", {
-          data: focusNodes,
-          firstFlag: true,
-        });
+        // // set focus data
+        // const focusNodes = allStatesData.get("S0").nodes;
+        // const focusLinks = allStatesData.get("S0").links;
+
+        // // 增加insight-index属性
+        // focusNodes.forEach((d) => (d.insightIndex = 0));
+        // const statisticNodeIdMap = new Map();
+
+        // focusNodes.forEach((d) => {
+        //   statisticNodeIdMap.set(d.id, d);
+        // });
+        // context.commit("setStatisticNodeIdMap", statisticNodeIdMap);
+        // context.commit("setTotalData", {
+        //   nodes: focusNodes,
+        //   links: focusLinks,
+        // });
+        // context.dispatch("groupByLinkType", focusLinks);
+        // context.dispatch("groupByNodeType", {
+        //   data: focusNodes,
+        //   firstFlag: true,
+        // });
       });
     },
   },

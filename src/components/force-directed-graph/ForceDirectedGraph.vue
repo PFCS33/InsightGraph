@@ -168,6 +168,9 @@ export default {
     selectedData() {
       return this.$store.getters["force/selectedData"];
     },
+    allStatesData() {
+      return this.$store.getters["force/allStatesData"];
+    },
   },
   data() {
     return {
@@ -290,6 +293,12 @@ export default {
   },
 
   watch: {
+    allStatesData: {
+      // don't watch deep
+      handler(newVal) {
+        this.drawGlobalGraph(newVal);
+      },
+    },
     checkIndex: {
       handler(newVal) {
         this.$store.dispatch("table/convertCheckSelection", {
@@ -401,16 +410,14 @@ export default {
       this.showMorePanel = false;
       this.showMoreIcon = true;
     },
-    changeInsightIndex(selectedIndex, targetId) {
-      let id = targetId;
-      if (!id) id = this.selectedNode.id;
-      const oldIndex = this.selectedNode.insightIndex;
+    changeInsightIndex(selectedIndex) {
+      const id = this.selectedNode.id;
+
       // change index record of selectedNode
       this.selectedNode.insightIndex = selectedIndex;
       const nodeData = this.nodeIdMap.get(id);
       // change data record in force graph
       nodeData.insightIndex = selectedIndex;
-      const oldType = nodeData["insight-list"][oldIndex]["insight-type"];
       const newType = nodeData["insight-list"][selectedIndex]["insight-type"];
       const g = d3
         .select("#svg-container")
@@ -457,7 +464,8 @@ export default {
       });
       // change vega-lite graph
       this.showIndex.get(id).finalize();
-      g.selectAll(".vega-lite-graph").remove();
+
+      g.select(".vega-lite-graph").remove();
       g.datum().view = null;
       g.datum().img = null;
       this.drawVegaLite(g, this.pinnedIndex.get(id) ? "svg" : "img");
@@ -1600,10 +1608,8 @@ export default {
         boudaryR * 5,
         boudaryR * 5,
       ];
-      // 选择svg
-      const svgTop = svgContainer
-        .select("#total-svg")
-        .attr("viewBox", [0, 0, width, height]);
+      // 选择top svg
+      const svgTop = svgContainer.select("#total-svg");
 
       const originalX = width * 0.5 - boudaryR;
       const originalY = height * 0.5 - boudaryR;
@@ -1891,11 +1897,12 @@ export default {
       function zoomedTop(event) {
         const transform = event.transform;
 
-        // 根据 transform 计算新的 x, y, width 和 height
-        const newX = originalX + transform.x;
-        const newY = originalY + transform.y;
-        const newWidth = originalWidth * transform.k;
-        const newHeight = originalHeight * transform.k;
+        // apply new transform
+        const k = transform.k;
+        const newX = k * originalX + transform.x;
+        const newY = k * originalY + transform.y;
+        const newWidth = originalWidth * k;
+        const newHeight = originalHeight * k;
 
         // 更新嵌套的 SVG 属性
         svgTop
@@ -1917,6 +1924,50 @@ export default {
         this.defaultForceConfig.y.Y =
         this.defaultForceConfig.radial.Y =
           boudaryR;
+    },
+
+    drawGlobalGraph(newVal) {
+      const that = this;
+      // 选择svg container
+      const svgContainer = d3.select("#svg-container");
+
+      // 获取container的宽和高
+      const width = parseInt(svgContainer.style("width"), 10);
+      const height = parseInt(svgContainer.style("height"), 10);
+      // 选择svg
+      const svgTop = svgContainer
+        .select("#total-svg")
+        .attr("viewBox", [0, 0, width, height]);
+      // 清除之前的子svg
+      svgTop.selectAll("svg").remove();
+
+      for (let [state, data] of newVal) {
+        if (state === "S0") {
+          const focusNodes = data.nodes;
+          const focusLinks = data.links;
+
+          // 增加insight-index属性
+          focusNodes.forEach((d) => (d.insightIndex = 0));
+          const statisticNodeIdMap = new Map();
+
+          focusNodes.forEach((d) => {
+            statisticNodeIdMap.set(d.id, d);
+          });
+
+          this.$store.commit("force/setStatisticNodeIdMap", statisticNodeIdMap);
+
+          this.$store.commit("force/setTotalData", {
+            nodes: focusNodes,
+            links: focusLinks,
+          });
+          this.$store.dispatch("force/groupByLinkType", focusLinks);
+          this.$store.dispatch("force/groupByNodeType", {
+            data: focusNodes,
+            firstFlag: true,
+          });
+          this.drawGraph(data);
+        }
+      }
     },
   },
 };
