@@ -174,6 +174,9 @@ export default {
   },
   data() {
     return {
+      // [{state:, x:,}, ...]
+      svgData: null,
+
       // (id, gdata)
       nodeIdMap: null,
 
@@ -422,7 +425,7 @@ export default {
       const g = d3
         .select("#svg-container")
         .select("#total-svg")
-        .selectChild("g")
+        .selectChild("g.node-group")
         .select(".focus-state")
         .select(".node-group")
         .selectChildren("g")
@@ -867,7 +870,7 @@ export default {
       const svg = d3
         .select("#svg-container")
         .select("#total-svg")
-        .selectChild("g")
+        .selectChild("g.node-group")
         .select(".focus-state");
       const dragDefine = d3
         .drag()
@@ -977,7 +980,7 @@ export default {
       const nodeGroup = d3
         .select("#svg-container")
         .select("#total-svg")
-        .selectChild("g")
+        .selectChild("g.node-group")
         .select(".focus-state")
         .select(".node-group")
         .selectChildren("g");
@@ -985,7 +988,7 @@ export default {
       const linkGroup = d3
         .select("#svg-container")
         .select("#total-svg")
-        .selectChild("g")
+        .selectChild("g.node-group")
         .select(".focus-state")
         .select(".link-group")
         .selectChildren("g");
@@ -1101,13 +1104,13 @@ export default {
       const nodeSingleG = d3
         .select("#svg-container")
         .select("#total-svg")
-        .selectChild("g")
+        .selectChild("g.node-group")
         .select(".focus-state")
         .select("g.node-group");
       const linkSingleG = d3
         .select("#svg-container")
         .select("#total-svg")
-        .selectChild("g")
+        .selectChild("g.node-group")
         .select(".focus-state")
         .select("g.link-group");
 
@@ -1549,7 +1552,7 @@ export default {
     //   observer.observe(svgElement);
     // },
     // initial drawing, create DOM elements and sim system
-    drawGraph(newVal) {
+    drawGraph(newVal, svgData) {
       const that = this;
       // 获取绘画数据
       const data = newVal;
@@ -1613,25 +1616,26 @@ export default {
         boudaryR * 5,
         boudaryR * 5,
       ];
-      // 选择top svg
-      const gTop = svgContainer.select("#total-svg").selectChild("g");
+      // 选择top node g
+      const gTop = svgContainer
+        .select("#total-svg")
+        .selectChild("g.node-group");
 
       const originalX = width * 0.5 - boudaryR;
       const originalY = height * 0.5 - boudaryR;
       const originalWidth = boudaryR * 2;
       const originalHeight = originalWidth;
       const svg = gTop
-        .append("svg")
-        .datum({
-          width: originalWidth,
-          height: originalHeight,
-        })
+        .select("svg.S0-state")
         .attr("width", originalWidth)
         .attr("height", originalWidth)
         .attr("x", originalX)
         .attr("y", originalY)
         .attr("viewBox", boundary)
         .attr("class", "focus-state");
+
+      svg.datum().width = originalWidth;
+      svg.datum().height = originalHeight;
 
       const backgroundShape = svg
         .append("rect")
@@ -1640,8 +1644,8 @@ export default {
         .attr("y", boundary[1])
         .attr("width", boundary[2])
         .attr("height", boundary[3])
-        .attr("stroke", "#000")
-        .attr("fill", "transparent");
+        .attr("stroke", "#555")
+        .attr("fill", "#fff");
       // .style("background-color", "#000");
 
       this.createInsetFilter(svg.node());
@@ -1876,7 +1880,7 @@ export default {
 
         .on("zoom", zoomed)
         .filter((event) => {
-          return event.shiftKey && event.target === backgroundShape.node();
+          return event.target === backgroundShape.node();
         });
 
       this.zoom = zoom;
@@ -1906,7 +1910,9 @@ export default {
       const data = graphInfo.data;
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
-      const gTop = svgContainer.select("#total-svg").selectChild("g");
+      const gTop = svgContainer
+        .select("#total-svg")
+        .selectChild("g.node-group");
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
@@ -1917,17 +1923,16 @@ export default {
       const boundary = [0, 0, originalWidth, originalHeight];
 
       const svg = gTop
-        .append("svg")
-        .datum({
-          width: originalWidth,
-          height: originalHeight,
-        })
+        .select(`svg.${state}-state`)
         .attr("width", originalWidth)
         .attr("height", originalHeight)
         .attr("x", originalX)
         .attr("y", originalY)
-        .attr("viewBox", boundary)
-        .attr("class", `${state}-state`);
+        .attr("viewBox", boundary);
+
+      svg.datum().width = originalWidth;
+      svg.datum().height = originalHeight;
+
       const backgroundShape = svg
         .append("rect")
         .attr("class", "backgroud-shape")
@@ -1935,26 +1940,62 @@ export default {
         .attr("y", boundary[1])
         .attr("width", boundary[2])
         .attr("height", boundary[3])
-        .attr("stroke", "#000")
-        .attr("fill", "transparent");
+        .attr("stroke", "#555")
+        .attr("fill", "#fff");
     },
     drawGlobalGraph(newVal) {
       const that = this;
+
+      // get binding data for top force simulation
+      const svgData = Array.from(newVal.keys()).map((state) => ({
+        id: state,
+      }));
+
+      const svgLinks = Array.from(newVal.keys()).map((state) => ({
+        source: "S0",
+        target: state,
+      }));
+      svgLinks.shift();
+
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
 
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
-      // 选择svg top
+      // 设置top svg属性
       const svgTop = svgContainer
         .select("#total-svg")
         .attr("viewBox", [0, 0, width, height]);
 
-      const gTop = svgTop.append("g");
+      // 添加top g，用于global zoom
+      const linkGTop = svgTop.append("g").attr("class", "link-group");
+      const nodeGTop = svgTop.append("g").attr("class", "node-group");
+
+      const groupsTop = svgTop.selectChildren("g");
 
       // 清除之前的子svg
-      gTop.selectAll("svg").remove();
+      groupsTop.selectAll("*").remove();
+      // 绑定顶层svg与links数据到g中
+
+      const svgGroups = nodeGTop
+        .selectChildren("svg")
+        .data(svgData)
+        .join("svg")
+        .attr("class", (d) => `${d.id}-state`);
+
+      const linkGroups = linkGTop
+        .selectAll("line")
+        .data(svgLinks, (d) => {
+          if (typeof d.source === "object") {
+            return `${d.source.id}_${d.target.id}`;
+          } else {
+            return `${d.source}_${d.target}`;
+          }
+        })
+        .join("line")
+        .attr("stroke", "#555");
+
       // 创建子svg图
       for (let [state, data] of newVal) {
         if (state === "S0") {
@@ -1981,7 +2022,6 @@ export default {
             data: focusNodes,
             firstFlag: true,
           });
-          this.drawGraph(data);
         } else {
           this.drawSubGraph({
             state: state,
@@ -2001,9 +2041,64 @@ export default {
 
       function zoomedTop(event) {
         const transform = event.transform;
-
         // 更新地理路径组的变换属性
-        gTop.attr("transform", transform);
+        groupsTop.attr("transform", transform);
+      }
+      // 创建全局力道图布局
+      const defaultBaseConfig = this.defaultBaseConfig;
+      const defaultForceConfig = this.defaultForceConfig;
+      const globalSimulation = d3
+        .forceSimulation(svgData)
+        .force(
+          "link",
+          d3
+            .forceLink(svgLinks)
+            .id((d) => d.id)
+            .distance(width / 3)
+        )
+        .force(
+          "charge",
+          d3
+            .forceManyBody()
+            .strength(-2000)
+            .theta(defaultForceConfig.manyBody.Theta)
+            .distanceMin(defaultForceConfig.manyBody.DistanceMin)
+        )
+        .force(
+          "center",
+          d3
+            .forceCenter(width / 2, height / 2)
+            .strength(defaultForceConfig.center.Strength)
+        )
+        .force(
+          "x",
+          d3
+            .forceX()
+            .x(width / 2)
+            .strength(defaultForceConfig.x.Strength)
+        )
+        .force(
+          "y",
+          d3
+            .forceY()
+            .y(height / 2)
+            .strength(defaultForceConfig.y.Strength)
+        )
+        .alpha(defaultBaseConfig.alpha)
+        .alphaMin(defaultBaseConfig.alphaMin)
+        .alphaTarget(defaultBaseConfig.alphaTarget)
+        .alphaDecay(defaultBaseConfig.alphaDecay)
+        .velocityDecay(defaultBaseConfig.velocityDecay)
+        .on("tick", globalTicked);
+      function globalTicked() {
+        // 移动svg时，由于左上角是x，y坐标，要记得减去高和宽的偏移
+        svgGroups.attr("x", (d) => d.x - d.width / 2);
+        svgGroups.attr("y", (d) => d.y - d.height / 2);
+        linkGroups
+          .attr("x1", (d) => d.source.x)
+          .attr("y1", (d) => d.source.y)
+          .attr("x2", (d) => d.target.x)
+          .attr("y2", (d) => d.target.y);
       }
     },
   },
