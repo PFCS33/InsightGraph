@@ -189,8 +189,8 @@ export default {
       circleRScale: null,
       insightSizeScale: null,
 
-      circleR: 12,
-      circleFocusR: 24,
+      circleR: 14,
+      circleFocusR: 28,
       // rectWH: 125 * 0.7 + 20,
       rectWidthOffset: 3,
       rectHeightOffset: 13,
@@ -570,8 +570,8 @@ export default {
         .duration(this.durationTime)
         .attr("opacity", 1);
 
-      const linkTypeColor = d3.scaleOrdinal(
-        ["parent-child", "siblings", "same-name"],
+      const nodeTypeColor = d3.scaleOrdinal(
+        ["point", "shape", "compound"],
 
         ["#C69DE9", "#F7A69F", "#53C4B6"]
       );
@@ -580,10 +580,7 @@ export default {
       const linkGroup = linkG
         .append("line")
         .attr("class", "link")
-        .attr("stroke", function () {
-          const type = d3.select(this.parentNode).datum().type;
-          return linkTypeColor(type);
-        })
+        .attr("stroke", "#555")
         .attr("stroke-opacity", 0.6)
         .attr("class", "network-line")
         .attr("stroke-width", 1);
@@ -593,7 +590,7 @@ export default {
       //画nodes
       const circleGroup = circleG
         .append("circle")
-        .attr("class", "circle")
+        .attr("class", "circle normal-circle")
         .classed("not-show", function () {
           const gData = d3.select(this.parentNode).datum();
           return gData.showDetail;
@@ -601,11 +598,14 @@ export default {
         .attr("r", function () {
           return d3.select(this.parentNode).datum().circleR;
         })
-        .attr("stroke", this.defaultNodeColor)
-        .attr("fill", "#fff")
-        .attr("stroke-width", 1.5)
-        .style("transition", "transform 0.2s")
+        .attr("fill", function () {
+          const gData = d3.select(this.parentNode).datum();
 
+          return nodeTypeColor(
+            gData["insight-list"][gData.insightIndex]["insight-category"]
+          );
+        })
+        .style("transition", "transform 0.2s")
         .on("mouseover", function (event) {
           const d = d3.select(this.parentNode).datum();
           that.hoverIndex.clear();
@@ -615,7 +615,9 @@ export default {
           });
           if (!d.showDetail) {
             d3.select(this)
-              .attr("fill", that.circleHoveredColor)
+              .attr("fill", function () {
+                return d3.color(d3.select(this).attr("fill")).brighter(0.4);
+              })
               .style("cursor", "pointer")
               .attr("transform", "scale(2)");
 
@@ -628,7 +630,17 @@ export default {
           const d = d3.select(this.parentNode).datum();
           that.hoverIndex.clear();
           if (!d.showDetail) {
-            d3.select(this).attr("transform", "scale(1)").attr("fill", "#FFF");
+            d3.select(this)
+              .attr("transform", "scale(1)")
+              .attr("fill", function () {
+                const gData = d3.select(this.parentNode).datum();
+                console.log(
+                  gData["insight-list"][gData.insightIndex]["insight-category"]
+                );
+                return nodeTypeColor(
+                  gData["insight-list"][gData.insightIndex]["insight-category"]
+                );
+              });
           }
           d3.select(this.parentNode)
             .select(".insight-icon")
@@ -697,7 +709,19 @@ export default {
                 circle
                   .classed("not-show", false)
                   .attr("transform", "scale(1)")
-                  .attr("fill", "#FFF");
+                  .attr("fill", function () {
+                    const gData = d3.select(this.parentNode).datum();
+                    console.log(
+                      gData["insight-list"][gData.insightIndex][
+                        "insight-category"
+                      ]
+                    );
+                    return nodeTypeColor(
+                      gData["insight-list"][gData.insightIndex][
+                        "insight-category"
+                      ]
+                    );
+                  });
                 insightIcon.classed("not-show", false);
                 that.simulation.alphaDecay(that.restartAlphaDecay);
                 that.simulation.alpha(that.defaultBaseConfig.alpha);
@@ -2311,6 +2335,10 @@ export default {
 
 <!-- global style -->
 <style lang="less">
+.normal-circle {
+  stroke: none;
+}
+
 .circle,
 .rect,
 .rect-title {
