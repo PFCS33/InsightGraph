@@ -634,9 +634,7 @@ export default {
               .attr("transform", "scale(1)")
               .attr("fill", function () {
                 const gData = d3.select(this.parentNode).datum();
-                console.log(
-                  gData["insight-list"][gData.insightIndex]["insight-category"]
-                );
+
                 return nodeTypeColor(
                   gData["insight-list"][gData.insightIndex]["insight-category"]
                 );
@@ -711,11 +709,7 @@ export default {
                   .attr("transform", "scale(1)")
                   .attr("fill", function () {
                     const gData = d3.select(this.parentNode).datum();
-                    console.log(
-                      gData["insight-list"][gData.insightIndex][
-                        "insight-category"
-                      ]
-                    );
+
                     return nodeTypeColor(
                       gData["insight-list"][gData.insightIndex][
                         "insight-category"
@@ -1588,7 +1582,7 @@ export default {
     //   // 开始观察 SVG 元素
     //   observer.observe(svgElement);
     // },
-    // initial drawing, create DOM elements and sim system
+    // initialization of focus graph, create DOM elements and sim system
     drawGraph(newVal, svgData) {
       const that = this;
       // 获取绘画数据
@@ -1679,7 +1673,7 @@ export default {
         .attr("class", "background-shape")
         .attr("cx", boundaryR)
         .attr("cy", boundaryR)
-        .attr("r", boundary[2] / 2 - 1)
+        .attr("r", boundary[2] / 2 - 2)
         // .attr("height", boundary[3])
         .attr("stroke", "#555")
         .attr("fill", "#fff");
@@ -1860,7 +1854,7 @@ export default {
       this.simulation = simulation;
 
       const r = boundary[2] / 2;
-      console.log(r);
+
       this.setDomAttributes(linkG, circleG);
       // 每次迭代回调函数，更新结点位置
       function ticked() {
@@ -1968,18 +1962,17 @@ export default {
       // 获取container的宽和高
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
-      const originalX = this.getRandomInt(0, width);
-      const originalY = this.getRandomInt(0, height);
-      const originalWidth = 40;
+
+      const boundaryR = 100;
+      const originalWidth = boundaryR * 2;
       const originalHeight = originalWidth;
-      const boundary = [0, 0, originalWidth, originalHeight];
+
+      const boundary = [0, 0, 2 * boundaryR, 2 * boundaryR];
 
       const svg = gTop
         .select(`svg.${state}-state`)
         .attr("width", originalWidth)
         .attr("height", originalHeight)
-        .attr("x", originalX)
-        .attr("y", originalY)
         .attr("viewBox", boundary);
 
       svg.datum().width = originalWidth;
@@ -1987,12 +1980,11 @@ export default {
       svg.datum().pinned = false;
 
       const backgroundShape = svg
-        .append("rect")
+        .append("circle")
         .attr("class", "background-shape")
-        .attr("x", boundary[0])
-        .attr("y", boundary[1])
-        .attr("width", boundary[2])
-        .attr("height", boundary[3])
+        .attr("cx", boundaryR)
+        .attr("cy", boundaryR)
+        .attr("r", boundary[2] / 2 - 2)
         .attr("stroke", "#555")
         .attr("fill", "#fff");
     },
@@ -2168,7 +2160,8 @@ export default {
           d3
             .forceLink(svgLinks)
             .id((d) => d.id)
-            .distance(width / 3)
+            //.distance(width / 3)
+            .distance(600)
         )
         .force(
           "charge",
