@@ -242,8 +242,8 @@ export default {
     },
     hoveredArea: {
       handler(newVal, oldVal) {
-        this.addHighlightBackground(oldVal, false);
-        this.addHighlightBackground(newVal, true);
+        if (oldVal) this.addHighlightBackground(oldVal, false);
+        if (newVal) this.addHighlightBackground(newVal, true);
       },
       deep: true,
     },

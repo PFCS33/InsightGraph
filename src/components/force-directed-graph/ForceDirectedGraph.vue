@@ -626,6 +626,7 @@ export default {
         })
         .on("mouseout", function (event) {
           const d = d3.select(this.parentNode).datum();
+          that.hoverIndex.clear();
           if (!d.showDetail) {
             d3.select(this).attr("transform", "scale(1)").attr("fill", "#FFF");
           }
@@ -807,7 +808,7 @@ export default {
           const id = parentNode.datum().id;
           const neighbor = that.neighborMap.get(id);
           that.neighborHighligt(id, neighbor, "hover", false);
-
+          that.hoverIndex.clear();
           if (id !== that.selectedNode.id) {
             rect.classed("center-highlight", false);
             parentNode.select(".rect-title").classed("center-highlight", false);
@@ -1620,22 +1621,22 @@ export default {
       const height = parseInt(svgContainer.style("height"), 10);
 
       // 先把svg图和nodes+links 元素画出来
-      const boudaryR = (width > height ? height : width) / 3;
+      const boundaryR = (width > height ? height : width) / 3;
 
       const boundary = [
-        -boudaryR * 1.5,
-        -boudaryR * 1.5,
-        boudaryR * 5,
-        boudaryR * 5,
+        -boundaryR * 1.5,
+        -boundaryR * 1.5,
+        boundaryR * 5,
+        boundaryR * 5,
       ];
       // 选择top node g
       const gTop = svgContainer
         .select("#total-svg")
         .selectChild("g.node-group");
 
-      const originalX = width * 0.5 - boudaryR;
-      const originalY = height * 0.5 - boudaryR;
-      const originalWidth = boudaryR * 2;
+      const originalX = width * 0.5 - boundaryR;
+      const originalY = height * 0.5 - boundaryR;
+      const originalWidth = boundaryR * 2;
       const originalHeight = originalWidth;
       const svg = gTop
         .select("svg.S0-state")
@@ -1650,12 +1651,12 @@ export default {
       svg.datum().fy = height * 0.5;
 
       const backgroundShape = svg
-        .append("rect")
+        .append("circle")
         .attr("class", "background-shape")
-        .attr("x", boundary[0])
-        .attr("y", boundary[1])
-        .attr("width", boundary[2])
-        .attr("height", boundary[3])
+        .attr("cx", boundaryR)
+        .attr("cy", boundaryR)
+        .attr("r", boundary[2] / 2 - 1)
+        // .attr("height", boundary[3])
         .attr("stroke", "#555")
         .attr("fill", "#fff");
       // .style("background-color", "#000");
@@ -1799,18 +1800,18 @@ export default {
         .force(
           "center",
           d3
-            .forceCenter(boudaryR, boudaryR)
+            .forceCenter(boundaryR, boundaryR)
             .strength(defaultForceConfig.center.Strength)
         )
         .force(
           "x",
 
-          d3.forceX().x(boudaryR).strength(defaultForceConfig.x.Strength)
+          d3.forceX().x(boundaryR).strength(defaultForceConfig.x.Strength)
         )
         .force(
           "y",
 
-          d3.forceY().y(boudaryR).strength(defaultForceConfig.y.Strength)
+          d3.forceY().y(boundaryR).strength(defaultForceConfig.y.Strength)
         )
         .force(
           "collide",
@@ -1833,6 +1834,9 @@ export default {
         .on("tick", ticked);
 
       this.simulation = simulation;
+
+      const r = boundary[2] / 2;
+      console.log(r);
       this.setDomAttributes(linkG, circleG);
       // 每次迭代回调函数，更新结点位置
       function ticked() {
@@ -1843,6 +1847,17 @@ export default {
           .select(".node-group")
           .selectChildren("g")
           .style("transform", (d) => {
+            // 计算节点到圆心的距离
+            const dx = d.x - boundaryR;
+            const dy = d.y - boundaryR;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // 如果节点超出圆形边界，将其移到边界上
+            if (distance > r) {
+              d.x = boundaryR + (dx / distance) * r;
+              d.y = boundaryR + (dy / distance) * r;
+            }
+
             return `translate(${d.x}px,${d.y}px)`;
           });
 
@@ -1868,18 +1883,18 @@ export default {
             return d.target.y;
           });
 
-        svg
-          .select(".link-group")
-          .selectChildren("g")
-          .selectChildren("text")
-          .attr("x", function () {
-            const d = d3.select(this.parentNode).datum();
-            return (d.source.x + d.target.x) / 2;
-          })
-          .attr("y", function () {
-            const d = d3.select(this.parentNode).datum();
-            return (d.source.y + d.target.y) / 2;
-          });
+        // svg
+        //   .select(".link-group")
+        //   .selectChildren("g")
+        //   .selectChildren("text")
+        //   .attr("x", function () {
+        //     const d = d3.select(this.parentNode).datum();
+        //     return (d.source.x + d.target.x) / 2;
+        //   })
+        //   .attr("y", function () {
+        //     const d = d3.select(this.parentNode).datum();
+        //     return (d.source.y + d.target.y) / 2;
+        //   });
       }
 
       // 设置整体zoom行为,只选择最顶层的2个g即可
@@ -1910,12 +1925,12 @@ export default {
       this.defaultForceConfig.center.X =
         this.defaultForceConfig.x.X =
         this.defaultForceConfig.radial.X =
-          boudaryR;
+          boundaryR;
 
       this.defaultForceConfig.center.Y =
         this.defaultForceConfig.y.Y =
         this.defaultForceConfig.radial.Y =
-          boudaryR;
+          boundaryR;
     },
     drawSubGraph(graphInfo) {
       const that = this;
@@ -2145,20 +2160,20 @@ export default {
         //     .forceCenter(width / 2, height / 2)
         //     .strength(defaultForceConfig.center.Strength)
         // )
-        .force(
-          "x",
-          d3
-            .forceX()
-            .x(width / 2)
-            .strength(defaultForceConfig.x.Strength)
-        )
-        .force(
-          "y",
-          d3
-            .forceY()
-            .y(height / 2)
-            .strength(defaultForceConfig.y.Strength)
-        )
+        // .force(
+        //   "x",
+        //   d3
+        //     .forceX()
+        //     .x(width / 2)
+        //     .strength(defaultForceConfig.x.Strength)
+        // )
+        // .force(
+        //   "y",
+        //   d3
+        //     .forceY()
+        //     .y(height / 2)
+        //     .strength(defaultForceConfig.y.Strength)
+        // )
         .alpha(defaultBaseConfig.alpha)
         .alphaMin(defaultBaseConfig.alphaMin)
         .alphaTarget(defaultBaseConfig.alphaTarget)

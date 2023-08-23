@@ -258,7 +258,7 @@ export default {
 
         // 创建分箱器
         const bin = d3.bin().value((d) => d.score);
-        // .thresholds(d3.thresholdFreedmanDiaconis);
+        //    .thresholds(d3.thresholdFreedmanDiaconis);
 
         // 创建左半轴的bar
         const typeColor = d3.scaleOrdinal(types, d3.schemeTableau10);
@@ -927,7 +927,7 @@ export default {
 }
 #histogram-box {
   width: 100%;
-  height: 130vh;
+  height: 135vh;
 }
 .link-filter-box {
   display: flex;
