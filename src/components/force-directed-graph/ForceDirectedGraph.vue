@@ -419,6 +419,7 @@ export default {
 
       // change index record of selectedNode
       this.selectedNode.insightIndex = selectedIndex;
+
       const nodeData = this.nodeIdMap.get(id);
       // change data record in force graph
       nodeData.insightIndex = selectedIndex;
@@ -1068,30 +1069,40 @@ export default {
         // newly filtered value
         nodes = data.nodes.map((d) => {
           const id = d.id;
-          // get force data
           const oldNode = this.nodeIdMap.get(d.id);
-          // get total insight-list data
           const originInsightList = statisticNodeIdMap.get(id)["insight-list"];
-
+          const oldInsightIndexList = oldNode.insightIndexList;
+          const oldInsightIndex = oldInsightIndexList[oldNode.insightIndex];
+          const newInsightIndexList = [];
           // filter insight-list data
-          oldNode["insight-list"] = originInsightList.filter((insight) => {
-            const type = insight["insight-type"];
-            const score = insight["insight-score"];
-            const selection = scoreSelectionMap.get(type).selection;
-            const selected = scoreSelectionMap.get(type).selected;
-            let result = false;
-            if (selected) {
-              if (
-                selection === "all" ||
-                (score >= selection[0] && score < selection[1])
-              )
-                result = true;
+          oldNode["insight-list"] = originInsightList.filter(
+            (insight, index) => {
+              const type = insight["insight-type"];
+              const score = insight["insight-score"];
+              const selection = scoreSelectionMap.get(type).selection;
+              const selected = scoreSelectionMap.get(type).selected;
+              let result = false;
+              if (selected) {
+                if (
+                  selection === "all" ||
+                  (score >= selection[0] && score < selection[1])
+                ) {
+                  result = true;
+                  newInsightIndexList.push(index);
+                }
+              }
+              return result;
             }
-            return result;
-          });
+          );
+
+          const newInsightIndex = newInsightIndexList.findIndex(
+            (e) => e === oldInsightIndex
+          );
 
           // reset insight index
-          oldNode.insightIndex = 0;
+          oldNode.insightIndex = newInsightIndex >= 0 ? newInsightIndex : 0;
+          oldNode.insightIndexList = newInsightIndexList;
+
           return oldNode;
         });
         // recalculate the size of circle and icon
@@ -2007,7 +2018,11 @@ export default {
           const focusLinks = data.links;
 
           // 增加insight-index属性
-          focusNodes.forEach((d) => (d.insightIndex = 0));
+          focusNodes.forEach((d) => {
+            d.insightIndex = 0;
+
+            d.insightIndexList = [...Array(d["insight-list"].length).keys()];
+          });
           const statisticNodeIdMap = new Map();
 
           focusNodes.forEach((d) => {
