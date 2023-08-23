@@ -175,9 +175,9 @@ export default {
   data() {
     return {
       globalSimulation: null,
-      // [{state:, x:,}, ...]
-      svgData: null,
 
+      // 小图的id Map汇总
+      subGraphNodeIdMaps: new Map(),
       // (id, gdata)
       nodeIdMap: null,
 
@@ -342,7 +342,7 @@ export default {
           this.restart(true);
         } else {
           // draw force graph
-          this.drawGraph(newVal);
+          //this.drawGraph(newVal);
         }
       }
     },
@@ -1583,7 +1583,7 @@ export default {
     //   observer.observe(svgElement);
     // },
     // initialization of focus graph, create DOM elements and sim system
-    drawGraph(newVal, svgData) {
+    drawGraph(newVal) {
       const that = this;
       // 获取绘画数据
       const data = newVal;
@@ -1608,6 +1608,7 @@ export default {
 
       this.circleRScale = circleRScale;
       this.insightSizeScale = insightSizeScale;
+      console.log(this.circleRScale);
       // 加入更多属性，控制vega-lite图的显示
       const nodes = data.nodes.map((d) => {
         const insightNum = d["insight-list"].length;
@@ -1669,11 +1670,12 @@ export default {
       svg.datum().fy = height * 0.5;
 
       const backgroundShape = svg
-        .append("circle")
+        .append("rect")
         .attr("class", "background-shape")
-        .attr("cx", boundaryR)
-        .attr("cy", boundaryR)
-        .attr("r", boundary[2] / 2 - 2)
+        .attr("x", boundary[0])
+        .attr("y", boundary[1])
+        .attr("width", boundary[2])
+        .attr("height", boundary[3])
         // .attr("height", boundary[3])
         .attr("stroke", "#555")
         .attr("fill", "#fff");
@@ -1866,14 +1868,16 @@ export default {
           .selectChildren("g")
           .style("transform", (d) => {
             // 计算节点到圆心的距离
-            const dx = d.x - boundaryR;
-            const dy = d.y - boundaryR;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (d.x < boundary[0]) {
+              d.x = boundary[0];
+            } else if (d.x > boundary[2] + boundary[0]) {
+              d.x = boundary[2] + boundary[0];
+            }
 
-            // 如果节点超出圆形边界，将其移到边界上
-            if (distance > r) {
-              d.x = boundaryR + (dx / distance) * r;
-              d.y = boundaryR + (dy / distance) * r;
+            if (d.y < boundary[1]) {
+              d.y = boundary[1];
+            } else if (d.y > boundary[3] + boundary[1]) {
+              d.y = boundary[3] + boundary[1];
             }
 
             return `translate(${d.x}px,${d.y}px)`;
@@ -1954,6 +1958,33 @@ export default {
       const that = this;
       const state = graphInfo.state;
       const data = graphInfo.data;
+
+      const circleRScale = this.circleRScale;
+      const insightSizeScale = this.insightSizeScale;
+
+      // 创建内部nodes和links数据
+      const links = data.links.map((d) => ({ ...d }));
+      const nodes = data.nodes.map((d) => {
+        const insightNum = d["insight-list"].length;
+        return {
+          ...d,
+          circleR: circleRScale(insightNum),
+          iconSize: insightSizeScale(insightNum),
+          showDetail: false,
+          pinned: false,
+          checked: false,
+          view: null,
+          img: null,
+          rect: null,
+        };
+      });
+      // 创建 id map，便于查询数据
+      const nodeIdMap = new Map();
+      nodes.forEach((node) => {
+        nodeIdMap.set(node.id, node);
+      });
+      this.subGraphNodeIdMaps.set(state, nodeIdMap);
+
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
       const gTop = svgContainer
@@ -1980,13 +2011,39 @@ export default {
       svg.datum().pinned = false;
 
       const backgroundShape = svg
-        .append("circle")
+        .append("rect")
         .attr("class", "background-shape")
-        .attr("cx", boundaryR)
-        .attr("cy", boundaryR)
-        .attr("r", boundary[2] / 2 - 2)
+        .attr("x", boundary[0])
+        .attr("y", boundary[1])
+        .attr("width", boundary[2])
+        .attr("height", boundary[3])
         .attr("stroke", "#555")
         .attr("fill", "#fff");
+
+      //local force data binding
+      const linkG = svg
+        .append("g")
+        .attr("class", "link-group")
+        .selectAll("g")
+        .data(links, (d) => {
+          if (typeof d.source === "object") {
+            return `${d.source.id}_${d.target.id}`;
+          } else {
+            return `${d.source}_${d.target}`;
+          }
+        })
+        .join("g");
+
+      const circleG = svg
+        .append("g")
+        .attr("class", "node-group")
+        .selectAll("g")
+        .data(nodes, (d) => d.id)
+        .join("g");
+
+      // // 力导向系统创建
+      // const simulation = d3
+      //   .forceSimulation(nodes)
     },
     drawGlobalGraph(newVal) {
       const that = this;
@@ -2070,6 +2127,10 @@ export default {
           this.$store.dispatch("force/groupByNodeType", {
             data: focusNodes,
             firstFlag: true,
+          });
+          this.drawGraph({
+            nodes: focusNodes,
+            links: focusLinks,
           });
         } else {
           this.drawSubGraph({
