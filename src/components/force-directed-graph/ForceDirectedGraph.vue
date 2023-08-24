@@ -174,6 +174,15 @@ export default {
   },
   data() {
     return {
+      focusState: "S0",
+      selectedNodes: new Map(),
+      checkIndexs: new Map(),
+      hoverIndexs: new Map(),
+      showIndexs: new Map(),
+      pinnedIndexs: new Map(),
+      simulations: new Map(),
+      neighborMaps: new Map(),
+
       globalSimulation: null,
 
       // 小图的id Map汇总
@@ -241,7 +250,7 @@ export default {
 
       simulation: null,
       zoom: null,
-      ticks: 0,
+
       editMode: false,
       durationTime: 150,
 
@@ -327,7 +336,8 @@ export default {
           this.selectedNode.id,
           this.neighborMap.get(this.selectedNode.id),
           "selected",
-          false
+          false,
+          "S0"
         );
         this.selectedNode = {
           id: null,
@@ -336,13 +346,13 @@ export default {
           col: null,
           row: null,
         };
-        this.getNeighbourInfo(newVal);
+        this.neighborMap = this.getNeighbourInfo(newVal);
         if (this.simulation) {
           this.simulation.stop();
           this.restart(true);
         } else {
           // draw force graph
-          //this.drawGraph(newVal);
+          this.drawGraph(newVal);
         }
       }
     },
@@ -352,8 +362,14 @@ export default {
         // get id array of neighbour
         const neighborSet = this.neighborMap.get(newVal.id);
         const oldNeighborSet = this.neighborMap.get(oldVal.id);
-        this.neighborHighligt(oldVal.id, oldNeighborSet, "selected", false);
-        this.neighborHighligt(newVal.id, neighborSet, "selected", true);
+        this.neighborHighligt(
+          oldVal.id,
+          oldNeighborSet,
+          "selected",
+          false,
+          "S0"
+        );
+        this.neighborHighligt(newVal.id, neighborSet, "selected", true, "S0");
 
         if (newVal.id) {
           this.$store.dispatch("table/convertCheckSelection", {
@@ -404,6 +420,7 @@ export default {
         }
       }
     },
+
     /* -------------------------------------------------------------------------- */
     // default config
     /* -------------------------------------------------------------------------- */
@@ -474,7 +491,11 @@ export default {
       g.select(".vega-lite-graph").remove();
       g.datum().view = null;
       g.datum().img = null;
-      this.drawVegaLite(g, this.pinnedIndex.get(id) ? "svg" : "img");
+      this.drawVegaLite(
+        g,
+        this.pinnedIndex.get(id) ? "svg" : "img",
+        this.focusState
+      );
 
       // change data of statistic graph
       this.$store.getters["force/statisticNodeIdMap"].get(id).insightIndex =
@@ -556,8 +577,20 @@ export default {
       let svgElement = document.querySelector("svg"); // replace this with the actual svg element
       svg.appendChild(filter);
     },
-    setDomAttributes(linkG, circleG) {
+    setDomAttributes(
+      linkG,
+      circleG,
+
+      state
+    ) {
       const that = this;
+
+      const selectedNodes =
+        state === this.focusState ? null : this.selectedNodes;
+      const simulation = this.simulations.get(state);
+      const hoverIndex = this.hoverIndexs.get(state);
+      const checkIndex = this.checkIndexs.get(state);
+      const neighborMap = this.neighborMaps.get(state);
 
       circleG
         .attr("opacity", 0)
@@ -600,142 +633,19 @@ export default {
         })
         .attr("fill", function () {
           const gData = d3.select(this.parentNode).datum();
-
           return nodeTypeColor(
             gData["insight-list"][gData.insightIndex]["insight-category"]
           );
         })
         .style("transition", "transform 0.2s")
         .on("mouseover", function (event) {
-          const d = d3.select(this.parentNode).datum();
-          that.hoverIndex.clear();
-          that.hoverIndex.set(d.id, {
-            col: d.col,
-            row: d.row,
-          });
-          if (!d.showDetail) {
-            d3.select(this)
-              .attr("fill", function () {
-                return d3.color(d3.select(this).attr("fill")).brighter(0.4);
-              })
-              .style("cursor", "pointer")
-              .attr("transform", "scale(2)");
-
-            d3.select(this.parentNode)
-              .select(".insight-icon")
-              .attr("transform", "scale(2)");
-          }
+          circleMouseover(event, this, hoverIndex);
         })
         .on("mouseout", function (event) {
-          const d = d3.select(this.parentNode).datum();
-          that.hoverIndex.clear();
-          if (!d.showDetail) {
-            d3.select(this)
-              .attr("transform", "scale(1)")
-              .attr("fill", function () {
-                const gData = d3.select(this.parentNode).datum();
-
-                return nodeTypeColor(
-                  gData["insight-list"][gData.insightIndex]["insight-category"]
-                );
-              });
-          }
-          d3.select(this.parentNode)
-            .select(".insight-icon")
-            .attr("transform", "scale(1)");
+          circleMouseout(event, this, hoverIndex);
         })
         .on("click", function () {
-          // 获取选择circle对应的container - g元素
-          const g = d3.select(this.parentNode);
-
-          that.selectedNode = {
-            id: g.datum().id,
-            insightIndex: g.datum().insightIndex,
-            "insight-list": g.datum()["insight-list"],
-            col: g.datum().col,
-            row: g.datum().row,
-          };
-
-          if (!g.datum().showDetail) {
-            g.datum().showDetail = true;
-
-            const circle = d3.select(this);
-            const rect = g.selectChild(".rect");
-            const insightIcon = g.selectChild(".insight-icon");
-            const rectTitle = g.select(".rect-title");
-            const rectText = g.selectChildren(".title-text");
-
-            rect.classed("not-show", false);
-            rectTitle.classed("not-show", false);
-            rectText.classed("not-show", false);
-            circle.classed("not-show", true);
-            insightIcon.classed("not-show", true);
-            g.append("use")
-              .attr("href", "#defs-remove")
-              .attr("class", "remove vega-lite-icon")
-              .attr("cursor", "pointer")
-              .on("click", function () {
-                g.datum().showDetail = false;
-                g.datum().pinned = false;
-                g.datum().checked = false;
-                g.classed("pinned", false);
-                g.datum().fx = null;
-                g.datum().fy = null;
-                that.selectedNode = {
-                  id: null,
-                  insightIndex: null,
-                  "insight-list": null,
-                  col: null,
-                  row: null,
-                };
-                g.selectChildren("rect").classed("svg-inset", false);
-                g.selectChildren(".vega-lite-icon").remove();
-                that.deleteVegaLite(g);
-                const collideForce = that.simulation.force("collide");
-                const bodyForce = that.simulation.force("charge");
-                const linkForce = that.simulation.force("link");
-                if (collideForce)
-                  collideForce.initialize(that.simulation.nodes());
-                if (linkForce) linkForce.initialize(that.simulation.nodes());
-                if (bodyForce) {
-                  that.simulation.force("charge", null);
-                  that.simulation.force("charge", bodyForce);
-                }
-                rect.classed("not-show", true);
-                rectTitle.classed("not-show", true);
-                rectText.classed("not-show", true);
-                circle
-                  .classed("not-show", false)
-                  .attr("transform", "scale(1)")
-                  .attr("fill", function () {
-                    const gData = d3.select(this.parentNode).datum();
-
-                    return nodeTypeColor(
-                      gData["insight-list"][gData.insightIndex][
-                        "insight-category"
-                      ]
-                    );
-                  });
-                insightIcon.classed("not-show", false);
-                that.simulation.alphaDecay(that.restartAlphaDecay);
-                that.simulation.alpha(that.defaultBaseConfig.alpha);
-                that.simulation.restart();
-              });
-
-            g.append("use")
-              .attr("href", "#defs-pin")
-              .attr("class", "pin vega-lite-icon")
-              .attr("cursor", "pointer")
-              .on("click", togglePin);
-
-            g.append("use")
-              .attr("href", "#defs-check")
-              .attr("class", "check vega-lite-icon")
-              .attr("cursor", "pointer")
-              .on("click", toggleCheck);
-
-            that.drawVegaLite(g, "img");
-          }
+          circleClick(that, this, simulation, selectedNodes);
         });
 
       const containerGroup = circleG;
@@ -744,7 +654,6 @@ export default {
         .append("use")
         .attr("href", function () {
           const gData = d3.select(this.parentNode).datum();
-
           const group =
             gData["insight-list"][gData.insightIndex]["insight-type"];
 
@@ -805,44 +714,20 @@ export default {
         .attr("stroke", "#ccc")
         .attr("stroke-width", 1.5)
         .attr("cursor", "pointer")
-        .on("mouseover", function (event) {
-          //颜色变，表示被选中
-          const rect = d3.select(this);
-          const parentNode = d3.select(this.parentNode);
-          const id = parentNode.datum().id;
-          const neighbor = that.neighborMap.get(id);
-          that.neighborHighligt(id, neighbor, "hover", true);
-          rect.classed("center-highlight", true);
-          parentNode.select(".rect-title").classed("center-highlight", true);
-          that.hoverIndex.clear();
-          that.hoverIndex.set(id, {
-            col: parentNode.datum().col,
-            row: parentNode.datum().row,
-          });
+        .on("mouseover", function () {
+          rectMouseover(that, this, neighborMap, hoverIndex);
         })
-        .on("mouseout", function (event) {
-          const rect = d3.select(this);
-          const parentNode = d3.select(this.parentNode);
-          const id = parentNode.datum().id;
-          const neighbor = that.neighborMap.get(id);
-          that.neighborHighligt(id, neighbor, "hover", false);
-          that.hoverIndex.clear();
-          if (id !== that.selectedNode.id) {
-            rect.classed("center-highlight", false);
-            parentNode.select(".rect-title").classed("center-highlight", false);
-          }
+        .on("mouseout", function () {
+          rectMouseout(
+            that,
+            this,
+            neighborMap,
+            hoverIndex,
+            that.selectedNode.id
+          );
         })
         .on("click", function () {
-          // 获取对应的container - g元素
-          const g = d3.select(this.parentNode);
-
-          that.selectedNode = {
-            id: g.datum().id,
-            insightIndex: g.datum().insightIndex,
-            "insight-list": g.datum()["insight-list"],
-            row: g.datum().row,
-            col: g.datum().col,
-          };
+          rectClick(that, this, selectedNodes);
 
           // d3.select(this).classed("center-highlight", true);
         })
@@ -853,7 +738,6 @@ export default {
         .attr("class", "rect-title")
         .classed("not-show", function () {
           const gData = d3.select(this.parentNode).datum();
-
           return !gData.showDetail;
         })
         .attr("fill", "#e9ecef")
@@ -892,7 +776,7 @@ export default {
         .select("#svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
-        .select(".S0-state");
+        .select(`.${state}-state`);
       const dragDefine = d3
         .drag()
         .container(function () {
@@ -918,7 +802,216 @@ export default {
         .selectChild(".rect")
         .call(dragDefine);
 
-      const simulation = this.simulation;
+      function circleMouseover(event, that, hoverIndex) {
+        const d = d3.select(that.parentNode).datum();
+        hoverIndex.clear();
+        hoverIndex.set(d.id, {
+          col: d.col,
+          row: d.row,
+        });
+        if (!d.showDetail) {
+          d3.select(that)
+            .attr("fill", function () {
+              return d3.color(d3.select(that).attr("fill")).brighter(0.4);
+            })
+            .style("cursor", "pointer")
+            .attr("transform", "scale(2)");
+
+          d3.select(that.parentNode)
+            .select(".insight-icon")
+            .attr("transform", "scale(2)");
+        }
+      }
+      function circleMouseout(event, that, hoverIndex) {
+        const d = d3.select(that.parentNode).datum();
+        hoverIndex.clear();
+        if (!d.showDetail) {
+          d3.select(that)
+            .attr("transform", "scale(1)")
+            .attr("fill", function () {
+              const gData = d3.select(that.parentNode).datum();
+
+              return nodeTypeColor(
+                gData["insight-list"][gData.insightIndex]["insight-category"]
+              );
+            });
+        }
+        d3.select(that.parentNode)
+          .select(".insight-icon")
+          .attr("transform", "scale(1)");
+      }
+
+      function circleClick(self, that, simulation, selectedNodes) {
+        // ! 注意selectedNode,只能通过self访问，watch才能及时响应
+        // 获取选择circle对应的container - g元素
+        const g = d3.select(that.parentNode);
+
+        // selectedNode.id = g.datum().id;
+        // selectedNode.insightIndex = g.datum().insightIndex;
+        // selectedNode["insight-list"] = g.datum()["insight-list"];
+        // selectedNode.col = g.datum().col;
+        // selectedNode.row = g.datum().row;
+
+        if (!selectedNodes) {
+          self.selectedNode = {
+            id: g.datum().id,
+            insightIndex: g.datum().insightIndex,
+            "insight-list": g.datum()["insight-list"],
+            col: g.datum().col,
+            row: g.datum().row,
+          };
+        } else {
+          selectedNodes.set(state, {
+            id: g.datum().id,
+            insightIndex: g.datum().insightIndex,
+            "insight-list": g.datum()["insight-list"],
+            col: g.datum().col,
+            row: g.datum().row,
+          });
+        }
+
+        if (!g.datum().showDetail) {
+          g.datum().showDetail = true;
+
+          const circle = d3.select(that);
+          const rect = g.selectChild(".rect");
+          const insightIcon = g.selectChild(".insight-icon");
+          const rectTitle = g.select(".rect-title");
+          const rectText = g.selectChildren(".title-text");
+
+          rect.classed("not-show", false);
+          rectTitle.classed("not-show", false);
+          rectText.classed("not-show", false);
+          circle.classed("not-show", true);
+          insightIcon.classed("not-show", true);
+          g.append("use")
+            .attr("href", "#defs-remove")
+            .attr("class", "remove vega-lite-icon")
+            .attr("cursor", "pointer")
+            .on("click", function () {
+              g.datum().showDetail = false;
+              g.datum().pinned = false;
+              g.datum().checked = false;
+              g.classed("pinned", false);
+              g.datum().fx = null;
+              g.datum().fy = null;
+              if (!selectedNodes) {
+                self.selectedNode = {
+                  id: null,
+                  insightIndex: null,
+                  "insight-list": null,
+                  col: null,
+                  row: null,
+                };
+              } else {
+                selectedNodes.set(state, {
+                  id: null,
+                  insightIndex: null,
+                  "insight-list": null,
+                  col: null,
+                  row: null,
+                });
+              }
+
+              g.selectChildren("rect").classed("svg-inset", false);
+              g.selectChildren(".vega-lite-icon").remove();
+              self.deleteVegaLite(g, state);
+              const collideForce = simulation.force("collide");
+              const bodyForce = simulation.force("charge");
+              const linkForce = simulation.force("link");
+              if (collideForce) collideForce.initialize(simulation.nodes());
+              if (linkForce) linkForce.initialize(simulation.nodes());
+              if (bodyForce) {
+                simulation.force("charge", null);
+                simulation.force("charge", bodyForce);
+              }
+              rect.classed("not-show", true);
+              rectTitle.classed("not-show", true);
+              rectText.classed("not-show", true);
+              circle
+                .classed("not-show", false)
+                .attr("transform", "scale(1)")
+                .attr("fill", function () {
+                  const gData = d3.select(that.parentNode).datum();
+
+                  return nodeTypeColor(
+                    gData["insight-list"][gData.insightIndex][
+                      "insight-category"
+                    ]
+                  );
+                });
+              insightIcon.classed("not-show", false);
+              simulation.alphaDecay(self.restartAlphaDecay);
+              simulation.alpha(self.defaultBaseConfig.alpha);
+              simulation.restart();
+            });
+
+          g.append("use")
+            .attr("href", "#defs-pin")
+            .attr("class", "pin vega-lite-icon")
+            .attr("cursor", "pointer")
+            .on("click", togglePin);
+
+          g.append("use")
+            .attr("href", "#defs-check")
+            .attr("class", "check vega-lite-icon")
+            .attr("cursor", "pointer")
+            .on("click", function () {
+              toggleCheck(this, checkIndex);
+            });
+
+          self.drawVegaLite(g, "img", state);
+        }
+      }
+      function rectMouseover(self, that, neighborMap, hoverIndex) {
+        //颜色变，表示被选中
+        const rect = d3.select(that);
+        const parentNode = d3.select(that.parentNode);
+        const id = parentNode.datum().id;
+        const neighbor = neighborMap.get(id);
+        self.neighborHighligt(id, neighbor, "hover", true, state);
+        rect.classed("center-highlight", true);
+        parentNode.select(".rect-title").classed("center-highlight", true);
+        hoverIndex.clear();
+        hoverIndex.set(id, {
+          col: parentNode.datum().col,
+          row: parentNode.datum().row,
+        });
+      }
+      function rectMouseout(self, that, neighborMap, hoverIndex, selectedId) {
+        const rect = d3.select(that);
+        const parentNode = d3.select(that.parentNode);
+        const id = parentNode.datum().id;
+        const neighbor = neighborMap.get(id);
+        self.neighborHighligt(id, neighbor, "hover", false, state);
+        hoverIndex.clear();
+        if (id !== selectedId) {
+          rect.classed("center-highlight", false);
+          parentNode.select(".rect-title").classed("center-highlight", false);
+        }
+      }
+      function rectClick(self, that, selectedNodes) {
+        // ! 注意:selectedNode
+        // 获取对应的container - g元素
+        const g = d3.select(that.parentNode);
+        if (!selectedNodes) {
+          self.selectedNode = {
+            id: g.datum().id,
+            insightIndex: g.datum().insightIndex,
+            "insight-list": g.datum()["insight-list"],
+            row: g.datum().row,
+            col: g.datum().col,
+          };
+        } else {
+          selectedNodes.set(state, {
+            id: g.datum().id,
+            insightIndex: g.datum().insightIndex,
+            "insight-list": g.datum()["insight-list"],
+            row: g.datum().row,
+            col: g.datum().col,
+          });
+        }
+      }
       // 拖动开始时，重新加热迭代过程，并且修正被拖动点的fx,fy
       function dragstarted(event) {
         if (!event.active)
@@ -954,7 +1047,7 @@ export default {
           event.subject.fy = null;
         }
       }
-      function togglePin(event, d) {
+      function togglePin() {
         const g = d3.select(this.parentNode);
         const pinned = !g.datum().pinned;
         g.datum().pinned = pinned;
@@ -964,24 +1057,24 @@ export default {
           g.datum().fy = g.datum().y;
           g.select(".pin").classed("icon-pinned", true);
 
-          that.drawVegaLite(g, "svg");
+          that.drawVegaLite(g, "svg", state);
           that.pinnedIndex.set(g.datum().id, g);
         } else {
           g.classed("pinned", false);
           g.select(".pin").classed("icon-pinned", false);
           g.datum().fx = null;
           g.datum().fy = null;
-          that.drawVegaLite(g, "img");
+          that.drawVegaLite(g, "img", state);
           that.pinnedIndex.delete(g.datum().id);
         }
       }
 
-      function toggleCheck() {
-        const g = d3.select(this.parentNode);
+      function toggleCheck(that, checkIndex) {
+        const g = d3.select(that.parentNode);
         const checked = !g.datum().checked;
         g.datum().checked = checked;
         if (checked) {
-          that.checkIndex.set(g.datum().id, {
+          checkIndex.set(g.datum().id, {
             row: g.datum().row,
             col: g.datum().col,
           });
@@ -989,20 +1082,20 @@ export default {
           g.select(".check").classed("icon-pinned", true);
           g.selectChildren("rect").classed("svg-inset", true);
         } else {
-          that.checkIndex.delete(g.datum().id);
+          checkIndex.delete(g.datum().id);
           g.select(".check").classed("icon-pinned", false);
           g.selectChildren("rect").classed("svg-inset", false);
         }
       }
     },
 
-    neighborHighligt(id, neighbor, type, enable) {
+    neighborHighligt(id, neighbor, type, enable, state) {
       const className = type + "-highlight";
       const nodeGroup = d3
         .select("#svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
-        .select(".S0-state")
+        .select(`.${state}-state`)
         .select(".node-group")
         .selectChildren("g");
 
@@ -1010,7 +1103,7 @@ export default {
         .select("#svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
-        .select(".S0-state")
+        .select(`.${state}-state`)
         .select(".link-group")
         .selectChildren("g");
       if (neighbor) {
@@ -1033,23 +1126,24 @@ export default {
 
     // 构造用于查询邻居的 neighborMap
     getNeighbourInfo(data) {
-      this.neighborMap = new Map();
+      const neighborMap = new Map();
       const links = data.links;
       links.forEach((link) => {
         const sourceId = link.source;
         const targetId = link.target;
 
-        if (this.neighborMap.has(sourceId)) {
-          this.neighborMap.get(sourceId).push(targetId);
+        if (neighborMap.has(sourceId)) {
+          neighborMap.get(sourceId).push(targetId);
         } else {
-          this.neighborMap.set(sourceId, [targetId]);
+          neighborMap.set(sourceId, [targetId]);
         }
-        if (this.neighborMap.has(targetId)) {
-          this.neighborMap.get(targetId).push(sourceId);
+        if (neighborMap.has(targetId)) {
+          neighborMap.get(targetId).push(sourceId);
         } else {
-          this.neighborMap.set(targetId, [sourceId]);
+          neighborMap.set(targetId, [sourceId]);
         }
       });
+      return neighborMap;
     },
 
     /* -------------------------------------------------------------------------- */
@@ -1063,7 +1157,6 @@ export default {
     // rebind data of dom element(nodes and links) and sim system
     restart(newVal) {
       const that = this;
-      this.ticks = 0;
 
       // 获取原始绘画数据
       const data = this.selectedData;
@@ -1190,7 +1283,11 @@ export default {
                 g.selectAll(".vega-lite-graph").remove();
                 g.datum().view = null;
                 g.datum().img = null;
-                that.drawVegaLite(g, that.pinnedIndex.get(id) ? "svg" : "img");
+                that.drawVegaLite(
+                  g,
+                  that.pinnedIndex.get(id) ? "svg" : "img",
+                  this.focusState
+                );
               }
             });
 
@@ -1280,7 +1377,12 @@ export default {
           }
         );
 
-      this.setDomAttributes(linkG, nodeG);
+      this.setDomAttributes(
+        linkG,
+        nodeG,
+
+        this.focusState
+      );
 
       // rebind data of simulation
       this.simulation.nodes(nodes);
@@ -1299,8 +1401,12 @@ export default {
     /* -------------------------------------------------------------------------- */
     // vegaLite relative
     /* -------------------------------------------------------------------------- */
-    drawVegaLite(g, mode) {
+    drawVegaLite(g, mode, state) {
       const that = this;
+      const simulation = this.simulations.get(state);
+      const showIndex = this.showIndexs.get(state);
+      const pinnedIndex = this.pinnedIndexs.get(state);
+
       const container = g.select(".vega-lite-container");
       const rect = g.selectChild(".rect");
       const removeIcon = g.selectChild(".remove");
@@ -1354,14 +1460,14 @@ export default {
           const view = result.view.background("transparent");
           // record the view
           g.datum().view = view;
-          that.showIndex.set(gData.id, view);
+          showIndex.set(gData.id, view);
 
-          const linkForce = that.simulation.force("link");
-          if (linkForce) linkForce.initialize(that.simulation.nodes());
-          const bodyForce = that.simulation.force("charge");
+          const linkForce = simulation.force("link");
+          if (linkForce) linkForce.initialize(simulation.nodes());
+          const bodyForce = simulation.force("charge");
           if (bodyForce) {
-            that.simulation.force("charge", null);
-            that.simulation.force("charge", bodyForce);
+            simulation.force("charge", null);
+            simulation.force("charge", bodyForce);
           }
 
           const svg = container.select("svg");
@@ -1396,8 +1502,8 @@ export default {
             width: rectWidth,
             height: rectHeight,
           };
-          const collideForce = that.simulation.force("collide");
-          if (collideForce) collideForce.initialize(that.simulation.nodes());
+          const collideForce = simulation.force("collide");
+          if (collideForce) collideForce.initialize(simulation.nodes());
 
           // add ainmation
           rect
@@ -1497,7 +1603,7 @@ export default {
             case "svg":
               // 初始就设置为 pinned 状态
               pinIcon.classed("icon-pinned", true);
-              that.pinnedIndex.set(gData.id, g);
+              pinnedIndex.set(gData.id, g);
               g.datum().pinned = true;
               g.classed("pinned", true);
               g.datum().fx = gData.x;
@@ -1517,19 +1623,22 @@ export default {
           );
         });
       }
-      that.simulation.alphaDecay(that.restartAlphaDecay);
-      that.simulation.alpha(that.defaultBaseConfig.alpha);
-      that.simulation.restart();
+      simulation.alphaDecay(that.restartAlphaDecay);
+      simulation.alpha(that.defaultBaseConfig.alpha);
+      simulation.restart();
     },
-    deleteVegaLite(g) {
+    deleteVegaLite(g, state) {
+      const showIndex = this.showIndexs.get(state);
+      const pinnedIndex = this.pinnedIndexs.get(state);
+      const checkIndex = this.checkIndexs.get(state);
       const id = g.datum().id;
-      this.showIndex.get(id).finalize();
+      showIndex.get(id).finalize();
       g.selectAll(".vega-lite-graph").remove();
       g.datum().view = null;
       g.datum().img = null;
-      this.checkIndex.delete(id);
-      this.pinnedIndex.delete(id);
-      this.showIndex.delete(id);
+      checkIndex.delete(id);
+      pinnedIndex.delete(id);
+      showIndex.delete(id);
     },
     /* -------------------------------------------------------------------------- */
     // other
@@ -1585,6 +1694,12 @@ export default {
     // initialization of focus graph, create DOM elements and sim system
     drawGraph(newVal) {
       const that = this;
+
+      this.hoverIndexs.set(this.focusState, this.hoverIndex);
+      this.checkIndexs.set(this.focusState, this.checkIndex);
+      this.pinnedIndexs.set(this.focusState, this.pinnedIndex);
+      this.neighborMaps.set(this.focusState, this.neighborMap);
+
       // 获取绘画数据
       const data = newVal;
       const links = data.links.map((d) => ({ ...d }));
@@ -1608,7 +1723,7 @@ export default {
 
       this.circleRScale = circleRScale;
       this.insightSizeScale = insightSizeScale;
-      console.log(this.circleRScale);
+
       // 加入更多属性，控制vega-lite图的显示
       const nodes = data.nodes.map((d) => {
         const insightNum = d["insight-list"].length;
@@ -1705,163 +1820,20 @@ export default {
         .join("g");
 
       /* -------------------------------------------------------------------------- */
-      const defaultBaseConfig = this.defaultBaseConfig;
-      const defaultForceConfig = this.defaultForceConfig;
 
-      // 力导向系统创建
-      const simulation = d3
-        .forceSimulation(nodes)
-        .force(
-          "link",
-          d3
-            .forceLink(links)
-            // 指明对应的是nodes数据的id属性
-            .id((d) => d.id)
-            // .distance(defaultForceConfig.link.Distance)
-            .distance(function (d) {
-              const sourceId = d.source.id;
-              const targetId = d.target.id;
+      this.simulation = this.createForceSimulation(
+        nodes,
+        links,
+        ticked,
+        this.neighborMap,
+        this.showIndex,
+        boundaryR
+      );
+      this.simulations.set(this.focusState, this.simulation);
 
-              const neighbor1 = that.neighborMap.get(sourceId);
-              const neighbor2 = that.neighborMap.get(targetId);
-              let neighborCount1 = 0;
-              let neighborCount2 = 0;
-              if (neighbor1) neighborCount1 = neighbor1.length;
-              if (neighbor2) neighborCount2 = neighbor2.length;
-
-              let distanceIncrease = 5;
-              if (neighborCount1 > 3 && neighborCount2 > 3) {
-                distanceIncrease = 20;
-              } else if (neighborCount1 > 3 || neighborCount2 > 3) {
-                distanceIncrease = 0;
-              }
-
-              const circleR1 = d.source.circleR;
-              const circleR2 = d.target.circleR;
-              const middleR = that.circleR * 1.5;
-              if (circleR1 > middleR || circleR2 > middleR) {
-                distanceIncrease += 25;
-                if (circleR1 > middleR && circleR2 > middleR)
-                  distanceIncrease += 25;
-              }
-
-              if (that.showIndex.size > 0) {
-                const show1 = that.showIndex.has(d.source.id);
-                const show2 = that.showIndex.has(d.target.id);
-                if (show1 || show2) {
-                  if (show1 && show2) {
-                    return that.vegaLiteLongLink + distanceIncrease;
-                  } else {
-                    return that.vegaLiteLink + distanceIncrease;
-                  }
-                }
-
-                for (const id of that.showIndex.keys()) {
-                  const directNeighbor = that.neighborMap.get(id);
-                  if (directNeighbor) {
-                    for (const neighbor of directNeighbor) {
-                      const secondNeighbor = that.neighborMap.get(neighbor);
-                      if (
-                        (targetId === neighbor &&
-                          secondNeighbor.includes(sourceId)) ||
-                        (sourceId === neighbor &&
-                          secondNeighbor.includes(targetId))
-                      ) {
-                        return that.circleNeighborLink + distanceIncrease;
-                      }
-                    }
-                  }
-                }
-              }
-
-              return that.circleLink + distanceIncrease;
-            })
-            .iterations(defaultForceConfig.link.Iterations)
-          // .strength(defaultForceConfig.link.Strength)
-        )
-        .force(
-          "charge",
-          d3
-            .forceManyBody()
-            .strength(function (d) {
-              let forceIncrease = 0;
-              const circleR = d.circleR;
-              const middleR = that.circleR * 1.5;
-              if (circleR > middleR) {
-                forceIncrease = -100;
-              }
-
-              let strength = that.circleStrength;
-              if (d.showDetail) {
-                strength = that.vegaLiteStrength;
-              } else {
-                if (that.showIndex.size > 0) {
-                  const id = d.id;
-                  for (const showId of that.showIndex.keys()) {
-                    const directNeighbor = that.neighborMap.get(showId);
-                    if (directNeighbor) {
-                      for (const neighbor of directNeighbor) {
-                        const secondNeighbor = that.neighborMap.get(neighbor);
-                        if (secondNeighbor.includes(id)) {
-                          return that.circleNeighborStrength + forceIncrease;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-
-              return strength + forceIncrease;
-            })
-            .theta(defaultForceConfig.manyBody.Theta)
-            .distanceMin(defaultForceConfig.manyBody.DistanceMin)
-          // .distanceMax(defaultForceConfig.manyBody.DistanceMax)
-        )
-        .force(
-          "center",
-          d3
-            .forceCenter(boundaryR, boundaryR)
-            .strength(defaultForceConfig.center.Strength)
-        )
-        .force(
-          "x",
-
-          d3.forceX().x(boundaryR).strength(defaultForceConfig.x.Strength)
-        )
-        .force(
-          "y",
-
-          d3.forceY().y(boundaryR).strength(defaultForceConfig.y.Strength)
-        )
-        .force(
-          "collide",
-          d3
-            .forceCollide((d) => {
-              if (d.showDetail) {
-                return d.rect.r;
-              } else {
-                return d.circleR;
-              }
-            })
-            .strength(defaultForceConfig.collide.Strength)
-            .iterations(defaultForceConfig.collide.Iterations)
-        )
-        .alpha(defaultBaseConfig.alpha)
-        .alphaMin(defaultBaseConfig.alphaMin)
-        .alphaTarget(defaultBaseConfig.alphaTarget)
-        .alphaDecay(defaultBaseConfig.alphaDecay)
-        .velocityDecay(defaultBaseConfig.velocityDecay)
-        .on("tick", ticked);
-
-      this.simulation = simulation;
-
-      const r = boundary[2] / 2;
-
-      this.setDomAttributes(linkG, circleG);
+      this.setDomAttributes(linkG, circleG, this.focusState);
       // 每次迭代回调函数，更新结点位置
       function ticked() {
-        that.ticks++;
-
         // 只通过transform.translate 更新父元素g的位置
         svg
           .select(".node-group")
@@ -1959,9 +1931,22 @@ export default {
       const state = graphInfo.state;
       const data = graphInfo.data;
 
-      const circleRScale = this.circleRScale;
-      const insightSizeScale = this.insightSizeScale;
+      // 创建自己的 circle scale 和 insight scale函数
+      let maxVegaLiteNum = 0;
+      data.nodes.forEach((node) => {
+        const vegaLiteNum = node["insight-list"].length;
+        if (vegaLiteNum > maxVegaLiteNum) maxVegaLiteNum = vegaLiteNum;
+      });
 
+      const circleRScale = d3
+        .scaleLog([1, maxVegaLiteNum], [this.circleR, this.circleR * 2])
+        .base(2);
+      const insightSizeScale = d3
+        .scaleLog(
+          [1, maxVegaLiteNum],
+          [this.insightIconSize, this.insightIconSize * 2]
+        )
+        .base(2);
       // 创建内部nodes和links数据
       const links = data.links.map((d) => ({ ...d }));
       const nodes = data.nodes.map((d) => {
@@ -1985,6 +1970,26 @@ export default {
       });
       this.subGraphNodeIdMaps.set(state, nodeIdMap);
 
+      const showIndex = new Map();
+      const hoverIndex = new Map();
+      const checkIndex = new Map();
+      const selectedNode = {
+        id: null,
+        insightIndex: null,
+        "insight-list": null,
+        col: null,
+        row: null,
+      };
+      const pinnedIndex = new Map();
+
+      this.showIndexs.set(state, showIndex);
+      this.hoverIndexs.set(state, hoverIndex);
+      this.checkIndexs.set(state, checkIndex);
+      this.selectedNodes.set(state, selectedNode);
+      this.pinnedIndexs.set(state, pinnedIndex);
+      const neighborMap = this.getNeighbourInfo(data);
+      this.neighborMaps.set(state, neighborMap);
+
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
       const gTop = svgContainer
@@ -1995,11 +2000,14 @@ export default {
       const height = parseInt(svgContainer.style("height"), 10);
 
       const boundaryR = 100;
+      const boundary = [
+        -boundaryR * 1.5,
+        -boundaryR * 1.5,
+        boundaryR * 5,
+        boundaryR * 5,
+      ];
       const originalWidth = boundaryR * 2;
       const originalHeight = originalWidth;
-
-      const boundary = [0, 0, 2 * boundaryR, 2 * boundaryR];
-
       const svg = gTop
         .select(`svg.${state}-state`)
         .attr("width", originalWidth)
@@ -2041,9 +2049,63 @@ export default {
         .data(nodes, (d) => d.id)
         .join("g");
 
-      // // 力导向系统创建
-      // const simulation = d3
-      //   .forceSimulation(nodes)
+      //力导向系统创建;
+      const simulation = this.createForceSimulation(
+        nodes,
+        links,
+        ticked,
+        neighborMap,
+        showIndex,
+        boundaryR
+      );
+      this.simulations.set(state, simulation);
+
+      this.setDomAttributes(linkG, circleG, state);
+
+      function ticked() {
+        // 只通过transform.translate 更新父元素g的位置
+        svg
+          .select(".node-group")
+          .selectChildren("g")
+          .style("transform", (d) => {
+            // 计算节点到圆心的距离
+            if (d.x < boundary[0]) {
+              d.x = boundary[0];
+            } else if (d.x > boundary[2] + boundary[0]) {
+              d.x = boundary[2] + boundary[0];
+            }
+
+            if (d.y < boundary[1]) {
+              d.y = boundary[1];
+            } else if (d.y > boundary[3] + boundary[1]) {
+              d.y = boundary[3] + boundary[1];
+            }
+
+            return `translate(${d.x}px,${d.y}px)`;
+          });
+
+        svg
+          .select(".link-group")
+          .selectChildren("g")
+          .selectChildren(".network-line")
+          .attr("x1", function () {
+            const d = d3.select(this.parentNode).datum();
+
+            return d.source.x;
+          })
+          .attr("y1", function () {
+            const d = d3.select(this.parentNode).datum();
+            return d.source.y;
+          })
+          .attr("x2", function () {
+            const d = d3.select(this.parentNode).datum();
+            return d.target.x;
+          })
+          .attr("y2", function () {
+            const d = d3.select(this.parentNode).datum();
+            return d.target.y;
+          });
+      }
     },
     drawGlobalGraph(newVal) {
       const that = this;
@@ -2054,7 +2116,7 @@ export default {
       }));
 
       const svgLinks = Array.from(newVal.keys()).map((state) => ({
-        source: "S0",
+        source: this.focusState,
         target: state,
       }));
       svgLinks.shift();
@@ -2100,7 +2162,7 @@ export default {
 
       // 创建子svg图
       for (let [state, data] of newVal) {
-        if (state === "S0") {
+        if (state === this.focusState) {
           // initilize the focus data
           const focusNodes = data.nodes;
           const focusLinks = data.links;
@@ -2128,14 +2190,26 @@ export default {
             data: focusNodes,
             firstFlag: true,
           });
-          this.drawGraph({
-            nodes: focusNodes,
-            links: focusLinks,
-          });
+          // this.drawGraph({
+          //   nodes: focusNodes,
+          //   links: focusLinks,
+          // });
         } else {
+          const subNodes = data.nodes;
+          const subLinks = data.links;
+
+          // 增加insight-index属性
+          subNodes.forEach((d) => {
+            d.insightIndex = 0;
+
+            d.insightIndexList = [...Array(d["insight-list"].length).keys()];
+          });
           this.drawSubGraph({
             state: state,
-            data: data,
+            data: {
+              nodes: subNodes,
+              links: subLinks,
+            },
           });
         }
       }
@@ -2270,6 +2344,164 @@ export default {
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
       }
+    },
+    // force function
+    createForceSimulation(
+      nodes,
+      links,
+      ticked,
+      neighborMap,
+      showIndex,
+      boundaryR
+    ) {
+      const defaultBaseConfig = this.defaultBaseConfig;
+      const defaultForceConfig = this.defaultForceConfig;
+      const that = this;
+      const simulation = d3
+        .forceSimulation(nodes)
+        .force(
+          "link",
+          d3
+            .forceLink(links)
+            // 指明对应的是nodes数据的id属性
+            .id((d) => d.id)
+            // .distance(defaultForceConfig.link.Distance)
+            .distance(function (d) {
+              const sourceId = d.source.id;
+              const targetId = d.target.id;
+
+              const neighbor1 = neighborMap.get(sourceId);
+              const neighbor2 = neighborMap.get(targetId);
+              let neighborCount1 = 0;
+              let neighborCount2 = 0;
+              if (neighbor1) neighborCount1 = neighbor1.length;
+              if (neighbor2) neighborCount2 = neighbor2.length;
+
+              let distanceIncrease = 5;
+              if (neighborCount1 > 3 && neighborCount2 > 3) {
+                distanceIncrease = 20;
+              } else if (neighborCount1 > 3 || neighborCount2 > 3) {
+                distanceIncrease = 0;
+              }
+
+              const circleR1 = d.source.circleR;
+              const circleR2 = d.target.circleR;
+              const middleR = that.circleR * 1.5;
+              if (circleR1 > middleR || circleR2 > middleR) {
+                distanceIncrease += 25;
+                if (circleR1 > middleR && circleR2 > middleR)
+                  distanceIncrease += 25;
+              }
+
+              if (showIndex.size > 0) {
+                const show1 = showIndex.has(d.source.id);
+                const show2 = showIndex.has(d.target.id);
+                if (show1 || show2) {
+                  if (show1 && show2) {
+                    return that.vegaLiteLongLink + distanceIncrease;
+                  } else {
+                    return that.vegaLiteLink + distanceIncrease;
+                  }
+                }
+
+                for (const id of showIndex.keys()) {
+                  const directNeighbor = neighborMap.get(id);
+                  if (directNeighbor) {
+                    for (const neighbor of directNeighbor) {
+                      const secondNeighbor = neighborMap.get(neighbor);
+                      if (
+                        (targetId === neighbor &&
+                          secondNeighbor.includes(sourceId)) ||
+                        (sourceId === neighbor &&
+                          secondNeighbor.includes(targetId))
+                      ) {
+                        return that.circleNeighborLink + distanceIncrease;
+                      }
+                    }
+                  }
+                }
+              }
+
+              return that.circleLink + distanceIncrease;
+            })
+            .iterations(defaultForceConfig.link.Iterations)
+          // .strength(defaultForceConfig.link.Strength)
+        )
+        .force(
+          "charge",
+          d3
+            .forceManyBody()
+            .strength(function (d) {
+              let forceIncrease = 0;
+              const circleR = d.circleR;
+              const middleR = that.circleR * 1.5;
+              if (circleR > middleR) {
+                forceIncrease = -100;
+              }
+
+              let strength = that.circleStrength;
+              if (d.showDetail) {
+                strength = that.vegaLiteStrength;
+              } else {
+                if (showIndex.size > 0) {
+                  const id = d.id;
+                  for (const showId of showIndex.keys()) {
+                    const directNeighbor = neighborMap.get(showId);
+                    if (directNeighbor) {
+                      for (const neighbor of directNeighbor) {
+                        const secondNeighbor = neighborMap.get(neighbor);
+                        if (secondNeighbor.includes(id)) {
+                          return that.circleNeighborStrength + forceIncrease;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+
+              return strength + forceIncrease;
+            })
+            .theta(defaultForceConfig.manyBody.Theta)
+            .distanceMin(defaultForceConfig.manyBody.DistanceMin)
+          // .distanceMax(defaultForceConfig.manyBody.DistanceMax)
+        )
+        .force(
+          "center",
+          d3
+            .forceCenter(boundaryR, boundaryR)
+            .strength(defaultForceConfig.center.Strength)
+        )
+        .force(
+          "x",
+
+          d3.forceX().x(boundaryR).strength(defaultForceConfig.x.Strength)
+        )
+        .force(
+          "y",
+
+          d3.forceY().y(boundaryR).strength(defaultForceConfig.y.Strength)
+        )
+        .force(
+          "collide",
+          d3
+            .forceCollide((d) => {
+              if (d.showDetail) {
+                return d.rect.r;
+              } else {
+                return d.circleR;
+              }
+            })
+            .strength(defaultForceConfig.collide.Strength)
+            .iterations(defaultForceConfig.collide.Iterations)
+        )
+        .alpha(defaultBaseConfig.alpha)
+        .alphaMin(defaultBaseConfig.alphaMin)
+        .alphaTarget(defaultBaseConfig.alphaTarget)
+        .alphaDecay(defaultBaseConfig.alphaDecay)
+        .velocityDecay(defaultBaseConfig.velocityDecay)
+        .on("tick", ticked);
+
+      return simulation;
     },
   },
 };

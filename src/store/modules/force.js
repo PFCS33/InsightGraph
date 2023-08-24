@@ -159,7 +159,8 @@ export default {
         data.graph.links.forEach((link) => {
           for (let [state, nodes] of allStatesNodes.entries()) {
             if (
-              nodes.find((d) => d.id === link.source || d.id === link.target)
+              nodes.find((d) => d.id === link.source) &&
+              nodes.find((d) => d.id === link.target)
             ) {
               allStatesLinks.get(state).push(link);
               break;
