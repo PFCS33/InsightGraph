@@ -164,6 +164,7 @@ export default {
   components: {
     VegaLiteFilter,
   },
+
   computed: {
     selectedData() {
       return this.$store.getters["force/selectedData"];
@@ -174,6 +175,13 @@ export default {
   },
   data() {
     return {
+      maxNodeNum: 0,
+      svgRScale: null,
+      linkDistanceScale: null,
+      chargeStrengthScale: null,
+      containerWidth: null,
+      containerHeight: null,
+      // mutiple states
       focusState: "S0",
       selectedNodes: new Map(),
       checkIndexs: new Map(),
@@ -309,6 +317,12 @@ export default {
     allStatesData: {
       // don't watch deep
       handler(newVal) {
+        this.maxNodeNum = d3.max(
+          Array.from(newVal.values()),
+          (d) => d.nodes.length
+        );
+        this.setTopScale(this.maxNodeNum);
+
         this.drawGlobalGraph(newVal);
       },
     },
@@ -426,6 +440,22 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    setTopScale(maxNodeNum) {
+      const svgContainer = d3.select("#svg-container");
+      this.containerWidth = parseInt(svgContainer.style("width"), 10);
+      this.containerHeight = parseInt(svgContainer.style("height"), 10);
+      const maxR =
+        (this.containerWidth > this.containerHeight
+          ? this.containerHeight
+          : this.containerWidth) / 2.5;
+
+      this.svgRScale = d3.scaleLinear([0, maxNodeNum], [75, maxR]);
+      this.linkDistanceScale = d3.scaleLinear([0, maxNodeNum], [50, maxR * 2]);
+      this.chargeStrengthScale = d3.scaleLinear(
+        [0, maxNodeNum],
+        [-2000, -5000]
+      );
+    },
     hideMoreBox() {
       this.hidePanelMode = true;
       this.showMorePanel = false;
@@ -1751,11 +1781,11 @@ export default {
       // svgContainer.selectAll("*").remove();
 
       // 获取container的宽和高
-      const width = parseInt(svgContainer.style("width"), 10);
-      const height = parseInt(svgContainer.style("height"), 10);
+      const width = this.containerWidth;
+      const height = this.containerHeight;
 
       // 先把svg图和nodes+links 元素画出来
-      const boundaryR = (width > height ? height : width) / 3;
+      const boundaryR = this.svgRScale(nodes.length);
 
       const boundary = [
         -boundaryR * 1.5,
@@ -1996,10 +2026,11 @@ export default {
         .select("#total-svg")
         .selectChild("g.node-group");
       // 获取container的宽和高
-      const width = parseInt(svgContainer.style("width"), 10);
-      const height = parseInt(svgContainer.style("height"), 10);
+      const width = this.containerWidth;
+      const height = this.containerHeight;
 
-      const boundaryR = 100;
+      // 先把svg图和nodes+links 元素画出来
+      const boundaryR = this.svgRScale(nodes.length);
       const boundary = [
         -boundaryR * 1.5,
         -boundaryR * 1.5,
@@ -2111,8 +2142,9 @@ export default {
       const that = this;
 
       // get binding data for top force simulation
-      const svgData = Array.from(newVal.keys()).map((state) => ({
-        id: state,
+      const svgData = Array.from(newVal.entries()).map((stateInfo) => ({
+        id: stateInfo[0],
+        nodeNum: stateInfo[1].nodes.length,
       }));
 
       const svgLinks = Array.from(newVal.keys()).map((state) => ({
@@ -2158,7 +2190,7 @@ export default {
           }
         })
         .join("line")
-        .attr("stroke", "#555");
+        .attr("stroke", "none");
 
       // 创建子svg图
       for (let [state, data] of newVal) {
@@ -2296,13 +2328,21 @@ export default {
             .forceLink(svgLinks)
             .id((d) => d.id)
             //.distance(width / 3)
-            .distance(600)
+            .distance((d) => {
+              const nodeNumS = d.source.nodeNum;
+              const nodeNumT = d.target.nodeNum;
+
+              return (
+                this.linkDistanceScale(nodeNumS) +
+                this.linkDistanceScale(nodeNumT)
+              );
+            })
         )
         .force(
           "charge",
           d3
             .forceManyBody()
-            .strength(-2000)
+            .strength((d) => this.chargeStrengthScale(d.nodeNum))
             .theta(defaultForceConfig.manyBody.Theta)
             .distanceMin(defaultForceConfig.manyBody.DistanceMin)
         )
