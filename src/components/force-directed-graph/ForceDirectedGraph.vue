@@ -1801,10 +1801,11 @@ export default {
         .attr("height", boundary[3])
         // .attr("height", boundary[3])
         .attr("stroke", "#555")
+        .attr("stroke-width", 10)
         .attr("fill", "#fff");
       // .style("background-color", "#000");
 
-      this.createInsetFilter(svg.node());
+      // this.createInsetFilter(svg.node());
       // this.createObserver(svg.node());
       //data binding
       const linkG = svg
@@ -2142,7 +2143,7 @@ export default {
       const svgTop = svgContainer
         .select("#total-svg")
         .attr("viewBox", [0, 0, width, height]);
-
+      this.createInsetFilter(svgTop.node());
       // 添加top g，用于global zoom
       const linkGTop = svgTop.append("g").attr("class", "link-group");
       const nodeGTop = svgTop.append("g").attr("class", "node-group");
