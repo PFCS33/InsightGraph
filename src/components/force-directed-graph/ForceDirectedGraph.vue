@@ -1694,7 +1694,7 @@ export default {
     // initialization of focus graph, create DOM elements and sim system
     drawGraph(newVal) {
       const that = this;
-
+      this.showIndexs.set(this.focusState, this.showIndex);
       this.hoverIndexs.set(this.focusState, this.hoverIndex);
       this.checkIndexs.set(this.focusState, this.checkIndex);
       this.pinnedIndexs.set(this.focusState, this.pinnedIndex);
