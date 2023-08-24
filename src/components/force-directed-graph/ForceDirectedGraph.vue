@@ -21,8 +21,8 @@
     <transition name="slide">
       <VegaLiteFilter
         v-if="showMorePanel"
-        :insightList="selectedNode['insight-list']"
-        :insightIndex="selectedNode['insightIndex']"
+        :insightList="filterNode['insight-list']"
+        :insightIndex="filterNode['insightIndex']"
         class="showMorePanelBox"
         @insightIndexChange="changeInsightIndex"
         @hideMoreBox="hideMoreBox"
@@ -175,6 +175,14 @@ export default {
   },
   data() {
     return {
+      // vega-lite filter
+      filterNode: {
+        id: null,
+        state: null,
+        insightIndex: null,
+        "insight-list": null,
+      },
+      // top svg force control
       maxNodeNum: 0,
       svgRScale: null,
       linkDistanceScale: null,
@@ -190,11 +198,10 @@ export default {
       pinnedIndexs: new Map(),
       simulations: new Map(),
       neighborMaps: new Map(),
+      nodeIdMaps: new Map(),
 
       globalSimulation: null,
 
-      // 小图的id Map汇总
-      subGraphNodeIdMaps: new Map(),
       // (id, gdata)
       nodeIdMap: null,
 
@@ -246,6 +253,7 @@ export default {
       // id
       selectedNode: {
         id: null,
+        state: null,
         insightIndex: null,
         "insight-list": null,
         col: null,
@@ -326,73 +334,9 @@ export default {
         this.drawGlobalGraph(newVal);
       },
     },
-    checkIndex: {
-      handler(newVal) {
-        this.$store.dispatch("table/convertCheckSelection", {
-          mode: "checked",
-          data: newVal,
-        });
-      },
-      deep: true,
-    },
-    hoverIndex: {
-      handler(newVal) {
-        this.$store.dispatch("table/convertCheckSelection", {
-          mode: "hovered",
-          data: newVal,
-        });
-      },
-      deep: true,
-    },
-    selectedData(newVal) {
-      if (newVal) {
-        this.neighborHighligt(
-          this.selectedNode.id,
-          this.neighborMap.get(this.selectedNode.id),
-          "selected",
-          false,
-          "S0"
-        );
-        this.selectedNode = {
-          id: null,
-          insightIndex: null,
-          "insight-list": null,
-          col: null,
-          row: null,
-        };
-        this.neighborMap = this.getNeighbourInfo(newVal);
-        if (this.simulation) {
-          this.simulation.stop();
-          this.restart(true);
-        } else {
-          // draw force graph
-          this.drawGraph(newVal);
-        }
-      }
-    },
-
-    selectedNode(newVal, oldVal) {
+    filterNode(newVal, oldVal) {
       if (newVal.id !== oldVal.id) {
-        // get id array of neighbour
-        const neighborSet = this.neighborMap.get(newVal.id);
-        const oldNeighborSet = this.neighborMap.get(oldVal.id);
-        this.neighborHighligt(
-          oldVal.id,
-          oldNeighborSet,
-          "selected",
-          false,
-          "S0"
-        );
-        this.neighborHighligt(newVal.id, neighborSet, "selected", true, "S0");
-
         if (newVal.id) {
-          this.$store.dispatch("table/convertCheckSelection", {
-            mode: "clicked",
-            data: new Map().set(newVal.id, {
-              col: newVal.col,
-              row: newVal.row,
-            }),
-          });
           if (newVal["insight-list"].length > 1) {
             if (this.hidePanelMode) {
               if (this.showMoreIcon) {
@@ -426,7 +370,84 @@ export default {
         } else {
           this.showMorePanel = false;
           this.showMoreIcon = false;
+        }
+      }
+    },
+    // selectedNodes: {
+    //   deep: true,
+    //   handler(newVal) {
+    //
+    //   },
+    // },
+    checkIndex: {
+      handler(newVal) {
+        this.$store.dispatch("table/convertCheckSelection", {
+          mode: "checked",
+          data: newVal,
+        });
+      },
+      deep: true,
+    },
+    hoverIndex: {
+      handler(newVal) {
+        this.$store.dispatch("table/convertCheckSelection", {
+          mode: "hovered",
+          data: newVal,
+        });
+      },
+      deep: true,
+    },
+    selectedData(newVal) {
+      if (newVal) {
+        this.neighborHighligt(
+          this.selectedNode.id,
+          this.neighborMap.get(this.selectedNode.id),
+          "selected",
+          false,
+          "S0"
+        );
+        this.selectedNode = {
+          id: null,
+          state: null,
+          insightIndex: null,
+          "insight-list": null,
+          col: null,
+          row: null,
+        };
+        this.neighborMap = this.getNeighbourInfo(newVal);
+        if (this.simulation) {
+          this.simulation.stop();
+          this.restart(true);
+        } else {
+          // draw force graph
+          this.drawGraph(newVal);
+        }
+      }
+    },
 
+    selectedNode(newVal, oldVal) {
+      if (newVal.id !== oldVal.id) {
+        // get id array of neighbour
+        const neighborSet = this.neighborMap.get(newVal.id);
+        const oldNeighborSet = this.neighborMap.get(oldVal.id);
+        this.neighborHighligt(
+          oldVal.id,
+          oldNeighborSet,
+          "selected",
+          false,
+          "S0"
+        );
+        this.neighborHighligt(newVal.id, neighborSet, "selected", true, "S0");
+        this.filterNode = newVal;
+        if (newVal.id) {
+          this.$store.dispatch("table/convertCheckSelection", {
+            mode: "clicked",
+            data: new Map().set(newVal.id, {
+              col: newVal.col,
+              row: newVal.row,
+            }),
+          });
+        } else {
           this.$store.dispatch("table/convertCheckSelection", {
             mode: "clicked",
             data: null,
@@ -461,84 +482,79 @@ export default {
       this.showMorePanel = false;
       this.showMoreIcon = true;
     },
+    setInsightIcon(that) {
+      const gData = d3.select(that.parentNode).datum();
+      const group = gData["insight-list"][gData.insightIndex]["insight-type"];
+
+      let insightType = null;
+      switch (group) {
+        case "dominance":
+          insightType = "dominance";
+          break;
+        case "outlier":
+          insightType = "outlier";
+          break;
+        case "top2":
+          insightType = "top2";
+          break;
+        case "evenness":
+          insightType = "evenness";
+          break;
+        case "trend":
+          insightType = "trend";
+          break;
+        case "skewness":
+          insightType = "skewness";
+          break;
+        case "kurtosis":
+          insightType = "kurtosis";
+          break;
+        case "correlation":
+        case "correlation-temporal":
+          insightType = "correlation";
+          break;
+      }
+      return "#defs-" + insightType;
+    },
     changeInsightIndex(selectedIndex) {
-      const id = this.selectedNode.id;
+      const that = this;
+      const id = this.filterNode.id;
+      const state = this.filterNode.state;
 
-      // change index record of selectedNode
-      this.selectedNode.insightIndex = selectedIndex;
+      // change index record of filterNode
+      this.filterNode.insightIndex = selectedIndex;
 
-      const nodeData = this.nodeIdMap.get(id);
+      console.log(state);
+      console.log(this.nodeIdMaps.get(state));
+      const nodeData = this.nodeIdMaps.get(state).get(id);
       // change data record in force graph
       nodeData.insightIndex = selectedIndex;
+
       const newType = nodeData["insight-list"][selectedIndex]["insight-type"];
       const g = d3
         .select("#svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
-        .select(".S0-state")
+        .select(`.${state}-state`)
         .select(".node-group")
         .selectChildren("g")
         .filter((d) => d.id === id);
 
       //change insight icon
       g.select(".insight-icon").attr("href", function () {
-        const gData = d3.select(this.parentNode).datum();
-        const group = gData["insight-list"][gData.insightIndex]["insight-type"];
-
-        let insightType = null;
-        switch (group) {
-          case "dominance":
-            insightType = "dominance";
-            break;
-          case "outlier":
-            insightType = "outlier";
-            break;
-          case "top2":
-            insightType = "top2";
-            break;
-          case "evenness":
-            insightType = "evenness";
-            break;
-          case "trend":
-            insightType = "trend";
-            break;
-          case "skewness":
-            insightType = "skewness";
-            break;
-          case "kurtosis":
-            insightType = "kurtosis";
-            break;
-          case "correlation":
-          case "correlation-temporal":
-            insightType = "correlation";
-            break;
-        }
-        return "#defs-" + insightType;
+        return that.setInsightIcon(this);
       });
       // change vega-lite graph
-      this.showIndex.get(id).finalize();
+      this.showIndexs.get(state).get(id).finalize();
 
       g.select(".vega-lite-graph").remove();
       g.datum().view = null;
       g.datum().img = null;
       this.drawVegaLite(
         g,
-        this.pinnedIndex.get(id) ? "svg" : "img",
+        this.pinnedIndexs.get(state).get(id) ? "svg" : "img",
         this.focusState
       );
-
-      // change data of statistic graph
-      this.$store.getters["force/statisticNodeIdMap"].get(id).insightIndex =
-        selectedIndex;
-
-      // const oldNodeDataGroup = this.$store.getters["force/nodeDataGroup"];
-      // const newNodeDataGroup = oldNodeDataGroup.map((d) => {
-      //   if (d.name === oldType) d.value -= 1;
-      //   if (d.name === newType) d.value += 1;
-      //   return d;
-      // });
-
-      // this.$store.commit("force/setNodeDataGroup", newNodeDataGroup);
     },
     createInsetFilter(svg) {
       let svgNamespace = "http://www.w3.org/2000/svg";
@@ -683,39 +699,7 @@ export default {
       const iconGroup = containerGroup
         .append("use")
         .attr("href", function () {
-          const gData = d3.select(this.parentNode).datum();
-          const group =
-            gData["insight-list"][gData.insightIndex]["insight-type"];
-
-          let insightType = null;
-          switch (group) {
-            case "dominance":
-              insightType = "dominance";
-              break;
-            case "outlier":
-              insightType = "outlier";
-              break;
-            case "top2":
-              insightType = "top2";
-              break;
-            case "evenness":
-              insightType = "evenness";
-              break;
-            case "trend":
-              insightType = "trend";
-              break;
-            case "skewness":
-              insightType = "skewness";
-              break;
-            case "kurtosis":
-              insightType = "kurtosis";
-              break;
-            case "correlation":
-            case "correlation-temporal":
-              insightType = "correlation";
-              break;
-          }
-          return "#defs-" + insightType;
+          return that.setInsightIcon(this);
         })
         .attr("class", "insight-icon")
         .attr("width", function () {
@@ -885,6 +869,7 @@ export default {
         if (!selectedNodes) {
           self.selectedNode = {
             id: g.datum().id,
+            state: state,
             insightIndex: g.datum().insightIndex,
             "insight-list": g.datum()["insight-list"],
             col: g.datum().col,
@@ -893,11 +878,18 @@ export default {
         } else {
           selectedNodes.set(state, {
             id: g.datum().id,
+            state: state,
             insightIndex: g.datum().insightIndex,
             "insight-list": g.datum()["insight-list"],
             col: g.datum().col,
             row: g.datum().row,
           });
+          self.filterNode = {
+            id: g.datum().id,
+            state: state,
+            insightIndex: g.datum().insightIndex,
+            "insight-list": g.datum()["insight-list"],
+          };
         }
 
         if (!g.datum().showDetail) {
@@ -928,6 +920,7 @@ export default {
               if (!selectedNodes) {
                 self.selectedNode = {
                   id: null,
+                  state: null,
                   insightIndex: null,
                   "insight-list": null,
                   col: null,
@@ -936,11 +929,18 @@ export default {
               } else {
                 selectedNodes.set(state, {
                   id: null,
+                  state: null,
                   insightIndex: null,
                   "insight-list": null,
                   col: null,
                   row: null,
                 });
+                self.filterNode = {
+                  id: null,
+                  state: null,
+                  insightIndex: null,
+                  "insight-list": null,
+                };
               }
 
               g.selectChildren("rect").classed("svg-inset", false);
@@ -1027,6 +1027,7 @@ export default {
         if (!selectedNodes) {
           self.selectedNode = {
             id: g.datum().id,
+            state: state,
             insightIndex: g.datum().insightIndex,
             "insight-list": g.datum()["insight-list"],
             row: g.datum().row,
@@ -1035,11 +1036,18 @@ export default {
         } else {
           selectedNodes.set(state, {
             id: g.datum().id,
+            state: state,
             insightIndex: g.datum().insightIndex,
             "insight-list": g.datum()["insight-list"],
             row: g.datum().row,
             col: g.datum().col,
           });
+          self.filterNode = {
+            id: g.datum().id,
+            state: state,
+            insightIndex: g.datum().insightIndex,
+            "insight-list": g.datum()["insight-list"],
+          };
         }
       }
       // 拖动开始时，重新加热迭代过程，并且修正被拖动点的fx,fy
@@ -1316,7 +1324,7 @@ export default {
                 that.drawVegaLite(
                   g,
                   that.pinnedIndex.get(id) ? "svg" : "img",
-                  this.focusState
+                  that.focusState
                 );
               }
             });
@@ -1329,38 +1337,7 @@ export default {
             update
               .select(".insight-icon")
               .attr("href", function () {
-                const gData = d3.select(this.parentNode).datum();
-                const group =
-                  gData["insight-list"][gData.insightIndex]["insight-type"];
-                let insightType = null;
-                switch (group) {
-                  case "dominance":
-                    insightType = "dominance";
-                    break;
-                  case "outlier":
-                    insightType = "outlier";
-                    break;
-                  case "top2":
-                    insightType = "top2";
-                    break;
-                  case "evenness":
-                    insightType = "evenness";
-                    break;
-                  case "trend":
-                    insightType = "trend";
-                    break;
-                  case "skewness":
-                    insightType = "skewness";
-                    break;
-                  case "kurtosis":
-                    insightType = "kurtosis";
-                    break;
-                  case "correlation":
-                  case "correlation-temporal":
-                    insightType = "correlation";
-                    break;
-                }
-                return "#defs-" + insightType;
+                return that.setInsightIcon(this);
               })
               .attr("class", "insight-icon")
               .attr("width", function () {
@@ -1774,6 +1751,7 @@ export default {
         nodeIdMap.set(node.id, node);
       });
       this.nodeIdMap = nodeIdMap;
+      this.nodeIdMaps.set(this.focusState, nodeIdMap);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
 
@@ -1998,13 +1976,14 @@ export default {
       nodes.forEach((node) => {
         nodeIdMap.set(node.id, node);
       });
-      this.subGraphNodeIdMaps.set(state, nodeIdMap);
+      this.nodeIdMaps.set(state, nodeIdMap);
 
       const showIndex = new Map();
       const hoverIndex = new Map();
       const checkIndex = new Map();
       const selectedNode = {
         id: null,
+        state: null,
         insightIndex: null,
         "insight-list": null,
         col: null,

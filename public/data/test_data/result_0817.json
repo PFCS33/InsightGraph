@@ -1879,6 +1879,12 @@
             "insight-category": "shape",
             "insight-score": 0.861180666864727,
             "vega-lite": "{\"data\": {\"values\": [{\"variable\": \"2013\", \"value\": 0.0}, {\"variable\": \"2014\", \"value\": 0.0}, {\"variable\": \"2015\", \"value\": 0.0}, {\"variable\": \"2016\", \"value\": 0.0}, {\"variable\": \"2017\", \"value\": 7910.0}, {\"variable\": \"2018\", \"value\": 14110.0}, {\"variable\": \"2019\", \"value\": 20980.0}, {\"variable\": \"2020\", \"value\": 26860.0}]}, \"mark\": {\"type\": \"area\", \"interpolate\": \"monotone\", \"line\": {\"color\": \"#4682b4\"}, \"color\": {\"x1\": 1, \"y1\": 1, \"x2\": 1, \"y2\": 0, \"gradient\": \"linear\", \"stops\": [{\"offset\": 0, \"color\": \"white\"}, {\"offset\": 1, \"color\": \"#4682b4\"}]}}, \"encoding\": {\"x\": {\"field\": \"variable\", \"type\": \"nominal\", \"axis\": {\"labelOverlap\": true, \"title\": null}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": null}, \"tooltip\": [{\"field\": \"variable\", \"type\": \"nominal\"}, {\"field\": \"value\", \"type\": \"quantitative\"}]}}"
+          },
+          {
+            "insight-type": "trend",
+            "insight-category": "shape",
+            "insight-score": 0.861180666864727,
+            "vega-lite": "{\"data\": {\"values\": [{\"variable\": \"2013\", \"value\": 0.0}, {\"variable\": \"2014\", \"value\": 0.0}, {\"variable\": \"2015\", \"value\": 0.0}, {\"variable\": \"2016\", \"value\": 0.0}, {\"variable\": \"2017\", \"value\": 7910.0}, {\"variable\": \"2018\", \"value\": 14110.0}, {\"variable\": \"2019\", \"value\": 20980.0}, {\"variable\": \"2020\", \"value\": 26860.0}]}, \"mark\": {\"type\": \"area\", \"interpolate\": \"monotone\", \"line\": {\"color\": \"#4682b4\"}, \"color\": {\"x1\": 1, \"y1\": 1, \"x2\": 1, \"y2\": 0, \"gradient\": \"linear\", \"stops\": [{\"offset\": 0, \"color\": \"white\"}, {\"offset\": 1, \"color\": \"#4682b4\"}]}}, \"encoding\": {\"x\": {\"field\": \"variable\", \"type\": \"nominal\", \"axis\": {\"labelOverlap\": true, \"title\": null}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": null}, \"tooltip\": [{\"field\": \"variable\", \"type\": \"nominal\"}, {\"field\": \"value\", \"type\": \"quantitative\"}]}}"
           }
         ],
         "state": "S1"
@@ -2187,6 +2193,12 @@
             "insight-category": "shape",
             "insight-score": 0.9209239737876554,
             "vega-lite": "{\"data\": {\"values\": [{\"variable\": \"2013\", \"value\": 4920.0}, {\"variable\": \"2014\", \"value\": 3360.0}, {\"variable\": \"2015\", \"value\": 2330.0}, {\"variable\": \"2016\", \"value\": 1900.0}, {\"variable\": \"2017\", \"value\": 2150.0}, {\"variable\": \"2018\", \"value\": 830.0}, {\"variable\": \"2019\", \"value\": 280.0}, {\"variable\": \"2020\", \"value\": 70.0}]}, \"mark\": {\"type\": \"area\", \"interpolate\": \"monotone\", \"line\": {\"color\": \"#4682b4\"}, \"color\": {\"x1\": 1, \"y1\": 1, \"x2\": 1, \"y2\": 0, \"gradient\": \"linear\", \"stops\": [{\"offset\": 0, \"color\": \"white\"}, {\"offset\": 1, \"color\": \"#4682b4\"}]}}, \"encoding\": {\"x\": {\"field\": \"variable\", \"type\": \"nominal\", \"axis\": {\"labelOverlap\": true, \"title\": null}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": null}, \"tooltip\": [{\"field\": \"variable\", \"type\": \"nominal\"}, {\"field\": \"value\", \"type\": \"quantitative\"}]}}"
+          },
+          {
+            "insight-type": "dominance",
+            "insight-category": "point",
+            "insight-score": 0.8746223564954683,
+            "vega-lite": "{\"data\": {\"values\": [{\"category\": \"Nintendo 3DS (3DS)\", \"value\": 70.0}, {\"category\": \"Nintendo Switch (NS)\", \"value\": 5790.0}, {\"category\": \"PlayStation 4 (PS4)\", \"value\": 750.0}, {\"category\": \"Xbox One (XOne)\", \"value\": 10.0}]}, \"mark\": {\"type\": \"arc\", \"innerRadius\": 5, \"stroke\": \"#fff\"}, \"encoding\": {\"theta\": {\"field\": \"value\", \"type\": \"quantitative\", \"stack\": true}, \"color\": {\"field\": \"category\", \"type\": \"nominal\", \"legend\": null}, \"order\": {\"field\": \"value\", \"type\": \"quantitative\", \"sort\": \"descending\"}, \"radius\": {\"field\": \"value\", \"scale\": {\"type\": \"linear\", \"zero\": true, \"rangeMin\": 20}}, \"tooltip\": [{\"field\": \"category\", \"type\": \"nominal\"}, {\"field\": \"value\", \"type\": \"quantitative\"}]}}"
           }
         ],
         "state": "S3"
