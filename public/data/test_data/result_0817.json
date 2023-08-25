@@ -1997,6 +1997,18 @@
             "insight-category": "shape",
             "insight-score": 0.6935876236710051,
             "vega-lite": "{\"data\": {\"values\": [{\"variable\": \"2013\", \"value\": 930.0}, {\"variable\": \"2014\", \"value\": 830.0}, {\"variable\": \"2015\", \"value\": 790.0}, {\"variable\": \"2016\", \"value\": 460.0}, {\"variable\": \"2017\", \"value\": 1180.0}, {\"variable\": \"2018\", \"value\": 1960.0}, {\"variable\": \"2019\", \"value\": 2770.0}, {\"variable\": \"2020\", \"value\": 4330.0}]}, \"mark\": {\"type\": \"area\", \"interpolate\": \"monotone\", \"line\": {\"color\": \"#4682b4\"}, \"color\": {\"x1\": 1, \"y1\": 1, \"x2\": 1, \"y2\": 0, \"gradient\": \"linear\", \"stops\": [{\"offset\": 0, \"color\": \"white\"}, {\"offset\": 1, \"color\": \"#4682b4\"}]}}, \"encoding\": {\"x\": {\"field\": \"variable\", \"type\": \"nominal\", \"axis\": {\"labelOverlap\": true, \"title\": null}}, \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": null}, \"tooltip\": [{\"field\": \"variable\", \"type\": \"nominal\"}, {\"field\": \"value\", \"type\": \"quantitative\"}]}}"
+          },
+          {
+            "insight-type": "outlier",
+            "insight-category": "point",
+            "insight-score": 2.5747273584778685,
+            "vega-lite": "{\"data\": {\"values\": [{\"category\": \"Nintendo 3DS (3DS)\", \"value\": 14560.0}, {\"category\": \"Nintendo DS (DS)\", \"value\": 290.0}, {\"category\": \"Nintendo Switch (NS)\", \"value\": 18440.0}, {\"category\": \"PlayStation 3 (PS3)\", \"value\": 7440.0}, {\"category\": \"PlayStation 4 (PS4)\", \"value\": 47540.0}, {\"category\": \"PlayStation Vita (PSV)\", \"value\": 4030.0}, {\"category\": \"Wii (Wii)\", \"value\": 1620.0}, {\"category\": \"Wii U (WiiU)\", \"value\": 3270.0}, {\"category\": \"Xbox 360 (X360)\", \"value\": 3360.0}, {\"category\": \"Xbox One (XOne)\", \"value\": 12160.0}]}, \"mark\": {\"type\": \"boxplot\", \"extent\": 3, \"size\": 20, \"median\": {\"color\": \"white\"}, \"ticks\": true}, \"encoding\": {\"x\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": null}, \"tooltip\": [{\"field\": \"category\", \"type\": \"nominal\"}, {\"field\": \"value\", \"type\": \"quantitative\"}]}}"
+          },
+          {
+            "insight-type": "dominance",
+            "insight-category": "point",
+            "insight-score": 0.582018927444795,
+            "vega-lite": "{\"data\": {\"values\": [{\"category\": \"Nintendo 3DS (3DS)\", \"value\": 1440.0}, {\"category\": \"PlayStation 3 (PS3)\", \"value\": 250.0}, {\"category\": \"PlayStation 4 (PS4)\", \"value\": 7380.0}, {\"category\": \"PlayStation Vita (PSV)\", \"value\": 410.0}, {\"category\": \"Wii U (WiiU)\", \"value\": 770.0}, {\"category\": \"Xbox 360 (X360)\", \"value\": 100.0}, {\"category\": \"Xbox One (XOne)\", \"value\": 2330.0}]}, \"mark\": {\"type\": \"arc\", \"innerRadius\": 5, \"stroke\": \"#fff\"}, \"encoding\": {\"theta\": {\"field\": \"value\", \"type\": \"quantitative\", \"stack\": true}, \"color\": {\"field\": \"category\", \"type\": \"nominal\", \"legend\": null}, \"order\": {\"field\": \"value\", \"type\": \"quantitative\", \"sort\": \"descending\"}, \"radius\": {\"field\": \"value\", \"scale\": {\"type\": \"linear\", \"zero\": true, \"rangeMin\": 20}}, \"tooltip\": [{\"field\": \"category\", \"type\": \"nominal\"}, {\"field\": \"value\", \"type\": \"quantitative\"}]}}"
           }
         ],
         "state": "S2"
@@ -2151,6 +2163,12 @@
             "insight-category": "point",
             "insight-score": 0.31478770131771594,
             "vega-lite": "{\"data\": {\"values\": [{\"category\": \"Nintendo 3DS (3DS)\", \"value\": 2150.0}, {\"category\": \"Nintendo Switch (NS)\", \"value\": 2020.0}, {\"category\": \"PlayStation 3 (PS3)\", \"value\": 30.0}, {\"category\": \"PlayStation 4 (PS4)\", \"value\": 2070.0}, {\"category\": \"PlayStation Vita (PSV)\", \"value\": 490.0}, {\"category\": \"Wii U (WiiU)\", \"value\": 60.0}, {\"category\": \"Xbox One (XOne)\", \"value\": 10.0}]}, \"mark\": {\"type\": \"arc\", \"innerRadius\": 5, \"stroke\": \"#fff\"}, \"encoding\": {\"theta\": {\"field\": \"value\", \"type\": \"quantitative\", \"stack\": true}, \"color\": {\"field\": \"category\", \"type\": \"nominal\", \"legend\": null}, \"order\": {\"field\": \"value\", \"type\": \"quantitative\", \"sort\": \"descending\"}, \"radius\": {\"field\": \"value\", \"scale\": {\"type\": \"linear\", \"zero\": true, \"rangeMin\": 20}}, \"tooltip\": [{\"field\": \"category\", \"type\": \"nominal\"}, {\"field\": \"value\", \"type\": \"quantitative\"}]}}"
+          },
+          {
+            "insight-type": "dominance",
+            "insight-category": "point",
+            "insight-score": 0.6431372549019608,
+            "vega-lite": "{\"data\": {\"values\": [{\"category\": \"Nintendo 3DS (3DS)\", \"value\": 4920.0}, {\"category\": \"PlayStation 3 (PS3)\", \"value\": 850.0}, {\"category\": \"PlayStation Vita (PSV)\", \"value\": 910.0}, {\"category\": \"Wii (Wii)\", \"value\": 100.0}, {\"category\": \"Wii U (WiiU)\", \"value\": 840.0}, {\"category\": \"Xbox 360 (X360)\", \"value\": 30.0}]}, \"mark\": {\"type\": \"arc\", \"innerRadius\": 5, \"stroke\": \"#fff\"}, \"encoding\": {\"theta\": {\"field\": \"value\", \"type\": \"quantitative\", \"stack\": true}, \"color\": {\"field\": \"category\", \"type\": \"nominal\", \"legend\": null}, \"order\": {\"field\": \"value\", \"type\": \"quantitative\", \"sort\": \"descending\"}, \"radius\": {\"field\": \"value\", \"scale\": {\"type\": \"linear\", \"zero\": true, \"rangeMin\": 20}}, \"tooltip\": [{\"field\": \"category\", \"type\": \"nominal\"}, {\"field\": \"value\", \"type\": \"quantitative\"}]}}"
           }
         ],
         "state": "S3"
@@ -7129,7 +7147,15 @@
   },
   "state_links": {
     "_-2013_": {
-      "S3": ["_Japan-2013_", "_Other-2013_"]
+      "S1": [
+        "_-2019_",
+        "_PlayStation Vita (PSV)-_",
+        "_PlayStation Vita (PSV)_Sony-_",
+        "_Europe_Microsoft-_",
+        "_Other_Nintendo-_"
+      ],
+      "S3": ["_Japan-2013_", "_Other-2013_"],
+      "S2": ["_Europe_Microsoft-_", "_Other_Nintendo-_"]
     },
     "_-2016_": {
       "S3": ["_Europe-2016_", "_North America-2016_", "_Other-2016_"]

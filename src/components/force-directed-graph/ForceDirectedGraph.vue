@@ -172,9 +172,14 @@ export default {
     allStatesData() {
       return this.$store.getters["force/allStatesData"];
     },
+    stateLinksMap() {
+      return this.$store.getters["force/stateLinksMap"];
+    },
   },
   data() {
     return {
+      //
+
       // vega-lite filter
       filterNode: {
         id: null,
@@ -197,18 +202,18 @@ export default {
       showIndexs: new Map(),
       pinnedIndexs: new Map(),
       simulations: new Map(),
-      neighborMaps: new Map(),
+      neighborMaps: new Map(), // (id, gdata)
       nodeIdMaps: new Map(),
+      circleRScales: new Map(),
+      insightSizeScales: new Map(),
 
       globalSimulation: null,
-
-      // (id, gdata)
-      nodeIdMap: null,
 
       // color
       defaultLinkColor: "#999",
       defaultNodeColor: "#aaa",
       circleHoveredColor: "#e6fcf5",
+      nodeTypeColor: null,
 
       circleRScale: null,
       insightSizeScale: null,
@@ -247,9 +252,6 @@ export default {
       checkIndex: new Map(),
       // (id, row,col)
       hoverIndex: new Map(),
-      // neighbor info
-      // (id, [...idn])
-      neighborMap: new Map(),
       // id
       selectedNode: {
         id: null,
@@ -264,7 +266,6 @@ export default {
       showMorePanel: false,
       hidePanelMode: false,
 
-      simulation: null,
       zoom: null,
 
       editMode: false,
@@ -322,6 +323,40 @@ export default {
   },
 
   watch: {
+    showIndex: {
+      deep: true,
+      handler(newVal, oldVal) {
+        console.log(1);
+        // get node map
+        const relatedNodeIdMap = new Map();
+        for (let showId of newVal.keys()) {
+          const stateMap = this.stateLinksMap.get(showId);
+
+          if (stateMap) {
+            for (let [state, nodeIds] of stateMap.entries()) {
+              const singleStateIds = relatedNodeIdMap.get(state);
+
+              if (singleStateIds) {
+                singleStateIds.push(...nodeIds);
+              } else {
+                const newNodeIds = [];
+                newNodeIds.push(...nodeIds);
+
+                relatedNodeIdMap.set(state, newNodeIds);
+              }
+            }
+          }
+        }
+        // get node Data
+        const filteredAllStateData =
+          this.getFilterSubGraphData(relatedNodeIdMap);
+
+        //console.log(filteredAllStateData);
+        Array.from(filteredAllStateData.keys()).forEach((state) => {
+          this.restart(true, state, filteredAllStateData.get(state));
+        });
+      },
+    },
     allStatesData: {
       // don't watch deep
       handler(newVal) {
@@ -399,25 +434,27 @@ export default {
     },
     selectedData(newVal) {
       if (newVal) {
-        this.neighborHighligt(
-          this.selectedNode.id,
-          this.neighborMap.get(this.selectedNode.id),
-          "selected",
-          false,
-          "S0"
-        );
-        this.selectedNode = {
-          id: null,
-          state: null,
-          insightIndex: null,
-          "insight-list": null,
-          col: null,
-          row: null,
-        };
-        this.neighborMap = this.getNeighbourInfo(newVal);
-        if (this.simulation) {
-          this.simulation.stop();
-          this.restart(true);
+        // this.neighborHighligt(
+        //   this.selectedNode.id,
+        //   this.neighborMap.get(this.selectedNode.id),
+        //   "selected",
+        //   false,
+        //   "S0"
+        // );
+        // this.selectedNode = {
+        //   id: null,
+        //   state: null,
+        //   insightIndex: null,
+        //   "insight-list": null,
+        //   col: null,
+        //   row: null,
+        // };
+        //this.neighborMap = this.getNeighbourInfo(newVal);
+        const state = this.focusState;
+        const simulation = this.simulations.get(state);
+        if (simulation) {
+          simulation.stop();
+          this.restart(true, state, newVal);
         } else {
           // draw force graph
           this.drawGraph(newVal);
@@ -428,8 +465,9 @@ export default {
     selectedNode(newVal, oldVal) {
       if (newVal.id !== oldVal.id) {
         // get id array of neighbour
-        const neighborSet = this.neighborMap.get(newVal.id);
-        const oldNeighborSet = this.neighborMap.get(oldVal.id);
+        const neighborMap = this.neighborMaps.get(this.focusState);
+        const neighborSet = neighborMap.get(newVal.id);
+        const oldNeighborSet = neighborMap.get(oldVal.id);
         this.neighborHighligt(
           oldVal.id,
           oldNeighborSet,
@@ -461,6 +499,190 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    getFilterSubGraphData(relatedNodeIdMap) {
+      const filteredNodeData = new Map();
+      for (const [state, nodeIds] of relatedNodeIdMap) {
+        const nodeData = this.allStatesData.get(state).nodes;
+
+        const newNodeData = Array.from(nodeData.values()).filter((d) =>
+          nodeIds.includes(d.id)
+        );
+
+        const oldNodeData = filteredNodeData.get(state);
+        if (oldNodeData) {
+          oldNodeData.push(...newNodeData);
+        } else {
+          filteredNodeData.set(state, newNodeData);
+        }
+      }
+
+      const filteredLinkData = new Map();
+      for (const [state, nodeIds] of relatedNodeIdMap) {
+        const linkData = this.allStatesData.get(state).links;
+
+        filteredLinkData.set(
+          state,
+          Array.from(linkData.values()).filter(
+            (d) => nodeIds.includes(d.source) && nodeIds.includes(d.target)
+          )
+        );
+      }
+
+      const allStatesData = new Map();
+      Array.from(this.allStatesData.keys()).forEach((state) => {
+        if (state !== this.focusState) {
+          const nodes = filteredNodeData.get(state);
+          if (nodes) {
+            allStatesData.set(state, {
+              links: filteredLinkData.get(state),
+              nodes: filteredNodeData.get(state),
+            });
+          } else {
+            allStatesData.set(state, {
+              links: [],
+              nodes: [],
+            });
+          }
+        }
+      });
+      return allStatesData;
+    },
+
+    domUpate(nodes, links, nodeSingleG, linkSingleG, state) {
+      const that = this;
+      const showIndex = this.showIndexs.get(state);
+      const pinnedIndex = this.showIndexs.get(state);
+      const checkIndex = this.checkIndexs.get(state);
+      const simulation = this.simulations.get(state);
+
+      // rebind data of dom elements
+      let nodeG = null;
+      let linkG = null;
+      linkSingleG
+        .selectAll("g")
+        .data(links, (d) => {
+          if (typeof d.source === "object") {
+            return `${d.source.id}_${d.target.id}`;
+          } else {
+            return `${d.source}_${d.target}`;
+          }
+        })
+        .join(
+          (enter) => {
+            linkG = enter.append("g");
+            return linkG;
+          },
+          (update) => update,
+          (exit) => {
+            exit
+              .attr("opacity", 1)
+              .transition()
+              .duration(this.durationTime)
+              .attr("opacity", 0)
+              .remove();
+          }
+        );
+
+      nodeSingleG
+        .selectChildren("g")
+        .data(nodes, (d) => d.id)
+        .join(
+          (enter) => {
+            nodeG = enter.append("g");
+          },
+          (update) => {
+            // update all vega-lite graph
+            update.each(function (d) {
+              const g = d3.select(this);
+              const id = d.id;
+              const view = showIndex.get(id);
+              if (view) {
+                view.finalize();
+                g.selectAll(".vega-lite-graph").remove();
+                g.datum().view = null;
+                g.datum().img = null;
+                that.drawVegaLite(
+                  g,
+                  pinnedIndex.get(id) ? "svg" : "img",
+                  state
+                );
+              }
+            });
+
+            // update circle attr
+            update
+              .select(".circle")
+              .attr("r", function () {
+                return d3.select(this.parentNode).datum().circleR;
+              })
+              .attr("fill", function () {
+                const gData = d3.select(this.parentNode).datum();
+                return that.nodeTypeColor(
+                  gData["insight-list"][gData.insightIndex]["insight-category"]
+                );
+              });
+            // update icon
+            update
+              .select(".insight-icon")
+              .attr("href", function () {
+                return that.setInsightIcon(this);
+              })
+              .attr("class", "insight-icon")
+              .attr("width", function () {
+                return d3.select(this.parentNode).datum().iconSize;
+              })
+              .attr("height", function () {
+                return d3.select(this.parentNode).datum().iconSize;
+              })
+              .attr("x", function () {
+                return -d3.select(this.parentNode).datum().iconSize / 2;
+              })
+              .attr("y", function () {
+                return -d3.select(this.parentNode).datum().iconSize / 2;
+              });
+          },
+          (exit) => {
+            exit
+              .each((data) => {
+                const id = data.id;
+                if (showIndex.has(id)) {
+                  showIndex.delete(id);
+                }
+                if (pinnedIndex.has(id)) {
+                  pinnedIndex.delete(id);
+                  data.fx = null;
+                  data.fy = null;
+                }
+                if (checkIndex.has(id)) {
+                  checkIndex.delete(id);
+                }
+
+                data.showDetail = false;
+                data.pinned = false;
+                data.checked = false;
+                data.view = null;
+                data.img = null;
+                data.rect = null;
+              })
+              .attr("opacity", 1)
+              .transition()
+              .duration(this.durationTime)
+              .attr("opacity", 0)
+              .remove();
+          }
+        );
+
+      this.setDomAttributes(linkG, nodeG, state);
+      // rebind data of simulation
+      simulation.nodes(nodes);
+      simulation.force("link").links(links);
+
+      // reset alpha to reheat
+      simulation.alphaDecay(this.defaultBaseConfig.alphaDecay);
+      simulation.alpha(this.defaultBaseConfig.alpha);
+
+      simulation.restart();
+    },
     setTopScale(maxNodeNum) {
       const svgContainer = d3.select("#svg-container");
       this.containerWidth = parseInt(svgContainer.style("width"), 10);
@@ -520,12 +742,12 @@ export default {
       const that = this;
       const id = this.filterNode.id;
       const state = this.filterNode.state;
+      const showIndex = this.showIndexs.get(state);
+      const pinnedIndex = this.pinnedIndexs.get(state);
 
       // change index record of filterNode
       this.filterNode.insightIndex = selectedIndex;
 
-      console.log(state);
-      console.log(this.nodeIdMaps.get(state));
       const nodeData = this.nodeIdMaps.get(state).get(id);
       // change data record in force graph
       nodeData.insightIndex = selectedIndex;
@@ -545,16 +767,12 @@ export default {
         return that.setInsightIcon(this);
       });
       // change vega-lite graph
-      this.showIndexs.get(state).get(id).finalize();
+      showIndex.get(id).finalize();
 
       g.select(".vega-lite-graph").remove();
       g.datum().view = null;
       g.datum().img = null;
-      this.drawVegaLite(
-        g,
-        this.pinnedIndexs.get(state).get(id) ? "svg" : "img",
-        this.focusState
-      );
+      this.drawVegaLite(g, pinnedIndex.get(id) ? "svg" : "img", state);
     },
     createInsetFilter(svg) {
       let svgNamespace = "http://www.w3.org/2000/svg";
@@ -623,19 +841,15 @@ export default {
       let svgElement = document.querySelector("svg"); // replace this with the actual svg element
       svg.appendChild(filter);
     },
-    setDomAttributes(
-      linkG,
-      circleG,
-
-      state
-    ) {
+    setDomAttributes(linkG, circleG, state) {
       const that = this;
 
-      const selectedNodes =
-        state === this.focusState ? null : this.selectedNodes;
+      const selectedNodes = this.selectedNodes;
+      //  state === this.focusState ? null : this.selectedNodes;
       const simulation = this.simulations.get(state);
       const hoverIndex = this.hoverIndexs.get(state);
       const checkIndex = this.checkIndexs.get(state);
+      const pinnedIndex = this.pinnedIndexs.get(state);
       const neighborMap = this.neighborMaps.get(state);
 
       circleG
@@ -654,6 +868,7 @@ export default {
 
         ["#C69DE9", "#F7A69F", "#53C4B6"]
       );
+      this.nodeTypeColor = nodeTypeColor;
 
       // 画links
       const linkGroup = linkG
@@ -691,7 +906,7 @@ export default {
           circleMouseout(event, this, hoverIndex);
         })
         .on("click", function () {
-          circleClick(that, this, simulation, selectedNodes);
+          circleClick(that, this, simulation);
         });
 
       const containerGroup = circleG;
@@ -732,16 +947,10 @@ export default {
           rectMouseover(that, this, neighborMap, hoverIndex);
         })
         .on("mouseout", function () {
-          rectMouseout(
-            that,
-            this,
-            neighborMap,
-            hoverIndex,
-            that.selectedNode.id
-          );
+          rectMouseout(that, this, neighborMap, hoverIndex);
         })
         .on("click", function () {
-          rectClick(that, this, selectedNodes);
+          rectClick(that, this);
 
           // d3.select(this).classed("center-highlight", true);
         })
@@ -855,18 +1064,12 @@ export default {
           .attr("transform", "scale(1)");
       }
 
-      function circleClick(self, that, simulation, selectedNodes) {
+      function circleClick(self, that, simulation) {
         // ! 注意selectedNode,只能通过self访问，watch才能及时响应
         // 获取选择circle对应的container - g元素
         const g = d3.select(that.parentNode);
 
-        // selectedNode.id = g.datum().id;
-        // selectedNode.insightIndex = g.datum().insightIndex;
-        // selectedNode["insight-list"] = g.datum()["insight-list"];
-        // selectedNode.col = g.datum().col;
-        // selectedNode.row = g.datum().row;
-
-        if (!selectedNodes) {
+        if (state === self.focusState) {
           self.selectedNode = {
             id: g.datum().id,
             state: state,
@@ -875,6 +1078,7 @@ export default {
             col: g.datum().col,
             row: g.datum().row,
           };
+          selectedNodes.set(state, self.selectedNode);
         } else {
           selectedNodes.set(state, {
             id: g.datum().id,
@@ -917,7 +1121,7 @@ export default {
               g.classed("pinned", false);
               g.datum().fx = null;
               g.datum().fy = null;
-              if (!selectedNodes) {
+              if (state === self.focusState) {
                 self.selectedNode = {
                   id: null,
                   state: null,
@@ -926,6 +1130,7 @@ export default {
                   col: null,
                   row: null,
                 };
+                selectedNodes.set(state, self.selectedNode);
               } else {
                 selectedNodes.set(state, {
                   id: null,
@@ -1008,31 +1213,32 @@ export default {
           row: parentNode.datum().row,
         });
       }
-      function rectMouseout(self, that, neighborMap, hoverIndex, selectedId) {
+      function rectMouseout(self, that, neighborMap, hoverIndex) {
         const rect = d3.select(that);
         const parentNode = d3.select(that.parentNode);
         const id = parentNode.datum().id;
         const neighbor = neighborMap.get(id);
         self.neighborHighligt(id, neighbor, "hover", false, state);
         hoverIndex.clear();
-        if (id !== selectedId) {
+        if (id !== selectedNodes.get(state).id) {
           rect.classed("center-highlight", false);
           parentNode.select(".rect-title").classed("center-highlight", false);
         }
       }
-      function rectClick(self, that, selectedNodes) {
+      function rectClick(self, that) {
         // ! 注意:selectedNode
         // 获取对应的container - g元素
         const g = d3.select(that.parentNode);
-        if (!selectedNodes) {
+        if (state === self.focusState) {
           self.selectedNode = {
             id: g.datum().id,
             state: state,
             insightIndex: g.datum().insightIndex,
             "insight-list": g.datum()["insight-list"],
-            row: g.datum().row,
             col: g.datum().col,
+            row: g.datum().row,
           };
+          selectedNodes.set(state, self.selectedNode);
         } else {
           selectedNodes.set(state, {
             id: g.datum().id,
@@ -1096,14 +1302,14 @@ export default {
           g.select(".pin").classed("icon-pinned", true);
 
           that.drawVegaLite(g, "svg", state);
-          that.pinnedIndex.set(g.datum().id, g);
+          pinnedIndex.set(g.datum().id, g);
         } else {
           g.classed("pinned", false);
           g.select(".pin").classed("icon-pinned", false);
           g.datum().fx = null;
           g.datum().fy = null;
           that.drawVegaLite(g, "img", state);
-          that.pinnedIndex.delete(g.datum().id);
+          pinnedIndex.delete(g.datum().id);
         }
       }
 
@@ -1189,21 +1395,25 @@ export default {
     /* -------------------------------------------------------------------------- */
 
     simStop() {
-      this.simulation.stop();
+      this.simulations.get(this.focusState).stop();
     },
 
     // rebind data of dom element(nodes and links) and sim system
-    restart(newVal) {
+    restart(hasNewVal, state, newVal) {
       const that = this;
+      const nodeIdMap = this.nodeIdMaps.get(state);
+      const simulation = this.simulations.get(state);
 
-      // 获取原始绘画数据
-      const data = this.selectedData;
+      /* construct "new" links and nodes  -------------------------------------------------------------------------- */
 
-      const preNodes = this.simulation.nodes();
+      const data = newVal === null ? this.selectedData : newVal;
+
       const links = data.links.map((d) => ({ ...d }));
       let nodes = null;
-      if (!newVal) {
-        // simple restart
+      if (!hasNewVal) {
+        // 获取之前的数据
+        const preNodes = simulation.nodes();
+        // simple restart, 用旧数据进行更新
         nodes = preNodes.map(function (d) {
           delete d.x;
           delete d.y;
@@ -1212,6 +1422,33 @@ export default {
           return d;
         });
       } else {
+        // change neighbour highlight and neighbor info
+        const selectedNodes = this.selectedNodes;
+        const neighborMaps = this.neighborMaps;
+
+        const selectedId = selectedNodes.get(state).id;
+
+        this.neighborHighligt(
+          selectedId,
+          neighborMaps.get(state).get(selectedId),
+          "selected",
+          false,
+          "S0"
+        );
+        if (state === this.focusState) {
+          this.selectedNode = {
+            id: null,
+            state: null,
+            insightIndex: null,
+            "insight-list": null,
+            col: null,
+            row: null,
+          };
+          selectedNodes.set(state, this.selectedNode);
+        }
+        neighborMaps.set(state, this.getNeighbourInfo(newVal));
+
+        // filter of insight
         const statisticNodeIdMap =
           this.$store.getters["force/statisticNodeIdMap"];
         const scoreSelectionMap =
@@ -1219,190 +1456,69 @@ export default {
         // newly filtered value
         nodes = data.nodes.map((d) => {
           const id = d.id;
-          const oldNode = this.nodeIdMap.get(d.id);
-          const originInsightList = statisticNodeIdMap.get(id)["insight-list"];
-          const oldInsightIndexList = oldNode.insightIndexList;
-          const oldInsightIndex = oldInsightIndexList[oldNode.insightIndex];
-          const newInsightIndexList = [];
-          // filter insight-list data
-          oldNode["insight-list"] = originInsightList.filter(
-            (insight, index) => {
-              const type = insight["insight-type"];
-              const score = insight["insight-score"];
-              const selection = scoreSelectionMap.get(type).selection;
-              const selected = scoreSelectionMap.get(type).selected;
-              let result = false;
-              if (selected) {
-                if (
-                  selection === "all" ||
-                  (score >= selection[0] && score < selection[1])
-                ) {
-                  result = true;
-                  newInsightIndexList.push(index);
+          const oldNode = nodeIdMap.get(d.id);
+
+          if (state === this.focusState) {
+            // filter insight-list
+            const originInsightList =
+              statisticNodeIdMap.get(id)["insight-list"];
+            const oldInsightIndexList = oldNode.insightIndexList;
+            const oldInsightIndex = oldInsightIndexList[oldNode.insightIndex];
+            const newInsightIndexList = [];
+            // filter insight-list data
+            oldNode["insight-list"] = originInsightList.filter(
+              (insight, index) => {
+                const type = insight["insight-type"];
+                const score = insight["insight-score"];
+                const selection = scoreSelectionMap.get(type).selection;
+                const selected = scoreSelectionMap.get(type).selected;
+                let result = false;
+                if (selected) {
+                  if (
+                    selection === "all" ||
+                    (score >= selection[0] && score < selection[1])
+                  ) {
+                    result = true;
+                    newInsightIndexList.push(index);
+                  }
                 }
+                return result;
               }
-              return result;
-            }
-          );
-
-          const newInsightIndex = newInsightIndexList.findIndex(
-            (e) => e === oldInsightIndex
-          );
-
-          // reset insight index
-          oldNode.insightIndex = newInsightIndex >= 0 ? newInsightIndex : 0;
-          oldNode.insightIndexList = newInsightIndexList;
-
+            );
+            const newInsightIndex = newInsightIndexList.findIndex(
+              (e) => e === oldInsightIndex
+            );
+            // reset insight index
+            oldNode.insightIndex = newInsightIndex >= 0 ? newInsightIndex : 0;
+            oldNode.insightIndexList = newInsightIndexList;
+          }
           return oldNode;
         });
-        // recalculate the size of circle and icon
-        nodes.forEach((d) => {
-          const insightNum = d["insight-list"].length;
-          d.circleR = this.circleRScale(insightNum);
-          d.iconSize = this.insightSizeScale(insightNum);
-        });
       }
+
+      const circleRScale = this.circleRScales.get(state);
+      const insightSizeScale = this.insightSizeScales.get(state);
+      // recalculate the size of circle and icon
+      nodes.forEach((d) => {
+        const insightNum = d["insight-list"].length;
+        d.circleR = circleRScale(insightNum);
+        d.iconSize = insightSizeScale(insightNum);
+      });
 
       const nodeSingleG = d3
         .select("#svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
-        .select(".S0-state")
+        .select(`.${state}-state`)
         .select("g.node-group");
       const linkSingleG = d3
         .select("#svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
-        .select(".S0-state")
+        .select(`.${state}-state`)
         .select("g.link-group");
 
-      // rebind data of dom elements
-      let nodeG = null;
-      let linkG = null;
-      linkSingleG
-        .selectAll("g")
-        .data(links, (d) => {
-          if (typeof d.source === "object") {
-            return `${d.source.id}_${d.target.id}`;
-          } else {
-            return `${d.source}_${d.target}`;
-          }
-        })
-        .join(
-          (enter) => {
-            linkG = enter.append("g");
-            return linkG;
-          },
-          (update) => update,
-          (exit) => {
-            exit
-              .attr("opacity", 1)
-              .transition()
-              .duration(this.durationTime)
-              .attr("opacity", 0)
-              .remove();
-          }
-        );
-      nodeSingleG
-        .selectChildren("g")
-        .data(nodes, (d) => d.id)
-        .join(
-          (enter) => {
-            nodeG = enter.append("g");
-          },
-          (update) => {
-            // update vega-lite graph
-            update.each(function (d) {
-              const g = d3.select(this);
-              const id = d.id;
-              const view = that.showIndex.get(id);
-              if (view) {
-                view.finalize();
-                g.selectAll(".vega-lite-graph").remove();
-                g.datum().view = null;
-                g.datum().img = null;
-                that.drawVegaLite(
-                  g,
-                  that.pinnedIndex.get(id) ? "svg" : "img",
-                  that.focusState
-                );
-              }
-            });
-
-            // updata circle R
-            update.select(".circle").attr("r", function () {
-              return d3.select(this.parentNode).datum().circleR;
-            });
-            // update icon
-            update
-              .select(".insight-icon")
-              .attr("href", function () {
-                return that.setInsightIcon(this);
-              })
-              .attr("class", "insight-icon")
-              .attr("width", function () {
-                return d3.select(this.parentNode).datum().iconSize;
-              })
-              .attr("height", function () {
-                return d3.select(this.parentNode).datum().iconSize;
-              })
-              .attr("x", function () {
-                return -d3.select(this.parentNode).datum().iconSize / 2;
-              })
-              .attr("y", function () {
-                return -d3.select(this.parentNode).datum().iconSize / 2;
-              });
-          },
-          (exit) => {
-            exit
-              .each((data) => {
-                const id = data.id;
-                if (this.showIndex.has(id)) {
-                  this.showIndex.delete(id);
-                }
-                if (this.pinnedIndex.has(id)) {
-                  this.pinnedIndex.delete(id);
-                  data.fx = null;
-                  data.fy = null;
-                }
-                if (this.checkIndex.has(id)) {
-                  this.checkIndex.delete(id);
-                }
-
-                data.showDetail = false;
-                data.pinned = false;
-                data.checked = false;
-                data.view = null;
-                data.img = null;
-                data.rect = null;
-              })
-              .attr("opacity", 1)
-              .transition()
-              .duration(this.durationTime)
-              .attr("opacity", 0)
-              .remove();
-          }
-        );
-
-      this.setDomAttributes(
-        linkG,
-        nodeG,
-
-        this.focusState
-      );
-
-      // rebind data of simulation
-      this.simulation.nodes(nodes);
-      this.simulation.force("link").links(links);
-
-      // this.simulation.force("center").initialize(nodes);
-      // this.simulation.force("x").initialize(nodes);
-      // this.simulation.force("y").initialize(nodes);
-      // reset alpha to reheat
-      this.simulation.alphaDecay(this.defaultBaseConfig.alphaDecay);
-      this.simulation.alpha(this.defaultBaseConfig.alpha);
-
-      this.simulation.restart();
+      this.domUpate(nodes, links, nodeSingleG, linkSingleG, state);
     },
 
     /* -------------------------------------------------------------------------- */
@@ -1701,11 +1817,20 @@ export default {
     // initialization of focus graph, create DOM elements and sim system
     drawGraph(newVal) {
       const that = this;
+
+      const neighborMap = this.getNeighbourInfo(newVal);
+
       this.showIndexs.set(this.focusState, this.showIndex);
       this.hoverIndexs.set(this.focusState, this.hoverIndex);
       this.checkIndexs.set(this.focusState, this.checkIndex);
+      this.selectedNodes.set(this.focusState, this.selectedNode);
       this.pinnedIndexs.set(this.focusState, this.pinnedIndex);
-      this.neighborMaps.set(this.focusState, this.neighborMap);
+      this.neighborMaps.set(this.focusState, neighborMap);
+
+      const showIndex = this.showIndex;
+      const hoverIndex = this.hoverIndex;
+      const checkIndex = this.checkIndex;
+      const pinnedIndex = this.pinnedIndex;
 
       // 获取绘画数据
       const data = newVal;
@@ -1728,14 +1853,16 @@ export default {
         )
         .base(2);
 
-      this.circleRScale = circleRScale;
-      this.insightSizeScale = insightSizeScale;
+      this.circleRScales.set(this.focusState, circleRScale);
+      this.insightSizeScales.set(this.focusState, insightSizeScale);
 
       // 加入更多属性，控制vega-lite图的显示
       const nodes = data.nodes.map((d) => {
         const insightNum = d["insight-list"].length;
         return {
           ...d,
+          insightIndex: 0,
+          insightIndexList: [...Array(insightNum).keys()],
           circleR: circleRScale(insightNum),
           iconSize: insightSizeScale(insightNum),
           showDetail: false,
@@ -1750,7 +1877,7 @@ export default {
       nodes.forEach((node) => {
         nodeIdMap.set(node.id, node);
       });
-      this.nodeIdMap = nodeIdMap;
+
       this.nodeIdMaps.set(this.focusState, nodeIdMap);
       // 选择svg container
       const svgContainer = d3.select("#svg-container");
@@ -1830,15 +1957,15 @@ export default {
 
       /* -------------------------------------------------------------------------- */
 
-      this.simulation = this.createForceSimulation(
+      const simulation = this.createForceSimulation(
         nodes,
         links,
         ticked,
-        this.neighborMap,
-        this.showIndex,
+        neighborMap,
+        showIndex,
         boundaryR
       );
-      this.simulations.set(this.focusState, this.simulation);
+      this.simulations.set(this.focusState, simulation);
 
       this.setDomAttributes(linkG, circleG, this.focusState);
       // 每次迭代回调函数，更新结点位置
@@ -1956,12 +2083,16 @@ export default {
           [this.insightIconSize, this.insightIconSize * 2]
         )
         .base(2);
+      this.circleRScales.set(state, circleRScale);
+      this.insightSizeScales.set(state, insightSizeScale);
       // 创建内部nodes和links数据
-      const links = data.links.map((d) => ({ ...d }));
-      const nodes = data.nodes.map((d) => {
+      let links = data.links.map((d) => ({ ...d }));
+      let nodes = data.nodes.map((d) => {
         const insightNum = d["insight-list"].length;
         return {
           ...d,
+          insightIndex: 0,
+          insightIndexList: [...Array(insightNum).keys()],
           circleR: circleRScale(insightNum),
           iconSize: insightSizeScale(insightNum),
           showDetail: false,
@@ -1982,6 +2113,7 @@ export default {
       const showIndex = new Map();
       const hoverIndex = new Map();
       const checkIndex = new Map();
+      const pinnedIndex = new Map();
       const selectedNode = {
         id: null,
         state: null,
@@ -1990,14 +2122,13 @@ export default {
         col: null,
         row: null,
       };
-      const pinnedIndex = new Map();
+      const neighborMap = this.getNeighbourInfo(data);
 
       this.showIndexs.set(state, showIndex);
       this.hoverIndexs.set(state, hoverIndex);
       this.checkIndexs.set(state, checkIndex);
       this.selectedNodes.set(state, selectedNode);
       this.pinnedIndexs.set(state, pinnedIndex);
-      const neighborMap = this.getNeighbourInfo(data);
       this.neighborMaps.set(state, neighborMap);
 
       // 选择svg container
@@ -2038,6 +2169,11 @@ export default {
         .attr("height", boundary[3])
         .attr("stroke", "#555")
         .attr("fill", "#fff");
+
+      /* -------------------------------------------------------------------------- */
+      // clear nodes and links data
+      nodes = [];
+      links = [];
 
       //local force data binding
       const linkG = svg
@@ -2179,12 +2315,6 @@ export default {
           const focusNodes = data.nodes;
           const focusLinks = data.links;
 
-          // 增加insight-index属性
-          focusNodes.forEach((d) => {
-            d.insightIndex = 0;
-
-            d.insightIndexList = [...Array(d["insight-list"].length).keys()];
-          });
           const statisticNodeIdMap = new Map();
 
           focusNodes.forEach((d) => {
@@ -2210,12 +2340,6 @@ export default {
           const subNodes = data.nodes;
           const subLinks = data.links;
 
-          // 增加insight-index属性
-          subNodes.forEach((d) => {
-            d.insightIndex = 0;
-
-            d.insightIndexList = [...Array(d["insight-list"].length).keys()];
-          });
           this.drawSubGraph({
             state: state,
             data: {

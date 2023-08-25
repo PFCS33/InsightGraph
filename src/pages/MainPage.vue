@@ -102,7 +102,11 @@ export default {
       this.$refs.forceGraph.simStop();
     },
     restart() {
-      this.$refs.forceGraph.restart(false);
+      this.$refs.forceGraph.restart(
+        false,
+        this.$refs.forceGraph.focusState,
+        null
+      );
     },
     toggleEditMode() {
       this.animationDone = false;

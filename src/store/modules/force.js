@@ -9,6 +9,7 @@ export default {
       statisticNodeIdMap: null,
       scoreSelectionMap: null,
       allStatesData: null,
+      stateLinksMap: null,
     };
   },
   getters: {
@@ -33,6 +34,9 @@ export default {
     allStatesData(state) {
       return state.allStatesData;
     },
+    stateLinksMap(state) {
+      return state.stateLinksMap;
+    },
   },
   mutations: {
     setTotalData(state, payload) {
@@ -55,6 +59,9 @@ export default {
     },
     setAllStatesData(state, payload) {
       state.allStatesData = payload;
+    },
+    setAllStateLinksMap(state, payload) {
+      state.stateLinksMap = payload;
     },
   },
   actions: {
@@ -147,26 +154,13 @@ export default {
       const file = "test_data/result_0817.json";
       const path = `data/${file}`;
       d3.json(path).then(function (data) {
+        // get table data
         const tableData = data.table;
         context.dispatch("table/loadHeadData", tableData, { root: true });
 
-        // 获取不同state的对应的links和nodesmap
+        // 获取不同state的对应的links和nodes map
         const allStatesNodes = d3.group(data.graph.nodes, (d) => d.state);
-        const allStatesLinks = new Map();
-        Array.from(allStatesNodes.keys()).forEach((state) =>
-          allStatesLinks.set(state, [])
-        );
-        data.graph.links.forEach((link) => {
-          for (let [state, nodes] of allStatesNodes.entries()) {
-            if (
-              nodes.find((d) => d.id === link.source) &&
-              nodes.find((d) => d.id === link.target)
-            ) {
-              allStatesLinks.get(state).push(link);
-              break;
-            }
-          }
-        });
+        const allStatesLinks = getLinksByNodes(allStatesNodes);
         const allStatesData = new Map();
 
         Array.from(allStatesNodes.keys()).forEach((state) => {
@@ -177,7 +171,19 @@ export default {
         });
 
         context.commit("setAllStatesData", allStatesData);
+        const stateLinksMap = new Map();
+        const stateLinks = data["state_links"];
 
+        Object.keys(stateLinks).forEach((nodeId) => {
+          const stateObj = stateLinks[nodeId];
+          const stateMaps = new Map();
+          Object.keys(stateObj).forEach((state) => {
+            stateMaps.set(state, stateObj[state]);
+          });
+          stateLinksMap.set(nodeId, stateMaps);
+        });
+
+        context.commit("setAllStateLinksMap", stateLinksMap);
         // // set focus data
         // const focusNodes = allStatesData.get("S0").nodes;
         // const focusLinks = allStatesData.get("S0").links;
@@ -199,6 +205,24 @@ export default {
         //   data: focusNodes,
         //   firstFlag: true,
         // });
+        function getLinksByNodes(allNodes) {
+          const allStatesLinks = new Map();
+          Array.from(allNodes.keys()).forEach((state) =>
+            allStatesLinks.set(state, [])
+          );
+          data.graph.links.forEach((link) => {
+            for (let [state, nodes] of allNodes.entries()) {
+              if (
+                nodes.find((d) => d.id === link.source) &&
+                nodes.find((d) => d.id === link.target)
+              ) {
+                allStatesLinks.get(state).push(link);
+                break;
+              }
+            }
+          });
+          return allStatesLinks;
+        }
       });
     },
   },
