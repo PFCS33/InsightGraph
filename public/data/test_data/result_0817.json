@@ -7147,17 +7147,20 @@
   },
   "state_links": {
     "_-2013_": {
+      "S3": ["_Japan-2013_", "_Other-2013_"]
+    },
+    "_-2016_": {
       "S1": [
         "_-2019_",
         "_PlayStation Vita (PSV)-_",
-        "_PlayStation Vita (PSV)_Sony-_",
+        "_PlayStation Vita (PSV)_Sony-_"
+      ],
+      "S2": [
+        "_Europe_Microsoft-_",
+        "_Other_Nintendo-_",
         "_Europe_Microsoft-_",
         "_Other_Nintendo-_"
       ],
-      "S3": ["_Japan-2013_", "_Other-2013_"],
-      "S2": ["_Europe_Microsoft-_", "_Other_Nintendo-_"]
-    },
-    "_-2016_": {
       "S3": ["_Europe-2016_", "_North America-2016_", "_Other-2016_"]
     },
     "_-2017_": {

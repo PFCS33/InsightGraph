@@ -326,8 +326,10 @@ export default {
     showIndex: {
       deep: true,
       handler(newVal, oldVal) {
-        console.log(1);
-        // get node map
+        // global links
+        const globalBundleData = [];
+
+        // get node map (key: state)
         const relatedNodeIdMap = new Map();
         for (let showId of newVal.keys()) {
           const stateMap = this.stateLinksMap.get(showId);
@@ -344,17 +346,29 @@ export default {
 
                 relatedNodeIdMap.set(state, newNodeIds);
               }
+              nodeIds.forEach((targetId) => {
+                // console.log(
+                //   state,
+                //   targetId,
+                //   this.nodeIdMaps.get(state).get(targetId)
+                // );
+                globalBundleData.push({
+                  source: this.nodeIdMaps.get(this.focusState).get(showId),
+                  target: this.nodeIdMaps.get(state).get(targetId),
+                });
+              });
             }
           }
         }
+
         // get node Data
         const filteredAllStateData =
           this.getFilterSubGraphData(relatedNodeIdMap);
 
-        //console.log(filteredAllStateData);
         Array.from(filteredAllStateData.keys()).forEach((state) => {
           this.restart(true, state, filteredAllStateData.get(state));
         });
+        this.updateGlobalBundle(globalBundleData);
       },
     },
     allStatesData: {
@@ -499,6 +513,39 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    updateGlobalBundle(globalBundleData) {
+      // this.globalSimulation.stop();
+      const bundleG = d3
+        .select("#svg-container")
+        .select("#total-svg")
+        .select("g.bundle-group");
+      bundleG
+        .selectAll("line")
+        .data(globalBundleData)
+        .join(
+          (enter) => {
+            enter
+              .append("line")
+              .attr("stroke", "#ccc")
+              .attr("stroke-opacity", 0.6);
+          },
+          (update) => update,
+          (exit) => {
+            exit
+              .attr("opacity", 1)
+              .transition()
+              .duration(this.durationTime)
+              .attr("opacity", 0)
+              .remove();
+          }
+        );
+
+      // this.globalSimulation.alphaDecay(this.defaultBaseConfig.alphaDecay);
+      // this.globalSimulation.alpha(this.defaultBaseConfig.alpha);
+
+      // this.globalSimulation.restart();
+    },
+
     getFilterSubGraphData(relatedNodeIdMap) {
       const filteredNodeData = new Map();
       for (const [state, nodeIds] of relatedNodeIdMap) {
@@ -1258,7 +1305,7 @@ export default {
       }
       // 拖动开始时，重新加热迭代过程，并且修正被拖动点的fx,fy
       function dragstarted(event) {
-        if (!event.active)
+        if (!event.active) {
           simulation
             .alphaTarget(
               +that.defaultBaseConfig.alphaTarget + 0.3 > 1
@@ -1266,6 +1313,14 @@ export default {
                 : +that.defaultBaseConfig.alphaTarget + 0.3
             )
             .restart();
+          that.globalSimulation
+            .alphaTarget(
+              +that.defaultBaseConfig.alphaTarget + 0.3 > 1
+                ? 1
+                : +that.defaultBaseConfig.alphaTarget + 0.3
+            )
+            .restart();
+        }
 
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
@@ -1280,8 +1335,11 @@ export default {
 
       // 拖动结束，降温
       function dragended(event) {
-        if (!event.active)
+        if (!event.active) {
           simulation.alphaTarget(that.defaultBaseConfig.alphaTarget);
+
+          that.globalSimulation.alphaTarget(that.defaultBaseConfig.alphaTarget);
+        }
 
         if (event.subject.pinned) {
           event.subject.fx = event.subject.x;
@@ -2261,6 +2319,7 @@ export default {
       const svgData = Array.from(newVal.entries()).map((stateInfo) => ({
         id: stateInfo[0],
         nodeNum: stateInfo[1].nodes.length,
+        inner: false,
       }));
 
       const svgLinks = Array.from(newVal.keys()).map((state) => ({
@@ -2283,13 +2342,12 @@ export default {
       // 添加top g，用于global zoom
       const linkGTop = svgTop.append("g").attr("class", "link-group");
       const nodeGTop = svgTop.append("g").attr("class", "node-group");
-
-      const groupsTop = svgTop.selectChildren("g");
+      const bundleGTop = svgTop.append("g").attr("class", "bundle-group");
+      const groupsTop = svgTop.selectChildren("g.link-group,g.node-group");
 
       // 清除之前的子svg
       groupsTop.selectAll("*").remove();
       // 绑定顶层svg与links数据到g中
-
       const svgGroups = nodeGTop
         .selectChildren("svg")
         .data(svgData)
@@ -2367,11 +2425,6 @@ export default {
         });
       svgTop.call(zoomTop);
 
-      function zoomedTop(event) {
-        const transform = event.transform;
-        // 更新地理路径组的变换属性
-        groupsTop.attr("transform", transform);
-      }
       // 创建顶层svg drag
       const dragDefine = d3
         .drag()
@@ -2385,41 +2438,6 @@ export default {
         .on("end", dragendedSvg);
 
       svgGroups.call(dragDefine);
-
-      function dragstartedSvg(event) {
-        if (!event.active)
-          that.globalSimulation
-            .alphaTarget(
-              +that.defaultBaseConfig.alphaTarget + 0.3 > 1
-                ? 1
-                : +that.defaultBaseConfig.alphaTarget + 0.3
-            )
-            .restart();
-
-        event.subject.fx = event.subject.x;
-        event.subject.fy = event.subject.y;
-      }
-
-      // 拖动时，让点跟着鼠标走
-      function draggedSvg(event) {
-        // 更新节点位置
-        event.subject.fx = event.x;
-        event.subject.fy = event.y;
-      }
-
-      // 拖动结束，降温
-      function dragendedSvg(event) {
-        if (!event.active)
-          that.globalSimulation.alphaTarget(that.defaultBaseConfig.alphaTarget);
-
-        if (event.subject.pinned) {
-          event.subject.fx = event.subject.x;
-          event.subject.fy = event.subject.y;
-        } else {
-          event.subject.fx = null;
-          event.subject.fy = null;
-        }
-      }
 
       // 创建全局力道图布局
       const defaultBaseConfig = this.defaultBaseConfig;
@@ -2480,15 +2498,104 @@ export default {
 
       function globalTicked() {
         // 移动svg时，由于左上角是x，y坐标，要记得减去高和宽的偏移
-        svgGroups.attr("x", (d) => d.x - d.width / 2);
-        svgGroups.attr("y", (d) => d.y - d.height / 2);
-        linkGroups
+        nodeGTop.selectChildren("svg").attr("x", (d) => d.x - d.width / 2);
+        nodeGTop.selectChildren("svg").attr("y", (d) => d.y - d.height / 2);
+        linkGTop
+          .selectChildren("line")
           .attr("x1", (d) => d.source.x)
           .attr("y1", (d) => d.source.y)
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
+        bundleGTop
+          .selectChildren("line")
+          .attr("x1", (d) => {
+            return transformToParentSVGX(
+              d.source.x,
+              nodeGTop.select(`.${d.source.state}-state`).node()
+            );
+          })
+          .attr("y1", (d) => {
+            return transformToParentSVGY(
+              d.source.y,
+              nodeGTop.select(`.${d.source.state}-state`).node()
+            );
+          })
+          .attr("x2", (d) => {
+            return transformToParentSVGX(
+              d.target.x,
+              nodeGTop.select(`.${d.target.state}-state`).node()
+            );
+          })
+          .attr("y2", (d) => {
+            return transformToParentSVGY(
+              d.target.y,
+              nodeGTop.select(`.${d.target.state}-state`).node()
+            );
+          });
+      }
+      function zoomedTop(event) {
+        const transform = event.transform;
+        // 更新地理路径组的变换属性
+        groupsTop.attr("transform", transform);
+        that.globalSimulation.alpha(that.defaultBaseConfig.alpha);
+        that.globalSimulation.restart();
+      }
+      function dragstartedSvg(event) {
+        if (!event.active)
+          that.globalSimulation
+            .alphaTarget(
+              +that.defaultBaseConfig.alphaTarget + 0.3 > 1
+                ? 1
+                : +that.defaultBaseConfig.alphaTarget + 0.3
+            )
+            .restart();
+
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+      }
+
+      // 拖动时，让点跟着鼠标走
+      function draggedSvg(event) {
+        // 更新节点位置
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+      }
+
+      // 拖动结束，降温
+      function dragendedSvg(event) {
+        if (!event.active)
+          that.globalSimulation.alphaTarget(that.defaultBaseConfig.alphaTarget);
+
+        if (event.subject.pinned) {
+          event.subject.fx = event.subject.x;
+          event.subject.fy = event.subject.y;
+        } else {
+          event.subject.fx = null;
+          event.subject.fy = null;
+        }
+      }
+
+      function transformToParentSVGX(x, childSVGElement) {
+        let point = childSVGElement.createSVGPoint();
+        point.x = x;
+        point.y = 0;
+
+        let transformedPoint = point.matrixTransform(childSVGElement.getCTM());
+
+        return transformedPoint.x;
+      }
+
+      function transformToParentSVGY(y, childSVGElement) {
+        let point = childSVGElement.ownerSVGElement.createSVGPoint();
+        point.x = 0;
+        point.y = y;
+
+        let transformedPoint = point.matrixTransform(childSVGElement.getCTM());
+
+        return transformedPoint.y;
       }
     },
+
     // force function
     createForceSimulation(
       nodes,
