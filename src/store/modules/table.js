@@ -55,6 +55,7 @@ export default {
       let result = new Map();
       const data = payload.data;
       const mode = payload.mode;
+
       if (data) {
         for (let [key, value] of data.entries()) {
           const rowName = value.row;

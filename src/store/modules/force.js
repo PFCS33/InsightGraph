@@ -160,7 +160,10 @@ export default {
 
         // 获取不同state的对应的links和nodes map
         const allStatesNodes = d3.group(data.graph.nodes, (d) => d.state);
-        const allStatesLinks = getLinksByNodes(allStatesNodes);
+        const allStatesLinks = getLinksByNodes(
+          allStatesNodes,
+          data.graph.links
+        );
         const allStatesData = new Map();
 
         Array.from(allStatesNodes.keys()).forEach((state) => {
@@ -205,13 +208,13 @@ export default {
         //   data: focusNodes,
         //   firstFlag: true,
         // });
-        function getLinksByNodes(allNodes) {
+        function getLinksByNodes(filteredNodes, allLinks) {
           const allStatesLinks = new Map();
-          Array.from(allNodes.keys()).forEach((state) =>
+          Array.from(filteredNodes.keys()).forEach((state) =>
             allStatesLinks.set(state, [])
           );
-          data.graph.links.forEach((link) => {
-            for (let [state, nodes] of allNodes.entries()) {
+          allLinks.forEach((link) => {
+            for (let [state, nodes] of filteredNodes.entries()) {
               if (
                 nodes.find((d) => d.id === link.source) &&
                 nodes.find((d) => d.id === link.target)

@@ -115,6 +115,13 @@
               :height="insightIconSize"
             ></image>
           </symbol>
+          <symbol
+            id="defs-focus"
+            viewBox="0 0 1024 1024"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <image width="1024" height="1024" href="/pic/focus.png"></image>
+          </symbol>
         </defs>
       </svg>
     </div>
@@ -208,6 +215,7 @@ export default {
       insightSizeScales: new Map(),
       selectedIds: new Map(),
 
+      crossStatesHoveredNeighbor: null,
       globalSimulation: null,
 
       // color
@@ -252,7 +260,11 @@ export default {
       // (id, row, col)
       checkIndex: new Map(),
       // (id, row,col)
-      hoverIndex: new Map(),
+      hoverIndex: {
+        id: null,
+        row: null,
+        col: null,
+      },
       // id
       selectedNode: {
         id: null,
@@ -324,9 +336,21 @@ export default {
   },
 
   watch: {
+    crossStatesHoveredNeighbor(newVal, oldVal) {
+      if (newVal) {
+        Array.from(newVal.keys()).forEach((state) => {
+          this.crossStatesNeighborHighlight(newVal.get(state), true, state);
+        });
+      }
+      if (oldVal) {
+        Array.from(oldVal.keys()).forEach((state) => {
+          this.crossStatesNeighborHighlight(oldVal.get(state), false, state);
+        });
+      }
+    },
     showIndex: {
       deep: true,
-      handler(newVal, oldVal) {
+      handler(newVal) {
         // global links
         const globalBundleData = [];
         const linkGTop = d3
@@ -371,7 +395,26 @@ export default {
           this.getFilterSubGraphData(relatedNodeIdMap);
 
         Array.from(filteredAllStateData.keys()).forEach((state) => {
-          this.restart(true, state, filteredAllStateData.get(state));
+          const newData = filteredAllStateData.get(state);
+          const newWidth = this.svgRScale(newData.nodes.length) * 2;
+          this.restart(true, state, newData);
+          // update size of svg
+          const svg = d3
+            .select("#svg-container")
+            .select("#total-svg")
+            .select("g.node-group")
+            .select(`.${state}-state`);
+          svg
+            .transition()
+            .duration(this.durationTime)
+            .attr("width", newWidth)
+            .attr("height", newWidth);
+
+          svg.datum().width = newWidth;
+          svg.datum().height = newWidth;
+          svg.datum().nodeNum = newData.nodes.length;
+          // update link distance of svg
+          this.globalSimulation.force("link").initialize();
         });
         // update bundle line attr
         this.updateGlobalBundle(globalBundleData);
@@ -465,8 +508,15 @@ export default {
       handler(newVal) {
         this.$store.dispatch("table/convertCheckSelection", {
           mode: "hovered",
-          data: newVal,
+          data: newVal.id
+            ? new Map().set(newVal.id, {
+                col: newVal.col,
+                row: newVal.row,
+              })
+            : null,
         });
+
+        this.crossStatesHoveredNeighbor = this.stateLinksMap.get(newVal.id);
       },
       deep: true,
     },
@@ -1084,11 +1134,22 @@ export default {
 
       function circleMouseover(event, that, hoverIndex) {
         const d = d3.select(that.parentNode).datum();
-        hoverIndex.clear();
-        hoverIndex.set(d.id, {
+
+        // hoverIndex.id = d.id;
+        // hoverIndex.col = d.col;
+        // hoverIndex.row = d.row;
+        Object.assign(hoverIndex, {
+          id: d.id,
           col: d.col,
           row: d.row,
         });
+        // hoverIndex = {
+        //   ...{
+        //     id: d.id,
+        //     col: d.col,
+        //     row: d.row,
+        //   },
+        // };
         if (!d.showDetail) {
           d3.select(that)
             .attr("fill", function () {
@@ -1104,7 +1165,14 @@ export default {
       }
       function circleMouseout(event, that, hoverIndex) {
         const d = d3.select(that.parentNode).datum();
-        hoverIndex.clear();
+        // hoverIndex.id = null;
+        // hoverIndex.col = null;
+        // hoverIndex.row = null;
+        Object.assign(hoverIndex, {
+          id: null,
+          col: null,
+          row: null,
+        });
         if (!d.showDetail) {
           d3.select(that)
             .attr("transform", "scale(1)")
@@ -1264,8 +1332,9 @@ export default {
         self.neighborHighligt(id, neighbor, "hover", true, state);
         rect.classed("center-highlight", true);
         parentNode.select(".rect-title").classed("center-highlight", true);
-        hoverIndex.clear();
-        hoverIndex.set(id, {
+
+        Object.assign(hoverIndex, {
+          id: id,
           col: parentNode.datum().col,
           row: parentNode.datum().row,
         });
@@ -1276,7 +1345,11 @@ export default {
         const id = parentNode.datum().id;
         const neighbor = neighborMap.get(id);
         self.neighborHighligt(id, neighbor, "hover", false, state);
-        hoverIndex.clear();
+        Object.assign(hoverIndex, {
+          id: null,
+          col: null,
+          row: null,
+        });
         if (id !== selectedNodes.get(state).id) {
           rect.classed("center-highlight", false);
           parentNode.select(".rect-title").classed("center-highlight", false);
@@ -1433,6 +1506,23 @@ export default {
           .filter((d) => d.id === id)
           .selectChildren("circle, rect,.insight-icon")
           .classed("center-highlight", enable);
+      }
+    },
+    crossStatesNeighborHighlight(neighbor, enable, state) {
+      const className = "hover-highlight";
+      const nodeGroup = d3
+        .select("#svg-container")
+        .select("#total-svg")
+        .selectChild("g.node-group")
+        .select(`.${state}-state`)
+        .select(".node-group")
+        .selectChildren("g");
+
+      if (neighbor) {
+        nodeGroup
+          .filter((d) => neighbor.includes(d.id))
+          .selectChildren("circle, rect, .insight-icon")
+          .classed(className, enable);
       }
     },
 
@@ -1989,7 +2079,7 @@ export default {
       const originalWidth = boundaryR * 2;
       const originalHeight = originalWidth;
       const svg = gTop
-        .select("svg.S0-state")
+        .select(`svg.${this.focusState}-state`)
         .attr("width", originalWidth)
         .attr("height", originalWidth)
         .attr("viewBox", boundary);
@@ -2035,6 +2125,16 @@ export default {
         .selectAll("g")
         .data(nodes, (d) => d.id)
         .join("g");
+
+      const focusIcon = svg
+        .append("use")
+        .attr("class", "focus-icon")
+        .attr("href", "#defs-focus")
+        .attr("x", boundary[0] + 5)
+        .attr("y", boundary[1] + 5)
+        .attr("width", boundaryR / 5)
+        .attr("height", boundaryR / 5)
+        .attr("cursor", "pointer");
 
       /* -------------------------------------------------------------------------- */
 
@@ -2192,7 +2292,11 @@ export default {
       this.nodeIdMaps.set(state, nodeIdMap);
 
       const showIndex = new Map();
-      const hoverIndex = new Map();
+      const hoverIndex = {
+        id: null,
+        col: null,
+        row: null,
+      };
       const checkIndex = new Map();
       const pinnedIndex = new Map();
       const selectedNode = {
@@ -2277,6 +2381,20 @@ export default {
         .data(nodes, (d) => d.id)
         .join("g");
 
+      const focusIcon = svg
+        .append("use")
+        .attr("class", "focus-icon")
+        .attr("href", "#defs-focus")
+        .attr("x", boundary[0] + 5)
+        .attr("y", boundary[1] + 5)
+        .attr("width", boundaryR / 2)
+        .attr("height", boundaryR / 2)
+        .attr("cursor", "pointer")
+
+        .on("click", function () {
+          const state = d3.select(this.parentNode).datum().id;
+          console.log(state);
+        });
       //力导向系统创建;
       const simulation = this.createForceSimulation(
         nodes,
@@ -2480,7 +2598,6 @@ export default {
             .distance((d) => {
               const nodeNumS = d.source.nodeNum;
               const nodeNumT = d.target.nodeNum;
-
               return (
                 this.linkDistanceScale(nodeNumS) +
                 this.linkDistanceScale(nodeNumT)
