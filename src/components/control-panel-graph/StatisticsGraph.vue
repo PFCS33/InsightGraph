@@ -483,7 +483,7 @@ export default {
 
             .attr("class", "x-axis")
             .attr("transform", `translate(0,${subHeight - marginBottom})`)
-            .call(d3.axisBottom(x).ticks(5).tickSizeOuter(0).tickSize(4))
+            .call(d3.axisBottom(x).tickValues(all_ticks).tickSizeInner(3))
             .call((g) => g.attr("font-size", "0.8rem"));
         });
 

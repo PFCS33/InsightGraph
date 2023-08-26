@@ -202,7 +202,7 @@ export default {
       containerWidth: null,
       containerHeight: null,
       // mutiple states
-      focusState: "S0",
+      focusState: "S1",
       selectedNodes: new Map(),
       checkIndexs: new Map(),
       hoverIndexs: new Map(),
@@ -350,75 +350,7 @@ export default {
     },
     showIndex: {
       deep: true,
-      handler(newVal) {
-        // global links
-        const globalBundleData = [];
-        const linkGTop = d3
-          .select("#svg-container")
-          .select("#total-svg")
-          .select("g.link-group");
-
-        // get node map (key: state)
-        const relatedNodeIdMap = new Map();
-        for (let showId of newVal.keys()) {
-          const stateMap = this.stateLinksMap.get(showId);
-
-          if (stateMap) {
-            for (let [state, nodeIds] of stateMap.entries()) {
-              const singleStateIds = relatedNodeIdMap.get(state);
-
-              if (singleStateIds) {
-                singleStateIds.push(...nodeIds);
-              } else {
-                const newNodeIds = [];
-                newNodeIds.push(...nodeIds);
-
-                relatedNodeIdMap.set(state, newNodeIds);
-              }
-              nodeIds.forEach((targetId) => {
-                const stateLineData = linkGTop
-                  .select(`line.${this.focusState}_${state}`)
-                  .datum();
-
-                globalBundleData.push({
-                  source: this.nodeIdMaps.get(this.focusState).get(showId),
-                  target: this.nodeIdMaps.get(state).get(targetId),
-                  middle: stateLineData,
-                });
-              });
-            }
-          }
-        }
-
-        // get node Data
-        const filteredAllStateData =
-          this.getFilterSubGraphData(relatedNodeIdMap);
-
-        Array.from(filteredAllStateData.keys()).forEach((state) => {
-          const newData = filteredAllStateData.get(state);
-          const newWidth = this.svgRScale(newData.nodes.length) * 2;
-          this.restart(true, state, newData);
-          // update size of svg
-          const svg = d3
-            .select("#svg-container")
-            .select("#total-svg")
-            .select("g.node-group")
-            .select(`.${state}-state`);
-          svg
-            .transition()
-            .duration(this.durationTime)
-            .attr("width", newWidth)
-            .attr("height", newWidth);
-
-          svg.datum().width = newWidth;
-          svg.datum().height = newWidth;
-          svg.datum().nodeNum = newData.nodes.length;
-          // update link distance of svg
-          this.globalSimulation.force("link").initialize();
-        });
-        // update bundle line attr
-        this.updateGlobalBundle(globalBundleData);
-      },
+      handler(newVal) {},
     },
     allStatesData: {
       // don't watch deep
@@ -501,6 +433,74 @@ export default {
           mode: "checked",
           data: newVal,
         });
+
+        // global links
+        const globalBundleData = [];
+        const linkGTop = d3
+          .select("#svg-container")
+          .select("#total-svg")
+          .select("g.link-group");
+
+        // get node map (key: state)
+        const relatedNodeIdMap = new Map();
+        for (let showId of newVal.keys()) {
+          const stateMap = this.stateLinksMap.get(showId);
+
+          if (stateMap) {
+            for (let [state, nodeIds] of stateMap.entries()) {
+              const singleStateIds = relatedNodeIdMap.get(state);
+
+              if (singleStateIds) {
+                singleStateIds.push(...nodeIds);
+              } else {
+                const newNodeIds = [];
+                newNodeIds.push(...nodeIds);
+
+                relatedNodeIdMap.set(state, newNodeIds);
+              }
+              nodeIds.forEach((targetId) => {
+                const stateLineData = linkGTop
+                  .select(`line.${this.focusState}_${state}`)
+                  .datum();
+
+                globalBundleData.push({
+                  source: this.nodeIdMaps.get(this.focusState).get(showId),
+                  target: this.nodeIdMaps.get(state).get(targetId),
+                  middle: stateLineData,
+                });
+              });
+            }
+          }
+        }
+
+        // get node Data
+        const filteredAllStateData =
+          this.getFilterSubGraphData(relatedNodeIdMap);
+
+        Array.from(filteredAllStateData.keys()).forEach((state) => {
+          const newData = filteredAllStateData.get(state);
+          const newWidth = this.svgRScale(newData.nodes.length) * 2;
+          this.restart(true, state, newData);
+          // update size of svg
+          const svg = d3
+            .select("#svg-container")
+            .select("#total-svg")
+            .select("g.node-group")
+            .select(`.${state}-state`);
+          svg
+            .transition()
+            .duration(this.durationTime)
+            .attr("width", newWidth)
+            .attr("height", newWidth);
+
+          svg.datum().width = newWidth;
+          svg.datum().height = newWidth;
+          svg.datum().nodeNum = newData.nodes.length;
+          // update link distance of svg
+          this.globalSimulation.force("link").initialize();
+        });
+        // update bundle line attr
+        this.updateGlobalBundle(globalBundleData);
       },
       deep: true,
     },
@@ -588,8 +588,8 @@ export default {
             enter
               .append("path")
               .attr("fill", "none")
-
-              .attr("stroke", "#ccc");
+              .attr("stroke", "#ccc")
+              .attr("stroke-opacity", "0.4");
           },
           (update) => update,
           (exit) => {
@@ -2353,7 +2353,22 @@ export default {
         .attr("width", boundary[2])
         .attr("height", boundary[3])
         .attr("stroke", "#555")
-        .attr("fill", "#fff");
+        .attr("fill", "#fff")
+        .on("dblclick", function () {
+          const svgData = d3.select(this.parentNode).datum();
+          svgData.pinned = !svgData.pinned;
+          if (svgData.pinned) {
+            svgData.fx = svgData.x;
+            svgData.fy = svgData.y;
+          } else {
+            svgData.fx = null;
+            svgData.fy = null;
+          }
+        })
+        .on("dblclick.zoom", function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        });
 
       /* -------------------------------------------------------------------------- */
       // clear nodes and links data

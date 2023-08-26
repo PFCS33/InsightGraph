@@ -91,10 +91,21 @@ export default {
       controlPanelMode: "base",
     };
   },
-  computed: {},
+  computed: {
+    loading() {
+      return this.$store.getters["force/loading"];
+    },
+
+    error() {
+      return this.$store.getters["force/error"];
+    },
+  },
   watch: {
-    selectedData() {
-      return this.$store.getters["force/selectedData"];
+    loading(newVal) {
+      console.log(newVal);
+    },
+    error(newVal) {
+      console.log(newVal);
     },
   },
   methods: {
