@@ -347,11 +347,6 @@ export default {
                 relatedNodeIdMap.set(state, newNodeIds);
               }
               nodeIds.forEach((targetId) => {
-                // console.log(
-                //   state,
-                //   targetId,
-                //   this.nodeIdMaps.get(state).get(targetId)
-                // );
                 globalBundleData.push({
                   source: this.nodeIdMaps.get(this.focusState).get(showId),
                   target: this.nodeIdMaps.get(state).get(targetId),
@@ -385,6 +380,24 @@ export default {
     },
     filterNode(newVal, oldVal) {
       if (newVal.id !== oldVal.id) {
+        const state = newVal.state;
+        const oldState = oldVal.state;
+        // get id array of neighbour
+        const neighborMap = this.neighborMaps.get(state);
+        const neighborSet = neighborMap.get(newVal.id);
+        if (state === oldState) {
+          const oldNeighborSet = neighborMap.get(oldVal.id);
+          this.neighborHighligt(
+            oldVal.id,
+            oldNeighborSet,
+            "selected",
+            false,
+            state
+          );
+        }
+
+        this.neighborHighligt(newVal.id, neighborSet, "selected", true, state);
+
         if (newVal.id) {
           if (newVal["insight-list"].length > 1) {
             if (this.hidePanelMode) {
@@ -478,18 +491,6 @@ export default {
 
     selectedNode(newVal, oldVal) {
       if (newVal.id !== oldVal.id) {
-        // get id array of neighbour
-        const neighborMap = this.neighborMaps.get(this.focusState);
-        const neighborSet = neighborMap.get(newVal.id);
-        const oldNeighborSet = neighborMap.get(oldVal.id);
-        this.neighborHighligt(
-          oldVal.id,
-          oldNeighborSet,
-          "selected",
-          false,
-          "S0"
-        );
-        this.neighborHighligt(newVal.id, neighborSet, "selected", true, "S0");
         this.filterNode = newVal;
         if (newVal.id) {
           this.$store.dispatch("table/convertCheckSelection", {
@@ -1171,7 +1172,7 @@ export default {
               if (state === self.focusState) {
                 self.selectedNode = {
                   id: null,
-                  state: null,
+                  state: state,
                   insightIndex: null,
                   "insight-list": null,
                   col: null,
@@ -1181,7 +1182,7 @@ export default {
               } else {
                 selectedNodes.set(state, {
                   id: null,
-                  state: null,
+                  state: state,
                   insightIndex: null,
                   "insight-list": null,
                   col: null,
@@ -1189,7 +1190,7 @@ export default {
                 });
                 self.filterNode = {
                   id: null,
-                  state: null,
+                  state: state,
                   insightIndex: null,
                   "insight-list": null,
                 };
@@ -1491,18 +1492,31 @@ export default {
           neighborMaps.get(state).get(selectedId),
           "selected",
           false,
-          "S0"
+          state
         );
         if (state === this.focusState) {
           this.selectedNode = {
             id: null,
-            state: null,
+            state: state,
             insightIndex: null,
             "insight-list": null,
             col: null,
             row: null,
           };
           selectedNodes.set(state, this.selectedNode);
+        } else {
+          selectedNodes.set(state, {
+            id: null,
+            state: state,
+            insightIndex: null,
+            "insight-list": null,
+          });
+          self.filterNode = {
+            id: null,
+            state: state,
+            insightIndex: null,
+            "insight-list": null,
+          };
         }
         neighborMaps.set(state, this.getNeighbourInfo(newVal));
 
@@ -2174,7 +2188,7 @@ export default {
       const pinnedIndex = new Map();
       const selectedNode = {
         id: null,
-        state: null,
+        state: state,
         insightIndex: null,
         "insight-list": null,
         col: null,
