@@ -328,6 +328,10 @@ export default {
       handler(newVal, oldVal) {
         // global links
         const globalBundleData = [];
+        const linkGTop = d3
+          .select("#svg-container")
+          .select("#total-svg")
+          .select("g.link-group");
 
         // get node map (key: state)
         const relatedNodeIdMap = new Map();
@@ -347,9 +351,14 @@ export default {
                 relatedNodeIdMap.set(state, newNodeIds);
               }
               nodeIds.forEach((targetId) => {
+                const stateLineData = linkGTop
+                  .select(`line.${this.focusState}_${state}`)
+                  .datum();
+
                 globalBundleData.push({
                   source: this.nodeIdMaps.get(this.focusState).get(showId),
                   target: this.nodeIdMaps.get(state).get(targetId),
+                  middle: stateLineData,
                 });
               });
             }
@@ -363,6 +372,7 @@ export default {
         Array.from(filteredAllStateData.keys()).forEach((state) => {
           this.restart(true, state, filteredAllStateData.get(state));
         });
+        // update bundle line attr
         this.updateGlobalBundle(globalBundleData);
       },
     },
@@ -515,20 +525,20 @@ export default {
   },
   methods: {
     updateGlobalBundle(globalBundleData) {
-      // this.globalSimulation.stop();
       const bundleG = d3
         .select("#svg-container")
         .select("#total-svg")
         .select("g.bundle-group");
       bundleG
-        .selectAll("line")
+        .selectAll("path")
         .data(globalBundleData)
         .join(
           (enter) => {
             enter
-              .append("line")
-              .attr("stroke", "#ccc")
-              .attr("stroke-opacity", 0.6);
+              .append("path")
+              .attr("fill", "none")
+
+              .attr("stroke", "#ccc");
           },
           (update) => update,
           (exit) => {
@@ -540,11 +550,6 @@ export default {
               .remove();
           }
         );
-
-      // this.globalSimulation.alphaDecay(this.defaultBaseConfig.alphaDecay);
-      // this.globalSimulation.alpha(this.defaultBaseConfig.alpha);
-
-      // this.globalSimulation.restart();
     },
 
     getFilterSubGraphData(relatedNodeIdMap) {
@@ -2378,7 +2383,11 @@ export default {
           }
         })
         .join("line")
+        .attr("class", (d) => {
+          return `${d.source}_${d.target}`;
+        })
         .attr("stroke", "none");
+      // .attr("stroke", "#555");
 
       // 创建子svg图
       for (let [state, data] of newVal) {
@@ -2510,6 +2519,12 @@ export default {
         .on("tick", globalTicked);
       this.globalSimulation = globalSimulation;
 
+      // create bundle generator
+      const lineGenerator = d3
+        .line()
+        .x((d) => d.x)
+        .y((d) => d.y)
+        .curve(d3.curveBundle.beta(1));
       function globalTicked() {
         // 移动svg时，由于左上角是x，y坐标，要记得减去高和宽的偏移
         nodeGTop.selectChildren("svg").attr("x", (d) => d.x - d.width / 2);
@@ -2520,32 +2535,56 @@ export default {
           .attr("y1", (d) => d.source.y)
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
-        bundleGTop
-          .selectChildren("line")
-          .attr("x1", (d) => {
-            return transformToParentSVGX(
-              d.source.x,
-              nodeGTop.select(`.${d.source.state}-state`).node()
-            );
-          })
-          .attr("y1", (d) => {
-            return transformToParentSVGY(
-              d.source.y,
-              nodeGTop.select(`.${d.source.state}-state`).node()
-            );
-          })
-          .attr("x2", (d) => {
-            return transformToParentSVGX(
-              d.target.x,
-              nodeGTop.select(`.${d.target.state}-state`).node()
-            );
-          })
-          .attr("y2", (d) => {
-            return transformToParentSVGY(
-              d.target.y,
-              nodeGTop.select(`.${d.target.state}-state`).node()
-            );
-          });
+
+        const zoomTransform = d3.zoomTransform(svgTop.node());
+        bundleGTop.selectChildren("path").attr("d", (d) => {
+          return lineGenerator([
+            {
+              x: transformToParentSVGX(
+                d.source.x,
+                nodeGTop.select(`.${d.source.state}-state`).node()
+              ),
+              y: transformToParentSVGY(
+                d.source.y,
+                nodeGTop.select(`.${d.source.state}-state`).node()
+              ),
+            },
+            {
+              x: zoomTransform.applyX(
+                ((d.middle.source.x + d.middle.target.x) * 4) / 9
+              ),
+              y: zoomTransform.applyY(
+                ((d.middle.source.y + d.middle.target.y) * 4) / 9
+              ),
+            },
+            // {
+            //   x: zoomTransform.applyX(
+            //     (d.middle.source.x + d.middle.target.x) / 2
+            //   ),
+            //   y: zoomTransform.applyY(
+            //     (d.middle.source.y + d.middle.target.y) / 2
+            //   ),
+            // },
+            {
+              x: zoomTransform.applyX(
+                ((d.middle.source.x + d.middle.target.x) * 2) / 3
+              ),
+              y: zoomTransform.applyY(
+                ((d.middle.source.y + d.middle.target.y) * 2) / 3
+              ),
+            },
+            {
+              x: transformToParentSVGX(
+                d.target.x,
+                nodeGTop.select(`.${d.target.state}-state`).node()
+              ),
+              y: transformToParentSVGY(
+                d.target.y,
+                nodeGTop.select(`.${d.target.state}-state`).node()
+              ),
+            },
+          ]);
+        });
       }
       function zoomedTop(event) {
         const transform = event.transform;
@@ -2605,7 +2644,6 @@ export default {
         point.y = y;
 
         let transformedPoint = point.matrixTransform(childSVGElement.getCTM());
-
         return transformedPoint.y;
       }
     },
