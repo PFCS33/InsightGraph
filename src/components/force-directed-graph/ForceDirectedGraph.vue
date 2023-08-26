@@ -206,6 +206,7 @@ export default {
       nodeIdMaps: new Map(),
       circleRScales: new Map(),
       insightSizeScales: new Map(),
+      selectedIds: new Map(),
 
       globalSimulation: null,
 
@@ -389,23 +390,23 @@ export default {
       },
     },
     filterNode(newVal, oldVal) {
-      if (newVal.id !== oldVal.id) {
-        const state = newVal.state;
-        const oldState = oldVal.state;
+      const state = newVal.state;
+      const oldSelectedId = this.selectedIds.get(state);
+      if (oldSelectedId !== newVal.id) {
         // get id array of neighbour
         const neighborMap = this.neighborMaps.get(state);
         const neighborSet = neighborMap.get(newVal.id);
-        if (state === oldState) {
-          const oldNeighborSet = neighborMap.get(oldVal.id);
+        if (oldSelectedId) {
+          const oldNeighborSet = neighborMap.get(oldSelectedId);
           this.neighborHighligt(
-            oldVal.id,
+            oldSelectedId,
             oldNeighborSet,
             "selected",
             false,
             state
           );
         }
-
+        this.selectedIds.set(state, newVal.id);
         this.neighborHighligt(newVal.id, neighborSet, "selected", true, state);
 
         if (newVal.id) {
@@ -698,13 +699,16 @@ export default {
             exit
               .each((data) => {
                 const id = data.id;
-                if (showIndex.has(id)) {
-                  showIndex.delete(id);
-                }
+                // console.log(id, pinnedIndex);
+                // console.log(pinnedIndex.has(id));
                 if (pinnedIndex.has(id)) {
+                  console.log(11111);
                   pinnedIndex.delete(id);
                   data.fx = null;
                   data.fy = null;
+                }
+                if (showIndex.has(id)) {
+                  showIndex.delete(id);
                 }
                 if (checkIndex.has(id)) {
                   checkIndex.delete(id);
