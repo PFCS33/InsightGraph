@@ -64,6 +64,15 @@
               flood-opacity="0.5"
             />
           </filter>
+          <filter id="rect-shadow-focus">
+            <feDropShadow
+              dx="3"
+              dy="3"
+              stdDeviation="8"
+              flood-color="#545b77"
+              flood-opacity="0.7"
+            />
+          </filter>
           <symbol
             id="defs-dominance"
             :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
@@ -516,8 +525,9 @@ export default {
         Array.from(filteredAllStateData.keys()).forEach((state) => {
           const newData = filteredAllStateData.get(state);
           const newWidth = this.svgRScale(newData.nodes.length) * 2;
+          // redrow inner force graph
           this.restart(true, state, newData);
-          // update size of svg
+          // global force graph update
           const svg = d3
             .select("#svg-container")
             .select("#total-svg")
@@ -525,7 +535,7 @@ export default {
             .select(`.${state}-state`);
           svg
             .transition()
-            .duration(this.durationTime)
+            .duration(this.durationTime * 2)
             .attr("width", newWidth)
             .attr("height", newWidth);
 
@@ -2487,7 +2497,8 @@ export default {
         .selectChildren("svg")
         .data(svgData)
         .join("svg")
-        .attr("class", (d) => `${d.id}-state`);
+        .attr("class", (d) => `${d.id}-state`)
+        .attr("preserveAspectRatio", "xMinYMin meet");
 
       const linkGroups = linkGTop
         .selectAll("line")
@@ -3046,13 +3057,13 @@ export default {
   .node-group {
     .background-shape {
       fill: #fff;
-      filter:url(#rect-shadow)
-      // stroke: #545b77;
-      // stroke-width: 5;
+      filter: url(#rect-shadow);
     }
     .focus-svg {
       .background-shape {
-        stroke-width: 20;
+        stroke: #545b77;
+        stroke-opacity: 0.5;
+        stroke-width: 3px;
       }
     }
   }
