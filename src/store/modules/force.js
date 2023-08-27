@@ -167,10 +167,10 @@ export default {
     },
     // load test data
     loadData(context, _payload) {
-      const file = "test_data/result_0826_S1.json";
-      const url = `data/${file}`;
+      // const file = "test_data/result_0826_S1.json";
+      // const url = `data/${file}`;
       context.commit("setLoading", true);
-
+      const url = "http://127.0.0.1:4523/m1/3208600-0-default/getState/S1";
       fetch(url)
         .then((response) => {
           if (!response.ok) {
@@ -180,7 +180,10 @@ export default {
         })
         .then((data) => {
           context.commit("setLoading", false);
-          context.commit("setError", false);
+          context.commit("setError", {
+            state: false,
+            message: "",
+          });
           // get table data
           const tableData = data.table;
           context.dispatch("table/loadHeadData", tableData, { root: true });
@@ -235,7 +238,10 @@ export default {
           }
         })
         .catch((error) => {
-          context.commit("setError", true);
+          context.commit("setError", {
+            state: true,
+            message: error.message,
+          });
           context.commit("setLoading", false);
           console.error("error:", error.message);
         });

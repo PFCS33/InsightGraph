@@ -1,5 +1,9 @@
 <template>
-  <div class="container">
+  <div
+    class="container"
+    v-loading="loading"
+    element-loading-text="Computing..."
+  >
     <nav class="navBar">
       <div class="nav-title">NavBar</div>
       <BaseButton
@@ -105,7 +109,13 @@ export default {
       console.log(newVal);
     },
     error(newVal) {
-      console.log(newVal);
+      if (newVal.state) {
+        ElMessage.error(`Error: ${newVal.message}`);
+        setTimeout(() => ElMessage.error("Please reload again"), 500);
+      }
+      if (!newVal.state) {
+        ElMessage.success(`Request successful`);
+      }
     },
   },
   methods: {
@@ -323,5 +333,8 @@ export default {
   .el-tabs__header {
     height: 100%;
   }
+}
+.el-loading-mask {
+  --el-color-primary: #545b77;
 }
 </style>
