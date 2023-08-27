@@ -35,6 +35,35 @@
         style="width: 100%; height: 100%"
       >
         <defs>
+          <filter
+            id="inset-shadow"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
+            <feComponentTransfer in="SourceAlpha">
+              <feFuncA type="table" tableValues="1 0"></feFuncA>
+            </feComponentTransfer>
+            <feGaussianBlur stdDeviation="5"></feGaussianBlur>
+            <feOffset dx="2.5" dy="2.5" result="offsetblur"></feOffset>
+            <feFlood flood-color="steelblue" result="color"></feFlood>
+            <feComposite in2="offsetblur" operator="in"></feComposite>
+            <feComposite in2="SourceAlpha" operator="in"></feComposite>
+            <feMerge>
+              <feMergeNode in="SourceGraphic"></feMergeNode>
+              <feMergeNode></feMergeNode>
+            </feMerge>
+          </filter>
+          <filter id="rect-shadow">
+            <feDropShadow
+              dx="3"
+              dy="3"
+              stdDeviation="6"
+              flood-color="#545b77"
+              flood-opacity="0.5"
+            />
+          </filter>
           <symbol
             id="defs-dominance"
             :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
@@ -121,6 +150,13 @@
             xmlns="http://www.w3.org/2000/svg"
           >
             <image width="1024" height="1024" href="/pic/focus.png"></image>
+          </symbol>
+          <symbol
+            id="defs-amplify"
+            viewBox="0 0 1024 1024"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <image width="1024" height="1024" href="/pic/amplify.png"></image>
           </symbol>
         </defs>
       </svg>
@@ -881,73 +917,7 @@ export default {
       g.datum().img = null;
       this.drawVegaLite(g, pinnedIndex.get(id) ? "svg" : "img", state);
     },
-    createInsetFilter(svg) {
-      let svgNamespace = "http://www.w3.org/2000/svg";
 
-      let filter = document.createElementNS(svgNamespace, "filter");
-      filter.setAttribute("id", "inset-shadow");
-      filter.setAttribute("x", "-50%");
-      filter.setAttribute("y", "-50%");
-      filter.setAttribute("width", "200%");
-      filter.setAttribute("height", "200%");
-
-      let feComponentTransfer = document.createElementNS(
-        svgNamespace,
-        "feComponentTransfer"
-      );
-      feComponentTransfer.setAttribute("in", "SourceAlpha");
-
-      let feFuncA = document.createElementNS(svgNamespace, "feFuncA");
-      feFuncA.setAttribute("type", "table");
-      feFuncA.setAttribute("tableValues", "1 0");
-
-      feComponentTransfer.appendChild(feFuncA);
-
-      let feGaussianBlur = document.createElementNS(
-        svgNamespace,
-        "feGaussianBlur"
-      );
-      feGaussianBlur.setAttribute("stdDeviation", "5");
-
-      let feOffset = document.createElementNS(svgNamespace, "feOffset");
-      feOffset.setAttribute("dx", "2.5");
-      feOffset.setAttribute("dy", "2.5");
-      feOffset.setAttribute("result", "offsetblur");
-
-      let feFlood = document.createElementNS(svgNamespace, "feFlood");
-      feFlood.setAttribute("flood-color", "steelblue");
-      feFlood.setAttribute("result", "color");
-
-      let feComposite1 = document.createElementNS(svgNamespace, "feComposite");
-      feComposite1.setAttribute("in2", "offsetblur");
-      feComposite1.setAttribute("operator", "in");
-
-      let feComposite2 = document.createElementNS(svgNamespace, "feComposite");
-      feComposite2.setAttribute("in2", "SourceAlpha");
-      feComposite2.setAttribute("operator", "in");
-
-      let feMerge = document.createElementNS(svgNamespace, "feMerge");
-
-      let feMergeNode1 = document.createElementNS(svgNamespace, "feMergeNode");
-      feMergeNode1.setAttribute("in", "SourceGraphic");
-
-      let feMergeNode2 = document.createElementNS(svgNamespace, "feMergeNode");
-
-      feMerge.appendChild(feMergeNode1);
-      feMerge.appendChild(feMergeNode2);
-
-      filter.appendChild(feComponentTransfer);
-      filter.appendChild(feGaussianBlur);
-      filter.appendChild(feOffset);
-      filter.appendChild(feFlood);
-      filter.appendChild(feComposite1);
-      filter.appendChild(feComposite2);
-      filter.appendChild(feMerge);
-
-      // Append the filter to the SVG element
-      let svgElement = document.querySelector("svg"); // replace this with the actual svg element
-      svg.appendChild(filter);
-    },
     setDomAttributes(linkG, circleG, state) {
       const that = this;
 
@@ -2082,7 +2052,10 @@ export default {
         .select(`svg.${this.focusState}-state`)
         .attr("width", originalWidth)
         .attr("height", originalWidth)
-        .attr("viewBox", boundary);
+        .attr("viewBox", boundary)
+        .classed("focus-svg", true)
+        .attr("fill", "#fff")
+        .attr("overflow", "visible");
 
       svg.datum().width = originalWidth;
       svg.datum().height = originalHeight;
@@ -2090,20 +2063,27 @@ export default {
       svg.datum().fx = width * 0.5;
       svg.datum().fy = height * 0.5;
 
+      // // 创建圆角矩形的 clip-path
+      // svg
+      //   .append("defs")
+      //   .append("clipPath")
+      //   .attr("id", "rounded-rect-clip")
+      //   .append("rect")
+      //   .attr("x", boundary[0])
+      //   .attr("y", boundary[1])
+      //   .attr("width", boundary[2])
+      //   .attr("height", boundary[3])
+      //   .attr("rx", 10);
+      //   svg.style("clip-path", "url(#rounded-rect-clip)");
+
       const backgroundShape = svg
         .append("rect")
         .attr("class", "background-shape")
         .attr("x", boundary[0])
         .attr("y", boundary[1])
         .attr("width", boundary[2])
-        .attr("height", boundary[3])
-        // .attr("height", boundary[3])
-        .attr("stroke", "#555")
-        .attr("stroke-width", 10)
-        .attr("fill", "#fff");
-      // .style("background-color", "#000");
+        .attr("height", boundary[3]);
 
-      // this.createInsetFilter(svg.node());
       // this.createObserver(svg.node());
       //data binding
       const linkG = svg
@@ -2129,7 +2109,7 @@ export default {
       const focusIcon = svg
         .append("use")
         .attr("class", "focus-icon")
-        .attr("href", "#defs-focus")
+        .attr("href", "#defs-amplify")
         .attr("x", boundary[0] + 5)
         .attr("y", boundary[1] + 5)
         .attr("width", boundaryR / 5)
@@ -2339,7 +2319,8 @@ export default {
         .select(`svg.${state}-state`)
         .attr("width", originalWidth)
         .attr("height", originalHeight)
-        .attr("viewBox", boundary);
+        .attr("viewBox", boundary)
+        .attr("overflow", "visible");
 
       svg.datum().width = originalWidth;
       svg.datum().height = originalHeight;
@@ -2352,8 +2333,6 @@ export default {
         .attr("y", boundary[1])
         .attr("width", boundary[2])
         .attr("height", boundary[3])
-        .attr("stroke", "#555")
-        .attr("fill", "#fff")
         .on("dblclick", function () {
           const svgData = d3.select(this.parentNode).datum();
           svgData.pinned = !svgData.pinned;
@@ -2494,7 +2473,7 @@ export default {
       const svgTop = svgContainer
         .select("#total-svg")
         .attr("viewBox", [0, 0, width, height]);
-      this.createInsetFilter(svgTop.node());
+
       // 添加top g，用于global zoom
       const linkGTop = svgTop.append("g").attr("class", "link-group");
       const nodeGTop = svgTop.append("g").attr("class", "node-group");
@@ -2571,7 +2550,7 @@ export default {
       // 创建全局zoom
       const zoomTop = d3
         .zoom()
-        .scaleExtent([0.3, 8]) // 设置缩放的范围
+        .scaleExtent([0.1, 8]) // 设置缩放的范围
         .on("zoom", zoomedTop)
         .filter((event) => {
           return (
@@ -3062,6 +3041,21 @@ export default {
 <style lang="less">
 .normal-circle {
   stroke: none;
+}
+#total-svg {
+  .node-group {
+    .background-shape {
+      fill: #fff;
+      filter:url(#rect-shadow)
+      // stroke: #545b77;
+      // stroke-width: 5;
+    }
+    .focus-svg {
+      .background-shape {
+        stroke-width: 20;
+      }
+    }
+  }
 }
 
 .circle,

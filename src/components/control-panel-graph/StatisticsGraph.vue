@@ -364,7 +364,7 @@ export default {
             .attr("y", subHeight - sliderHeight)
             .attr("width", sliderWidth)
             .attr("height", sliderRectHeight)
-            .attr("fill", "#edd2ff")
+            .attr("fill", "#D5DAEC")
             .attr("stroke", "#fff");
 
           // 添加slider的背景线
@@ -434,8 +434,7 @@ export default {
           }
           // 直方图矩形框
           g.append("g")
-
-            .attr("fill", "#b67dc1")
+            .attr("fill", "#858eb5")
             .attr("class", "rect-group")
             .style("cursor", "pointer")
             .selectAll("rect")
@@ -982,7 +981,7 @@ export default {
 }
 </style>
 
-<style>
+<style lang="less">
 .barchart-hover-highlight {
   filter: brightness(110%);
 

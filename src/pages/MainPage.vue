@@ -139,8 +139,9 @@ export default {
 .container {
   height: 100%;
   width: 100%;
-  background-color: #fff;
-  /* background-color: #f8f8f8; */
+  /* background: linear-gradient(#fff, #f8f8f8); */
+  background-color: #fafafa;
+
   display: flex;
   flex-direction: column;
   gap: 0.4vw;

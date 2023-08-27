@@ -1,20 +1,27 @@
 <template>
   <div class="container">
-    <svg>
-      <use href="#defs-top2"></use>
+    <svg class="svg">
+      <defs>
+        <filter id="rect-shadow">
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="2"
+            flood-color="#545b77"
+            flood-opacity="0.8"
+          />
+        </filter>
+      </defs>
+      <rect
+        x="100"
+        y="100"
+        width="300"
+        height="300"
+        fill="#fff"
+        stroke="#D5DAEC"
+        filter="url(#rect-shadow)"
+      ></rect>
     </svg>
-    <defs>
-      <symbol
-        id="defs-top2"
-        :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
-      >
-        <image
-          href="/pic/top2.png"
-          :width="insightIconSize"
-          :height="insightIconSize"
-        ></image>
-      </symbol>
-    </defs>
   </div>
 </template>
 <script>
