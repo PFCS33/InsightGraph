@@ -105,16 +105,13 @@ export default {
     },
   },
   watch: {
-    loading(newVal) {
-      console.log(newVal);
-    },
     error(newVal) {
       if (newVal.state) {
         ElMessage.error(`Error: ${newVal.message}`);
         setTimeout(() => ElMessage.error("Please reload again"), 500);
       }
       if (!newVal.state) {
-        ElMessage.success(`Request successful`);
+        ElMessage.success(`Calculation complete`);
       }
     },
   },
@@ -141,7 +138,9 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch("force/loadData");
+    this.$store.dispatch("force/loadData", {
+      state: "S0",
+    });
   },
 };
 </script>

@@ -162,10 +162,14 @@
           </symbol>
           <symbol
             id="defs-amplify"
-            viewBox="0 0 1024 1024"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <image width="1024" height="1024" href="/pic/amplify.png"></image>
+            <image
+              :width="insightIconSize"
+              :height="insightIconSize"
+              href="/pic/amplify.png"
+            ></image>
           </symbol>
         </defs>
       </svg>
@@ -247,7 +251,7 @@ export default {
       containerWidth: null,
       containerHeight: null,
       // mutiple states
-      focusState: "S1",
+      focusState: "S0",
       selectedNodes: new Map(),
       checkIndexs: new Map(),
       hoverIndexs: new Map(),
@@ -381,6 +385,8 @@ export default {
   },
 
   watch: {
+    focusState(newVal) {},
+
     crossStatesHoveredNeighbor(newVal, oldVal) {
       if (newVal) {
         Array.from(newVal.keys()).forEach((state) => {
@@ -542,8 +548,16 @@ export default {
           svg.datum().width = newWidth;
           svg.datum().height = newWidth;
           svg.datum().nodeNum = newData.nodes.length;
+          console.log(1);
           // update link distance of svg
-          this.globalSimulation.force("link").initialize();
+          this.globalSimulation.force("link").distance((d) => {
+            const nodeNumS = d.source.nodeNum;
+            const nodeNumT = d.target.nodeNum;
+            return (
+              this.linkDistanceScale(nodeNumS) +
+              this.linkDistanceScale(nodeNumT)
+            );
+          });
         });
         // update bundle line attr
         this.updateGlobalBundle(globalBundleData);
@@ -846,7 +860,10 @@ export default {
           : this.containerWidth) / 2.5;
 
       this.svgRScale = d3.scaleLinear([0, maxNodeNum], [75, maxR]);
-      this.linkDistanceScale = d3.scaleLinear([0, maxNodeNum], [50, maxR * 2]);
+      this.linkDistanceScale = d3.scaleLinear(
+        [0, maxNodeNum],
+        [50, maxR * 1.5]
+      );
       this.chargeStrengthScale = d3.scaleLinear(
         [0, maxNodeNum],
         [-2000, -5000]
@@ -2116,7 +2133,7 @@ export default {
         .data(nodes, (d) => d.id)
         .join("g");
 
-      const focusIcon = svg
+      const AmplifyIcon = svg
         .append("use")
         .attr("class", "focus-icon")
         .attr("href", "#defs-amplify")
@@ -2124,10 +2141,37 @@ export default {
         .attr("y", boundary[1] + 5)
         .attr("width", boundaryR / 5)
         .attr("height", boundaryR / 5)
-        .attr("cursor", "pointer");
+        .attr("cursor", "pointer")
+        .on("click", function () {
+          const state = d3.select(this.parentNode).datum().id;
+          console.log(state);
+        });
 
+      const stateText = svg
+        .append("text")
+        .text(this.focusState)
+        .attr("font-size", boundaryR / 5)
+        .attr("font-weight", "bold")
+        .attr("text-anchor", "end")
+        .attr("dominant-baseline", "hanging")
+        .style("fill", "#aaa")
+        .attr("x", boundary[0] + boundary[2] - 5)
+        .attr("y", boundary[1] + 5);
       /* -------------------------------------------------------------------------- */
 
+      const oldBoundaryRect = [
+        boundary[0],
+        boundary[1],
+        boundary[2] + boundary[0],
+        boundary[3] + boundary[1],
+      ];
+      const boundaryRect = [
+        boundary[0],
+        boundary[1],
+        boundary[2] + boundary[0],
+        boundary[3] + boundary[1],
+      ];
+      const ticked = this.createTickFunction(svg, boundaryRect);
       const simulation = this.createForceSimulation(
         nodes,
         links,
@@ -2139,99 +2183,24 @@ export default {
       this.simulations.set(this.focusState, simulation);
 
       this.setDomAttributes(linkG, circleG, this.focusState);
-      // 每次迭代回调函数，更新结点位置
-      function ticked() {
-        // 只通过transform.translate 更新父元素g的位置
-        svg
-          .select(".node-group")
-          .selectChildren("g")
-          .style("transform", (d) => {
-            // 计算节点到圆心的距离
-            if (d.x < boundary[0]) {
-              d.x = boundary[0];
-            } else if (d.x > boundary[2] + boundary[0]) {
-              d.x = boundary[2] + boundary[0];
-            }
 
-            if (d.y < boundary[1]) {
-              d.y = boundary[1];
-            } else if (d.y > boundary[3] + boundary[1]) {
-              d.y = boundary[3] + boundary[1];
-            }
+      this.addZoomBehavior(
+        svg,
+        simulation,
+        backgroundShape,
+        boundaryRect,
+        oldBoundaryRect
+      );
+      // // initialize the default data
+      // this.defaultForceConfig.center.X =
+      //   this.defaultForceConfig.x.X =
+      //   this.defaultForceConfig.radial.X =
+      //     boundaryR;
 
-            return `translate(${d.x}px,${d.y}px)`;
-          });
-
-        svg
-          .select(".link-group")
-          .selectChildren("g")
-          .selectChildren(".network-line")
-          .attr("x1", function () {
-            const d = d3.select(this.parentNode).datum();
-
-            return d.source.x;
-          })
-          .attr("y1", function () {
-            const d = d3.select(this.parentNode).datum();
-            return d.source.y;
-          })
-          .attr("x2", function () {
-            const d = d3.select(this.parentNode).datum();
-            return d.target.x;
-          })
-          .attr("y2", function () {
-            const d = d3.select(this.parentNode).datum();
-            return d.target.y;
-          });
-
-        // svg
-        //   .select(".link-group")
-        //   .selectChildren("g")
-        //   .selectChildren("text")
-        //   .attr("x", function () {
-        //     const d = d3.select(this.parentNode).datum();
-        //     return (d.source.x + d.target.x) / 2;
-        //   })
-        //   .attr("y", function () {
-        //     const d = d3.select(this.parentNode).datum();
-        //     return (d.source.y + d.target.y) / 2;
-        //   });
-      }
-
-      // 设置整体zoom行为,只选择最顶层的2个g即可
-      const group = svg.selectChildren("g");
-
-      // 创建缩放函数
-      const zoom = d3
-        .zoom()
-        .scaleExtent([0.3, 8]) // 设置缩放的范围
-
-        .on("zoom", zoomed)
-        .filter((event) => {
-          return event.shiftKey && event.target === backgroundShape.node();
-        });
-
-      this.zoom = zoom;
-      // 仅将缩放行为应用到顶层元素
-      svg.call(zoom);
-      // 定义zoom的回调函数
-      function zoomed(event) {
-        const transform = event.transform;
-        // 更新地理路径组的变换属性
-        group.attr("transform", transform);
-      }
-
-      // initialize the default data
-
-      this.defaultForceConfig.center.X =
-        this.defaultForceConfig.x.X =
-        this.defaultForceConfig.radial.X =
-          boundaryR;
-
-      this.defaultForceConfig.center.Y =
-        this.defaultForceConfig.y.Y =
-        this.defaultForceConfig.radial.Y =
-          boundaryR;
+      // this.defaultForceConfig.center.Y =
+      //   this.defaultForceConfig.y.Y =
+      //   this.defaultForceConfig.radial.Y =
+      //     boundaryR;
     },
     drawSubGraph(graphInfo) {
       const that = this;
@@ -2394,11 +2363,38 @@ export default {
         .attr("width", boundaryR / 2)
         .attr("height", boundaryR / 2)
         .attr("cursor", "pointer")
-
         .on("click", function () {
           const state = d3.select(this.parentNode).datum().id;
-          console.log(state);
+          that.focusState = state;
+          that.$store.dispatch("force/loadData", {
+            state: state,
+          });
         });
+
+      const stateText = svg
+        .append("text")
+        .text(state)
+        .attr("font-size", boundaryR / 5)
+        .attr("font-weight", "bold")
+        .attr("text-anchor", "end")
+        .attr("dominant-baseline", "hanging")
+        .style("fill", "#aaa")
+        .attr("x", boundary[0] + boundary[2] - 5)
+        .attr("y", boundary[1] + 5);
+
+      const oldBoundaryRect = [
+        boundary[0],
+        boundary[1],
+        boundary[2] + boundary[0],
+        boundary[3] + boundary[1],
+      ];
+      const boundaryRect = [
+        boundary[0],
+        boundary[1],
+        boundary[2] + boundary[0],
+        boundary[3] + boundary[1],
+      ];
+      const ticked = this.createTickFunction(svg, boundaryRect);
       //力导向系统创建;
       const simulation = this.createForceSimulation(
         nodes,
@@ -2411,24 +2407,80 @@ export default {
       this.simulations.set(state, simulation);
 
       this.setDomAttributes(linkG, circleG, state);
+      this.addZoomBehavior(
+        svg,
+        simulation,
+        backgroundShape,
+        boundaryRect,
+        oldBoundaryRect
+      );
+    },
+    addZoomBehavior(
+      svg,
+      simulation,
+      backgroundShape,
+      boundaryRect,
+      oldBoundaryRect
+    ) {
+      const that = this;
+      // 设置整体zoom行为,只选择最顶层的2个g即可
+      const group = svg.selectChildren("g");
 
-      function ticked() {
+      // 创建缩放函数
+      const zoom = d3
+        .zoom()
+        .scaleExtent([0.3, 8]) // 设置缩放的范围
+
+        .on("zoom", zoomed)
+        .filter((event) => {
+          return event.shiftKey;
+        });
+
+      // 仅将缩放行为应用到顶层元素/
+      svg.call(zoom);
+      // 定义zoom的回调函数
+      function zoomed(event) {
+        const transform = event.transform;
+        // 更新地理路径组的变换属性
+        group.attr("transform", transform);
+        // change boundary coord
+        [boundaryRect[0], boundaryRect[1]] = transform.invert([
+          oldBoundaryRect[0],
+          oldBoundaryRect[1],
+        ]);
+        [boundaryRect[2], boundaryRect[3]] = transform.invert([
+          oldBoundaryRect[2],
+          oldBoundaryRect[3],
+        ]);
+        const newCenterCoord = [
+          (boundaryRect[0] + boundaryRect[2]) / 2,
+          (boundaryRect[1] + boundaryRect[3]) / 2,
+        ];
+        // change position force
+        simulation.force("x").x(newCenterCoord[0]);
+        simulation.force("y").y(newCenterCoord[1]);
+        simulation.force("center").x(newCenterCoord[0]).y(newCenterCoord[1]);
+        simulation.alpha(that.defaultBaseConfig.alpha / 2);
+        simulation.restart();
+      }
+    },
+    createTickFunction(svg, boundaryRect) {
+      return function ticked() {
         // 只通过transform.translate 更新父元素g的位置
         svg
           .select(".node-group")
           .selectChildren("g")
           .style("transform", (d) => {
-            // 计算节点到圆心的距离
-            if (d.x < boundary[0]) {
-              d.x = boundary[0];
-            } else if (d.x > boundary[2] + boundary[0]) {
-              d.x = boundary[2] + boundary[0];
+            if (d.x < boundaryRect[0]) {
+              d.x = boundaryRect[0];
+            } else if (d.x > boundaryRect[2]) {
+              d.x = boundaryRect[2];
             }
 
-            if (d.y < boundary[1]) {
-              d.y = boundary[1];
-            } else if (d.y > boundary[3] + boundary[1]) {
-              d.y = boundary[3] + boundary[1];
+            if (d.y < boundaryRect[1]) {
+              d.y = boundaryRect[1];
+            } else if (d.y > boundaryRect[3]) {
+              d.y = boundaryRect[3];
             }
 
             return `translate(${d.x}px,${d.y}px)`;
@@ -2455,7 +2507,7 @@ export default {
             const d = d3.select(this.parentNode).datum();
             return d.target.y;
           });
-      }
+      };
     },
     drawGlobalGraph(newVal) {
       const that = this;
@@ -2603,6 +2655,10 @@ export default {
             .distance((d) => {
               const nodeNumS = d.source.nodeNum;
               const nodeNumT = d.target.nodeNum;
+              console.log(
+                this.linkDistanceScale(nodeNumS) +
+                  this.linkDistanceScale(nodeNumT)
+              );
               return (
                 this.linkDistanceScale(nodeNumS) +
                 this.linkDistanceScale(nodeNumT)
@@ -2683,14 +2739,7 @@ export default {
                 ((d.middle.source.y + d.middle.target.y) * 4) / 9
               ),
             },
-            // {
-            //   x: zoomTransform.applyX(
-            //     (d.middle.source.x + d.middle.target.x) / 2
-            //   ),
-            //   y: zoomTransform.applyY(
-            //     (d.middle.source.y + d.middle.target.y) / 2
-            //   ),
-            // },
+
             {
               x: zoomTransform.applyX(
                 ((d.middle.source.x + d.middle.target.x) * 2) / 3
@@ -2759,7 +2808,19 @@ export default {
         point.x = x;
         point.y = 0;
 
-        let transformedPoint = point.matrixTransform(childSVGElement.getCTM());
+        // 获取子 SVG 的 CTM
+        let childMatrix = childSVGElement.getCTM();
+
+        // 创建一个表示 d3.zoom 转换的 SVGMatrix
+        let zoomTransform = d3.zoomTransform(childSVGElement);
+        let zoomMatrix = childSVGElement
+          .createSVGMatrix()
+          .translate(zoomTransform.x, zoomTransform.y)
+          .scale(zoomTransform.k);
+        // 结合两个转换
+        let combinedMatrix = childMatrix.multiply(zoomMatrix);
+        // 使用组合的转换来转换点
+        let transformedPoint = point.matrixTransform(combinedMatrix);
 
         return transformedPoint.x;
       }
@@ -2769,7 +2830,19 @@ export default {
         point.x = 0;
         point.y = y;
 
-        let transformedPoint = point.matrixTransform(childSVGElement.getCTM());
+        // 获取子 SVG 的 CTM
+        let childMatrix = childSVGElement.getCTM();
+
+        // 创建一个表示 d3.zoom 转换的 SVGMatrix
+        let zoomTransform = d3.zoomTransform(childSVGElement);
+        let zoomMatrix = childSVGElement
+          .createSVGMatrix()
+          .translate(zoomTransform.x, zoomTransform.y)
+          .scale(zoomTransform.k);
+        // 结合两个转换
+        let combinedMatrix = childMatrix.multiply(zoomMatrix);
+        // 使用组合的转换来转换点
+        let transformedPoint = point.matrixTransform(combinedMatrix);
         return transformedPoint.y;
       }
     },

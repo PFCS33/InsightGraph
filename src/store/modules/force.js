@@ -166,11 +166,13 @@ export default {
       context.commit("setLinkDataGroup", counts);
     },
     // load test data
-    loadData(context, _payload) {
+    loadData(context, payload) {
       // const file = "test_data/result_0826_S1.json";
       // const url = `data/${file}`;
+      const targetState = payload.state;
       context.commit("setLoading", true);
-      const url = "http://127.0.0.1:4523/m1/3208600-0-default/getState/S1";
+      const url =
+        "http://127.0.0.1:4523/m1/3208600-0-default/getState/" + targetState;
       fetch(url)
         .then((response) => {
           if (!response.ok) {
@@ -179,6 +181,7 @@ export default {
           return response.json();
         })
         .then((data) => {
+          console.log(data);
           context.commit("setLoading", false);
           context.commit("setError", {
             state: false,
