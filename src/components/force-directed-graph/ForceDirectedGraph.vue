@@ -405,14 +405,20 @@ export default {
     },
     allStatesData: {
       // don't watch deep
-      handler(newVal) {
-        this.maxNodeNum = d3.max(
-          Array.from(newVal.values()),
-          (d) => d.nodes.length
-        );
-        this.setTopScale(this.maxNodeNum);
+      handler(newVal, oldVal) {
+        console.log(newVal, oldVal);
+        if (oldVal) {
+          // update
+        } else {
+          // initilize
+          this.maxNodeNum = d3.max(
+            Array.from(newVal.values()),
+            (d) => d.nodes.length
+          );
+          this.setTopScale(this.maxNodeNum);
 
-        this.drawGlobalGraph(newVal);
+          this.drawGlobalGraph(newVal);
+        }
       },
     },
     filterNode(newVal, oldVal) {
@@ -548,7 +554,7 @@ export default {
           svg.datum().width = newWidth;
           svg.datum().height = newWidth;
           svg.datum().nodeNum = newData.nodes.length;
-          console.log(1);
+
           // update link distance of svg
           this.globalSimulation.force("link").distance((d) => {
             const nodeNumS = d.source.nodeNum;
@@ -809,10 +815,8 @@ export default {
             exit
               .each((data) => {
                 const id = data.id;
-                // console.log(id, pinnedIndex);
-                // console.log(pinnedIndex.has(id));
+
                 if (pinnedIndex.has(id)) {
-                  console.log(11111);
                   pinnedIndex.delete(id);
                   data.fx = null;
                   data.fy = null;
@@ -2144,7 +2148,6 @@ export default {
         .attr("cursor", "pointer")
         .on("click", function () {
           const state = d3.select(this.parentNode).datum().id;
-          console.log(state);
         });
 
       const stateText = svg
@@ -2225,7 +2228,7 @@ export default {
         .base(2);
       this.circleRScales.set(state, circleRScale);
       this.insightSizeScales.set(state, insightSizeScale);
-      // 创建内部nodes和links数据
+      // 获取内部nodes和links数据
       let links = data.links.map((d) => ({ ...d }));
       let nodes = data.nodes.map((d) => {
         const insightNum = d["insight-list"].length;
@@ -2250,6 +2253,7 @@ export default {
       });
       this.nodeIdMaps.set(state, nodeIdMap);
 
+      // 创建辅助数据类型，全部根据state索引
       const showIndex = new Map();
       const hoverIndex = {
         id: null,
@@ -2275,17 +2279,17 @@ export default {
       this.pinnedIndexs.set(state, pinnedIndex);
       this.neighborMaps.set(state, neighborMap);
 
-      // 选择svg container
-      const svgContainer = d3.select("#svg-container");
-      const gTop = svgContainer
+      // 选择顶层svg下的g.node-group和对应的子svg
+      const gTop = d3
+        .select("#svg-container")
         .select("#total-svg")
         .selectChild("g.node-group");
-      // 获取container的宽和高
-      const width = this.containerWidth;
-      const height = this.containerHeight;
+      const svg = gTop.select(`svg.${state}-state`);
+      // 先设置 nodeNum属性为0
+      svg.datum().nodeNum = 0;
 
-      // 先把svg图和nodes+links 元素画出来
-      const boundaryR = this.svgRScale(nodes.length);
+      // 设置子svg图的宽和高，
+      const boundaryR = this.svgRScale(svg.datum().nodeNum);
       const boundary = [
         -boundaryR * 1.5,
         -boundaryR * 1.5,
@@ -2294,17 +2298,18 @@ export default {
       ];
       const originalWidth = boundaryR * 2;
       const originalHeight = originalWidth;
-      const svg = gTop
-        .select(`svg.${state}-state`)
+      svg
         .attr("width", originalWidth)
         .attr("height", originalHeight)
         .attr("viewBox", boundary)
         .attr("overflow", "visible");
 
+      // 设置svg子元素的绑定的data属性
       svg.datum().width = originalWidth;
       svg.datum().height = originalHeight;
       svg.datum().pinned = false;
 
+      // 添加背景rect元素
       const backgroundShape = svg
         .append("rect")
         .attr("class", "background-shape")
@@ -2329,11 +2334,12 @@ export default {
         });
 
       /* -------------------------------------------------------------------------- */
-      // clear nodes and links data
+      // 开始生成对应的DOM元素
+      // 先绑定空数据，对应nodeNum为0
       nodes = [];
       links = [];
 
-      //local force data binding
+      // 创建顶层g元素 (nodeG 和 linkG)
       const linkG = svg
         .append("g")
         .attr("class", "link-group")
@@ -2354,6 +2360,7 @@ export default {
         .data(nodes, (d) => d.id)
         .join("g");
 
+      // 顶层 icon
       const focusIcon = svg
         .append("use")
         .attr("class", "focus-icon")
@@ -2370,7 +2377,7 @@ export default {
             state: state,
           });
         });
-
+      // 顶层 text
       const stateText = svg
         .append("text")
         .text(state)
@@ -2382,6 +2389,8 @@ export default {
         .attr("x", boundary[0] + boundary[2] - 5)
         .attr("y", boundary[1] + 5);
 
+      /* -------------------------------------------------------------------------- */
+      //力导向系统创建;
       const oldBoundaryRect = [
         boundary[0],
         boundary[1],
@@ -2395,7 +2404,6 @@ export default {
         boundary[3] + boundary[1],
       ];
       const ticked = this.createTickFunction(svg, boundaryRect);
-      //力导向系统创建;
       const simulation = this.createForceSimulation(
         nodes,
         links,
@@ -2405,8 +2413,11 @@ export default {
         boundaryR
       );
       this.simulations.set(state, simulation);
-
+      /* -------------------------------------------------------------------------- */
+      // DOM元素创建
       this.setDomAttributes(linkG, circleG, state);
+      /* -------------------------------------------------------------------------- */
+      // Zoom 添加
       this.addZoomBehavior(
         svg,
         simulation,
@@ -2512,7 +2523,25 @@ export default {
     drawGlobalGraph(newVal) {
       const that = this;
 
-      // get binding data for top force simulation
+      /* -------------------------------------------------------------------------- */
+      // 设置top svg 宽高属性
+      const svgContainer = d3.select("#svg-container");
+      const width = parseInt(svgContainer.style("width"), 10);
+      const height = parseInt(svgContainer.style("height"), 10);
+      const svgTop = svgContainer
+        .select("#total-svg")
+        .attr("viewBox", [0, 0, width, height]);
+
+      /* -------------------------------------------------------------------------- */
+      // 添加top g，用于global zoom和 bundle g的管理
+      const linkGTop = svgTop.append("g").attr("class", "link-group");
+      const nodeGTop = svgTop.append("g").attr("class", "node-group");
+      const bundleGTop = svgTop.append("g").attr("class", "bundle-group");
+      const groupsTop = svgTop.selectChildren("g.link-group,g.node-group");
+
+      /* -------------------------------------------------------------------------- */
+      // svg子图初步生成
+      // 生成全局力道图对应的nodes和links数据
       const svgData = Array.from(newVal.entries()).map((stateInfo) => ({
         id: stateInfo[0],
         nodeNum: stateInfo[1].nodes.length,
@@ -2524,27 +2553,7 @@ export default {
         target: state,
       }));
       svgLinks.shift();
-
-      // 选择svg container
-      const svgContainer = d3.select("#svg-container");
-
-      // 获取container的宽和高
-      const width = parseInt(svgContainer.style("width"), 10);
-      const height = parseInt(svgContainer.style("height"), 10);
-      // 设置top svg属性
-      const svgTop = svgContainer
-        .select("#total-svg")
-        .attr("viewBox", [0, 0, width, height]);
-
-      // 添加top g，用于global zoom
-      const linkGTop = svgTop.append("g").attr("class", "link-group");
-      const nodeGTop = svgTop.append("g").attr("class", "node-group");
-      const bundleGTop = svgTop.append("g").attr("class", "bundle-group");
-      const groupsTop = svgTop.selectChildren("g.link-group,g.node-group");
-
-      // 清除之前的子svg
-      groupsTop.selectAll("*").remove();
-      // 绑定顶层svg与links数据到g中
+      // 绑定顶层svg与links数据到对应的g中，生成子svg元素和state links
       const svgGroups = nodeGTop
         .selectChildren("svg")
         .data(svgData)
@@ -2566,12 +2575,12 @@ export default {
           return `${d.source}_${d.target}`;
         })
         .attr("stroke", "none");
-      // .attr("stroke", "#555");
 
-      // 创建子svg图
+      /* -------------------------------------------------------------------------- */
+      // 生成子svg图具体内容
       for (let [state, data] of newVal) {
         if (state === this.focusState) {
-          // initilize the focus data
+          // 针对focus state，提交数据，生成左侧 control panel需要的数据，并生成子svg图内容
           const focusNodes = data.nodes;
           const focusLinks = data.links;
 
@@ -2592,11 +2601,8 @@ export default {
             data: focusNodes,
             firstFlag: true,
           });
-          // this.drawGraph({
-          //   nodes: focusNodes,
-          //   links: focusLinks,
-          // });
         } else {
+          // 非focus state的内容生成
           const subNodes = data.nodes;
           const subLinks = data.links;
 
@@ -2610,6 +2616,8 @@ export default {
         }
       }
 
+      /* -------------------------------------------------------------------------- */
+      // 全局力道图布局 + zoom + drag 定义，必须要在子svg图生成之后
       // 创建全局zoom
       const zoomTop = d3
         .zoom()
@@ -2655,10 +2663,7 @@ export default {
             .distance((d) => {
               const nodeNumS = d.source.nodeNum;
               const nodeNumT = d.target.nodeNum;
-              console.log(
-                this.linkDistanceScale(nodeNumS) +
-                  this.linkDistanceScale(nodeNumT)
-              );
+
               return (
                 this.linkDistanceScale(nodeNumS) +
                 this.linkDistanceScale(nodeNumT)
@@ -2673,26 +2678,6 @@ export default {
             .theta(defaultForceConfig.manyBody.Theta)
             .distanceMin(defaultForceConfig.manyBody.DistanceMin)
         )
-        // .force(
-        //   "center",
-        //   d3
-        //     .forceCenter(width / 2, height / 2)
-        //     .strength(defaultForceConfig.center.Strength)
-        // )
-        // .force(
-        //   "x",
-        //   d3
-        //     .forceX()
-        //     .x(width / 2)
-        //     .strength(defaultForceConfig.x.Strength)
-        // )
-        // .force(
-        //   "y",
-        //   d3
-        //     .forceY()
-        //     .y(height / 2)
-        //     .strength(defaultForceConfig.y.Strength)
-        // )
         .alpha(defaultBaseConfig.alpha)
         .alphaMin(defaultBaseConfig.alphaMin)
         .alphaTarget(defaultBaseConfig.alphaTarget)

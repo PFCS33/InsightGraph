@@ -181,7 +181,6 @@ export default {
           return response.json();
         })
         .then((data) => {
-          console.log(data);
           context.commit("setLoading", false);
           context.commit("setError", {
             state: false,
