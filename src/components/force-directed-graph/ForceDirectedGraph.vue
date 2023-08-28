@@ -231,11 +231,12 @@ export default {
     stateLinksMap() {
       return this.$store.getters["force/stateLinksMap"];
     },
+    scoreSelectionMap() {
+      return this.$store.getters["force/scoreSelectionMap"];
+    },
   },
   data() {
     return {
-      //
-
       // vega-lite filter
       filterNode: {
         id: null,
@@ -252,6 +253,7 @@ export default {
       containerHeight: null,
       // mutiple states
       focusState: "S0",
+      oldFocusState: null,
       selectedNodes: new Map(),
       checkIndexs: new Map(),
       hoverIndexs: new Map(),
@@ -263,9 +265,38 @@ export default {
       circleRScales: new Map(),
       insightSizeScales: new Map(),
       selectedIds: new Map(),
+      scoreSelectionMaps: new Map(),
+      // 原始数据
+      linksStateMaps: new Map(),
+      nodeStateMaps: new Map(),
+      originNodeIdMaps: new Map(),
+      showStateList: [],
 
       crossStatesHoveredNeighbor: null,
       globalSimulation: null,
+
+      // focus control
+      // (id,view)
+      showIndex: new Map(),
+      // (id, g)
+      pinnedIndex: new Map(),
+      // (id, row, col)
+      checkIndex: new Map(),
+      // (id, row,col)
+      hoverIndex: {
+        id: null,
+        row: null,
+        col: null,
+      },
+      // id
+      selectedNode: {
+        id: null,
+        state: null,
+        insightIndex: null,
+        "insight-list": null,
+        col: null,
+        row: null,
+      },
 
       // color
       defaultLinkColor: "#999",
@@ -301,34 +332,10 @@ export default {
       iconSize: 15,
       iconOffset: 5,
 
-      // show conifg of vega-lite graph
-      // (id,view)
-      showIndex: new Map(),
-      // (id, g)
-      pinnedIndex: new Map(),
-      // (id, row, col)
-      checkIndex: new Map(),
-      // (id, row,col)
-      hoverIndex: {
-        id: null,
-        row: null,
-        col: null,
-      },
-      // id
-      selectedNode: {
-        id: null,
-        state: null,
-        insightIndex: null,
-        "insight-list": null,
-        col: null,
-        row: null,
-      },
       // showMoreIcon
       showMoreIcon: false,
       showMorePanel: false,
       hidePanelMode: false,
-
-      zoom: null,
 
       editMode: false,
       durationTime: 150,
@@ -358,11 +365,10 @@ export default {
           Y: null,
           Strength: 0.1,
         },
-        radial: {
-          X: null,
-          Y: null,
-          R: 100,
+        collide: {
+          Radius: null,
           Strength: 1,
+          Iterations: 1,
         },
         manyBody: {
           Strength: null,
@@ -375,18 +381,14 @@ export default {
           Strength: null,
           Iterations: 1,
         },
-        collide: {
-          Radius: null,
-          Strength: 1,
-          Iterations: 1,
-        },
       },
     };
   },
 
   watch: {
-    focusState(newVal) {},
-
+    scoreSelectionMap(newVal) {
+      this.scoreSelectionMaps.set(this.focusState, newVal);
+    },
     crossStatesHoveredNeighbor(newVal, oldVal) {
       if (newVal) {
         Array.from(newVal.keys()).forEach((state) => {
@@ -399,17 +401,41 @@ export default {
         });
       }
     },
-    showIndex: {
-      deep: true,
-      handler(newVal) {},
-    },
+    // showIndex: {
+    //   deep: true,
+    //   handler(newVal) {},
+    // },
     allStatesData: {
       // don't watch deep
       handler(newVal, oldVal) {
         console.log(newVal, oldVal);
+        // 记录 links 数据
+        for (const [state, value] of newVal.entries()) {
+          this.linksStateMaps.set(state, value.links);
+          this.nodeStateMaps.set(state, value.nodes);
+        }
+
         if (oldVal) {
           // update
+          // 完全删除不展示的states
+          const filteredStates = this.filterOldState();
+          //  获取当前需要展示的state列表
+          const newStates = Array.from(newVal.keys());
+          const oldStates = this.showStateList;
+          this.showStateList = [
+            ...new Set(
+              newStates
+                .concat(oldStates)
+                .filter((item) => !filteredStates.includes(item))
+            ),
+          ];
+
+          // 更新旧的focus state内的点
+          this.updateOldFocusState(this.oldFocusState);
+          this.updateNewFocusState(this.focusState);
         } else {
+          // 获取当前需要展示的state 列表
+          this.showStateList = Array.from(newVal.keys());
           // initilize
           this.maxNodeNum = d3.max(
             Array.from(newVal.values()),
@@ -530,7 +556,7 @@ export default {
           }
         }
 
-        // get node Data
+        // get new sub graph Data
         const filteredAllStateData =
           this.getFilterSubGraphData(relatedNodeIdMap);
 
@@ -586,24 +612,9 @@ export default {
       },
       deep: true,
     },
+    // links data + node id list
     selectedData(newVal) {
       if (newVal) {
-        // this.neighborHighligt(
-        //   this.selectedNode.id,
-        //   this.neighborMap.get(this.selectedNode.id),
-        //   "selected",
-        //   false,
-        //   "S0"
-        // );
-        // this.selectedNode = {
-        //   id: null,
-        //   state: null,
-        //   insightIndex: null,
-        //   "insight-list": null,
-        //   col: null,
-        //   row: null,
-        // };
-        //this.neighborMap = this.getNeighbourInfo(newVal);
         const state = this.focusState;
         const simulation = this.simulations.get(state);
         if (simulation) {
@@ -641,6 +652,88 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    updateNewFocusState(state) {
+      const nodeData = this.nodeStateMaps.get(state);
+      const linkData = this.linksStateMaps.get(state);
+      const nodeIds = nodeData.map((d) => d.id);
+      this.nodeIdMaps.get(state);
+      // this.restart(true, state, {
+      //   links: linkData,
+      //   nodes: nodeData,
+      // });
+    },
+
+    updateOldFocusState(state) {
+      const OldFocusSvg = d3
+        .select("#svg-container")
+        .select("#total-svg")
+        .select("g.node-group")
+        .select(".focus-svg");
+      // 获取需要保存的nodes和links数据
+      const preservedNodeIds = Array.from(this.checkIndex.keys());
+      const linkData = this.linksStateMaps.get(state);
+      const preservedLinks = linkData.filter(
+        (d) =>
+          preservedNodeIds.includes(d.source) &&
+          preservedNodeIds.includes(d.target)
+      );
+
+      this.restart(true, state, {
+        links: preservedLinks,
+        nodes: preservedNodeIds,
+      });
+      // change data in sub-svg
+      OldFocusSvg.datum().nodeNum = preservedNodeIds.length;
+    },
+    filterOldState() {
+      const that = this;
+      const svgTop = d3.select("#svg-container").select("#total-svg");
+      // 获取需要删除的子svg和id列表
+      const filteredSvgs = svgTop
+        .select("g.node-group")
+        .selectChildren("svg")
+        .filter((d) => d.nodeNum === 0 && d.id !== this.focusState);
+      const filteredIds = [];
+      filteredSvgs.each((d) => filteredIds.push(d.id));
+      // 获取需要删除的全局line
+      const filteredLinks = svgTop
+        .select("g.link-group")
+        .selectChildren("line")
+        .filter(function () {
+          const className = d3.select(this).attr("class");
+          return filteredIds.includes(className.split("_")[1]);
+        });
+
+      // 删除dom元素
+      filteredSvgs
+        .attr("opacity", 1)
+        .transition()
+        .duration(this.durationTime)
+        .attr("opacity", 0)
+        .remove();
+      filteredLinks
+        .attr("opacity", 1)
+        .transition()
+        .duration(this.durationTime)
+        .attr("opacity", 0)
+        .remove();
+      // 删除数据结构
+      filteredIds.forEach((state) => {
+        this.selectedNodes.delete(state);
+        this.checkIndexs.delete(state);
+        this.selectedNodes.delete(state);
+        this.hoverIndexs.delete(state);
+        this.showIndexs.delete(state);
+        this.pinnedIndexs.delete(state);
+        this.simulations.delete(state);
+        this.neighborMaps.delete(state);
+        this.nodeIdMaps.delete(state);
+        this.circleRScales.delete(state);
+        this.insightSizeScales.delete(state);
+        this.selectedIds.delete(state);
+      });
+      return filteredIds;
+    },
     updateGlobalBundle(globalBundleData) {
       const bundleG = d3
         .select("#svg-container")
@@ -672,23 +765,17 @@ export default {
     getFilterSubGraphData(relatedNodeIdMap) {
       const filteredNodeData = new Map();
       for (const [state, nodeIds] of relatedNodeIdMap) {
-        const nodeData = this.allStatesData.get(state).nodes;
-
-        const newNodeData = Array.from(nodeData.values()).filter((d) =>
-          nodeIds.includes(d.id)
-        );
-
         const oldNodeData = filteredNodeData.get(state);
         if (oldNodeData) {
-          oldNodeData.push(...newNodeData);
+          oldNodeData.push(...nodeIds);
         } else {
-          filteredNodeData.set(state, newNodeData);
+          filteredNodeData.set(state, nodeIds);
         }
       }
 
       const filteredLinkData = new Map();
       for (const [state, nodeIds] of relatedNodeIdMap) {
-        const linkData = this.allStatesData.get(state).links;
+        const linkData = this.linksStateMaps.get(state);
 
         filteredLinkData.set(
           state,
@@ -699,7 +786,7 @@ export default {
       }
 
       const allStatesData = new Map();
-      Array.from(this.allStatesData.keys()).forEach((state) => {
+      this.showStateList.forEach((state) => {
         if (state !== this.focusState) {
           const nodes = filteredNodeData.get(state);
           if (nodes) {
@@ -1621,19 +1708,16 @@ export default {
         neighborMaps.set(state, this.getNeighbourInfo(newVal));
 
         // filter of insight
-        const statisticNodeIdMap =
-          this.$store.getters["force/statisticNodeIdMap"];
-        const scoreSelectionMap =
-          this.$store.getters["force/scoreSelectionMap"];
-        // newly filtered value
-        nodes = data.nodes.map((d) => {
-          const id = d.id;
-          const oldNode = nodeIdMap.get(d.id);
+        const originNodeIdMap = this.originNodeIdMaps.get(state);
 
-          if (state === this.focusState) {
+        const scoreSelectionMap = this.scoreSelectionMaps.get(state);
+        // newly filtered value
+        nodes = data.nodes.map((id) => {
+          const oldNode = nodeIdMap.get(id);
+
+          if (scoreSelectionMap) {
             // filter insight-list
-            const originInsightList =
-              statisticNodeIdMap.get(id)["insight-list"];
+            const originInsightList = originNodeIdMap.get(id)["insight-list"];
             const oldInsightIndexList = oldNode.insightIndexList;
             const oldInsightIndex = oldInsightIndexList[oldNode.insightIndex];
             const newInsightIndexList = [];
@@ -2005,12 +2089,12 @@ export default {
       const pinnedIndex = this.pinnedIndex;
 
       // 获取绘画数据
-      const data = newVal;
-      const links = data.links.map((d) => ({ ...d }));
+      const originNodes = this.nodeStateMaps.get(this.focusState);
+      const links = newVal.links.map((d) => ({ ...d }));
 
       // 创建每个node insight num到 circleR & insight icon size的映射
       let maxVegaLiteNum = 0;
-      data.nodes.forEach((node) => {
+      originNodes.forEach((node) => {
         const vegaLiteNum = node["insight-list"].length;
         if (vegaLiteNum > maxVegaLiteNum) maxVegaLiteNum = vegaLiteNum;
       });
@@ -2029,7 +2113,7 @@ export default {
       this.insightSizeScales.set(this.focusState, insightSizeScale);
 
       // 加入更多属性，控制vega-lite图的显示
-      const nodes = data.nodes.map((d) => {
+      const nodes = originNodes.map((d) => {
         const insightNum = d["insight-list"].length;
         return {
           ...d,
@@ -2209,10 +2293,11 @@ export default {
       const that = this;
       const state = graphInfo.state;
       const data = graphInfo.data;
+      const originNodes = this.nodeStateMaps.get(state);
 
       // 创建自己的 circle scale 和 insight scale函数
       let maxVegaLiteNum = 0;
-      data.nodes.forEach((node) => {
+      originNodes.forEach((node) => {
         const vegaLiteNum = node["insight-list"].length;
         if (vegaLiteNum > maxVegaLiteNum) maxVegaLiteNum = vegaLiteNum;
       });
@@ -2230,7 +2315,7 @@ export default {
       this.insightSizeScales.set(state, insightSizeScale);
       // 获取内部nodes和links数据
       let links = data.links.map((d) => ({ ...d }));
-      let nodes = data.nodes.map((d) => {
+      let nodes = originNodes.map((d) => {
         const insightNum = d["insight-list"].length;
         return {
           ...d,
@@ -2371,7 +2456,9 @@ export default {
         .attr("height", boundaryR / 2)
         .attr("cursor", "pointer")
         .on("click", function () {
+          // load new data
           const state = d3.select(this.parentNode).datum().id;
+          that.oldFocusState = that.focusState;
           that.focusState = state;
           that.$store.dispatch("force/loadData", {
             state: state,
@@ -2583,22 +2670,22 @@ export default {
           // 针对focus state，提交数据，生成左侧 control panel需要的数据，并生成子svg图内容
           const focusNodes = data.nodes;
           const focusLinks = data.links;
+          const nodesData = this.nodeStateMaps.get(state);
 
-          const statisticNodeIdMap = new Map();
+          const originNodeIdMap = new Map();
 
-          focusNodes.forEach((d) => {
-            statisticNodeIdMap.set(d.id, d);
+          nodesData.forEach((d) => {
+            originNodeIdMap.set(d.id, d);
           });
-
-          this.$store.commit("force/setStatisticNodeIdMap", statisticNodeIdMap);
+          this.originNodeIdMaps.set(state, originNodeIdMap);
 
           this.$store.commit("force/setTotalData", {
-            nodes: focusNodes,
+            nodes: nodesData,
             links: focusLinks,
           });
           this.$store.dispatch("force/groupByLinkType", focusLinks);
           this.$store.dispatch("force/groupByNodeType", {
-            data: focusNodes,
+            data: nodesData,
             firstFlag: true,
           });
         } else {

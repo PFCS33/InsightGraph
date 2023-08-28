@@ -499,35 +499,6 @@ export default {
         this.histogramConfig.types = types;
         this.histogramConfig.yTypeFunc = yType;
         this.histogramConfig.typeColor = typeColor;
-
-        // piechart.on("legendselectchanged", function (params) {
-        //   const filteredNodes = that.filteredNodes
-        //     ? that.filteredNodes
-        //     : that.totalData.nodes;
-        //   const selectedLinks = that.filterdLinks
-        //     ? that.filterdLinks
-        //     : that.totalData.links;
-
-        //   const selectedNodeData = filteredNodes.filter(
-        //     (d) =>
-        //       params.selected[d["insight-list"][d.insightIndex]["insight-type"]]
-        //   );
-
-        //   const idMap = new Set();
-        //   selectedNodeData.forEach((node) => {
-        //     idMap.add(node.id);
-        //   });
-        //   const filteredLinks = selectedLinks.filter(
-        //     (d) => idMap.has(d.source) && idMap.has(d.target)
-        //   );
-
-        //   that.$store.dispatch("force/groupByLinkType", filteredLinks);
-        //   that.$store.dispatch("force/groupByNodeType", selectedNodeData);
-        //   that.$store.commit("force/setSelectedData", {
-        //     nodes: selectedNodeData,
-        //     links: filteredLinks,
-        //   });
-        // });
       } else {
         const types = this.histogramConfig.types;
         const xTicks = this.histogramConfig.xTicks;
@@ -829,7 +800,7 @@ export default {
             firstFlag: false,
           });
           that.$store.commit("force/setSelectedData", {
-            nodes: selectedNodeData,
+            nodes: selectedNodeData.map((d) => d.id),
             links: filteredLinks,
           });
         }
@@ -886,7 +857,7 @@ export default {
           firstFlag: false,
         });
         that.$store.commit("force/setSelectedData", {
-          nodes: nodes,
+          nodes: nodes.map((d) => d.id),
           links: links,
         });
       },
