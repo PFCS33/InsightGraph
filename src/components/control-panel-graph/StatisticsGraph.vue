@@ -54,19 +54,26 @@
 export default {
   data() {
     return {
+      linkType: ["siblings", "parent-child", "same-name"],
+      stateList: [],
       barchartConfig: null,
       histogramConfig: null,
-      linkType: ["siblings", "parent-child", "same-name"],
-
-      filteredNodes: null,
-      filterdLinks: null,
-      selectedNodes: null,
-
       selectedLinkType: {
         siblings: true,
         "parent-child": true,
         "same-name": true,
       },
+      barchartConfigs: new Map(),
+      histogramConfigs: new Map(),
+      selectedLinkTypes: new Map(),
+
+      // 画图数据
+      linkGroup: null,
+      nodeGroup: null,
+
+      // 中间数据
+      filteredNodes: null,
+      filterdLinks: null,
     };
   },
 
@@ -74,18 +81,115 @@ export default {
     totalData() {
       return this.$store.getters["force/totalData"];
     },
-    linkGroup() {
-      return this.$store.getters["force/linkDataGroup"];
+
+    scoreSelectionMaps() {
+      return this.$store.getters["force/scoreSelectionMaps"];
     },
-    nodeGroup() {
-      return this.$store.getters["force/nodeDataGroup"];
+    focusState() {
+      return this.$store.getters["force/focusState"];
     },
     scoreSelectionMap() {
-      return this.$store.getters["force/scoreSelectionMap"];
+      return this.scoreSelectionMaps.get(this.focusState);
     },
   },
 
   methods: {
+    graphDataUpdate(links, nodes) {
+      this.groupByLinkType(links);
+      this.groupByNodeType({
+        data: nodes,
+      });
+      this.$store.commit("force/setSelectedData", {
+        nodes: nodes.map((d) => d.id),
+        links: links,
+      });
+    },
+    groupByLinkType(payload) {
+      let counts = [];
+      if (payload.length > 0) {
+        counts = d3
+          .rollups(
+            payload,
+            (D) => D.length,
+            (d) => d.type
+          )
+          .map((d) => ({
+            type: d[0],
+            count: d[1],
+          }));
+      }
+      this.linkGroup = counts;
+    },
+
+    groupByNodeType(payload) {
+      const data = payload.data;
+      const state = this.focusState;
+      const scoreMap = new Map();
+      const scoreSelectionMaps = this.scoreSelectionMaps;
+      const scoreSelectionMap = this.scoreSelectionMap;
+
+      if (data.length > 0) {
+        data.forEach((node) => {
+          const id = node.id;
+          node["insight-list"].forEach((insight, index) => {
+            const type = insight["insight-type"];
+            const score = insight["insight-score"];
+
+            let scoreFilter = true;
+            if (scoreSelectionMap) {
+              const filter = scoreSelectionMap.get(type);
+              if (
+                !filter.selected ||
+                score < filter.selection[0] ||
+                score >= filter.selection[1]
+              ) {
+                scoreFilter = false;
+              }
+            }
+
+            if (scoreFilter) {
+              if (scoreMap.has(type)) {
+                const value = scoreMap.get(type);
+                value.count += 1;
+                value.scores.push({
+                  id: id,
+                  index: index,
+                  score: score,
+                });
+              } else {
+                const value = {
+                  count: 1,
+                  scores: [
+                    {
+                      id: id,
+                      index: index,
+                      score: score,
+                    },
+                  ],
+                };
+                scoreMap.set(type, value);
+              }
+            }
+          });
+        });
+      }
+
+      if (!scoreSelectionMap) {
+        const types = new Map();
+        for (let type of scoreMap.keys()) {
+          types.set(type, { selection: "all", selected: true });
+        }
+        scoreSelectionMaps.set(state, types);
+      }
+      this.nodeGroup = scoreMap;
+    },
+
+    changeTypeSelected(payload) {
+      this.scoreSelectionMap.get(payload.type).selected = payload.selected;
+    },
+    changeTypeSelection(payload) {
+      this.scoreSelectionMap.get(payload.type).selection = payload.selection;
+    },
     toggleSelectedLink(link) {
       this.selectedLinkType[link] = !this.selectedLinkType[link];
     },
@@ -101,6 +205,7 @@ export default {
         const width = parseInt(container.style("width"), 10);
         const height = parseInt(container.style("height"), 10);
 
+        container.select("svg").remove();
         const colorScale = d3.scaleOrdinal(this.linkType, [
           "#F7A69F",
           "#C69DE9",
@@ -132,6 +237,8 @@ export default {
         this.barchartConfig.height = height;
         this.barchartConfig.colorScale = colorScale;
         this.barchartConfig.tooltip = tooltip;
+
+        this.barchartConfigs.set(this.focusState, this.barchartConfig);
       }
       const config = this.barchartConfig;
       const y = d3
@@ -225,6 +332,8 @@ export default {
         const types = Array.from(newVal.keys());
 
         const container = d3.select("#histogram-box");
+
+        container.select("svg").selectChildren("g").remove();
         // barchart图的margin
         const marginLeftType = 3;
         const marginRightType = 13;
@@ -351,7 +460,7 @@ export default {
                   .attr("fill", "#545b77")
                   .attr("color", "transparent");
               }
-              that.$store.dispatch("force/changeTypeSelected", {
+              that.changeTypeSelected({
                 type: d.type,
                 selected: d.selected,
               });
@@ -400,7 +509,7 @@ export default {
             if (!event.sourceEvent) return;
             if (!selection) {
               // 选择为空时 （默认全选）
-              that.$store.dispatch("force/changeTypeSelection", {
+              that.changeTypeSelection({
                 type: type,
                 selection: "all",
               });
@@ -427,7 +536,7 @@ export default {
               .transition()
               .call(brush.move, x1 > x0 ? [x0, x1].map(x) : null);
 
-            that.$store.dispatch("force/changeTypeSelection", {
+            that.changeTypeSelection({
               type: type,
               selection: x1 > x0 ? [x0, x1] : "all",
             });
@@ -499,6 +608,8 @@ export default {
         this.histogramConfig.types = types;
         this.histogramConfig.yTypeFunc = yType;
         this.histogramConfig.typeColor = typeColor;
+
+        this.histogramConfigs.set(this.focusState, this.histogramConfig);
       } else {
         const types = this.histogramConfig.types;
         const xTicks = this.histogramConfig.xTicks;
@@ -767,6 +878,32 @@ export default {
     },
   },
   watch: {
+    focusState(newVal) {
+      if (this.stateList.includes(newVal)) {
+        this.barchartConfig = this.barchartConfigs.get(newVal);
+        this.histogramConfig = this.histogramConfigs.get(newVal);
+        this.selectedLinkType = this.selectedLinkTypes.get(newVal);
+        console.log(this.selectedLinkType);
+        // swich state
+      } else {
+        this.barchartConfig = null;
+        this.histogramConfig = null;
+        this.selectedLinkType = {
+          siblings: true,
+          "parent-child": true,
+          "same-name": true,
+        };
+
+        // initialize
+        this.stateList.push(newVal);
+        this.selectedLinkTypes.set(newVal, this.selectedLinkType);
+
+        this.groupByLinkType(this.totalData.links);
+        this.groupByNodeType({
+          data: this.totalData.nodes,
+        });
+      }
+    },
     linkGroup(newVal) {
       if (newVal) {
         this.drawBarchart(newVal);
@@ -794,21 +931,14 @@ export default {
             selectedLinks,
             filteredNodes
           );
-          that.$store.dispatch("force/groupByLinkType", filteredLinks);
-          that.$store.dispatch("force/groupByNodeType", {
-            data: selectedNodeData,
-            firstFlag: false,
-          });
-          that.$store.commit("force/setSelectedData", {
-            nodes: selectedNodeData.map((d) => d.id),
-            links: filteredLinks,
-          });
+          this.graphDataUpdate(filteredLinks, selectedNodeData);
         }
       },
     },
     selectedLinkType: {
       deep: true,
       handler(newVal) {
+        this.selectedLinkTypes.set(this.focusState, newVal);
         const that = this;
         // 作为主选项，每次选择获取全局数据
         const totalLinks = that.totalData.links;
@@ -850,16 +980,7 @@ export default {
           selectedLinkData,
           filteredNodes
         );
-
-        that.$store.dispatch("force/groupByLinkType", links);
-        that.$store.dispatch("force/groupByNodeType", {
-          data: filteredNodes,
-          firstFlag: false,
-        });
-        that.$store.commit("force/setSelectedData", {
-          nodes: nodes.map((d) => d.id),
-          links: links,
-        });
+        this.graphDataUpdate(links, nodes);
       },
     },
   },

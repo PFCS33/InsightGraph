@@ -65,13 +65,33 @@
             />
           </filter>
           <filter id="rect-shadow-focus">
-            <feDropShadow
-              dx="3"
-              dy="3"
-              stdDeviation="8"
-              flood-color="#545b77"
-              flood-opacity="0.7"
+            <feOffset in="SourceAlpha" dx="0" dy="0" result="offsetAlpha" />
+            <feMorphology
+              in="offsetAlpha"
+              operator="dilate"
+              radius="2.5"
+              result="morphedAlpha"
             />
+            <feGaussianBlur
+              in="morphedAlpha"
+              stdDeviation="6"
+              result="blurAlpha"
+            />
+            <feFlood
+              flood-color="#545b77"
+              flood-opacity="0.8"
+              result="floodColor"
+            />
+            <feComposite
+              in="floodColor"
+              in2="blurAlpha"
+              operator="in"
+              result="colorBlur"
+            />
+            <feMerge>
+              <feMergeNode in="colorBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
           </filter>
           <symbol
             id="defs-dominance"
@@ -231,8 +251,8 @@ export default {
     stateLinksMap() {
       return this.$store.getters["force/stateLinksMap"];
     },
-    scoreSelectionMap() {
-      return this.$store.getters["force/scoreSelectionMap"];
+    scoreSelectionMaps() {
+      return this.$store.getters["force/scoreSelectionMaps"];
     },
   },
   data() {
@@ -265,12 +285,17 @@ export default {
       circleRScales: new Map(),
       insightSizeScales: new Map(),
       selectedIds: new Map(),
-      scoreSelectionMaps: new Map(),
+
+      selectedDatas: new Map(),
+      svgNodeDatas: new Map(),
+      svgLinkDatas: [],
+
       // 原始数据
-      linksStateMaps: new Map(),
+      linkStateMaps: new Map(),
       nodeStateMaps: new Map(),
       originNodeIdMaps: new Map(),
       showStateList: [],
+      newStateList: [],
 
       crossStatesHoveredNeighbor: null,
       globalSimulation: null,
@@ -386,9 +411,6 @@ export default {
   },
 
   watch: {
-    scoreSelectionMap(newVal) {
-      this.scoreSelectionMaps.set(this.focusState, newVal);
-    },
     crossStatesHoveredNeighbor(newVal, oldVal) {
       if (newVal) {
         Array.from(newVal.keys()).forEach((state) => {
@@ -408,41 +430,70 @@ export default {
     allStatesData: {
       // don't watch deep
       handler(newVal, oldVal) {
-        console.log(newVal, oldVal);
-        // 记录 links 数据
+        // 记录 links和nodes原始数据
         for (const [state, value] of newVal.entries()) {
-          this.linksStateMaps.set(state, value.links);
+          this.linkStateMaps.set(state, value.links);
           this.nodeStateMaps.set(state, value.nodes);
         }
 
         if (oldVal) {
           // update
-          // 完全删除不展示的states
+          // 获取需要被完全删除的states (不包含 oldFocusState 和 new focus state)
           const filteredStates = this.filterOldState();
           //  获取当前需要展示的state列表
-          const newStates = Array.from(newVal.keys());
-          const oldStates = this.showStateList;
-          this.showStateList = [
+          // 新加入的 直接邻居 state (old 和 new focus 都不包含)
+          const newStates = Array.from(newVal.keys()).filter(
+            (state) => state !== this.oldFocusState && state !== this.focusState
+          );
+
+          const originStates = this.showStateList;
+          const showStateList = [
             ...new Set(
-              newStates
-                .concat(oldStates)
+              originStates
                 .filter((item) => !filteredStates.includes(item))
+                .concat(newStates)
             ),
           ];
 
+          // 更新全局state 信息
+          this.showStateList = showStateList;
+          this.newStateList = newStates;
+          // 更新重绑定数据，顶层DOM元素（svg 和 svgLinks）
+          const [newSvgData, newLinkData] = this.updateGlobalDom(
+            showStateList,
+            newStates,
+            filteredStates
+          );
+          this.svgLinkDatas = newLinkData;
+
           // 更新旧的focus state内的点
           this.updateOldFocusState(this.oldFocusState);
+          // 画新加入的svg图
+          this.addNewState(
+            newStates.filter((state) => state !== this.focusState)
+          );
+
+          // 更新新focus图内的点 (checkIndex的更新（空白），会导致新加入的，当前focus的直接邻居重画大小)
           this.updateNewFocusState(this.focusState);
+
+          // 更新全局力导图
+          this.updateGlobalForce(newSvgData, newLinkData);
         } else {
           // 获取当前需要展示的state 列表
           this.showStateList = Array.from(newVal.keys());
+          this.newStateList = this.showStateList.filter(
+            (state) => state !== this.focusState
+          );
           // initilize
-          this.maxNodeNum = d3.max(
+          // 更新最大node数
+          let maxNodeNum = d3.max(
             Array.from(newVal.values()),
             (d) => d.nodes.length
           );
-          this.setTopScale(this.maxNodeNum);
-
+          maxNodeNum =
+            maxNodeNum > this.maxNodeNum ? maxNodeNum : this.maxNodeNum;
+          this.maxNodeNum = maxNodeNum;
+          this.setTopScale(maxNodeNum);
           this.drawGlobalGraph(newVal);
         }
       },
@@ -556,40 +607,42 @@ export default {
           }
         }
 
+        // 根据该state的本身设置的保存条件，再筛选一次
+        for (let [state, ids] of relatedNodeIdMap.entries()) {
+          const selectedData = this.selectedDatas.get(state);
+          if (selectedData) {
+            relatedNodeIdMap.set(
+              state,
+              ids.filter((id) => selectedData.nodes.includes(id))
+            );
+          }
+        }
+
         // get new sub graph Data
         const filteredAllStateData =
           this.getFilterSubGraphData(relatedNodeIdMap);
 
         Array.from(filteredAllStateData.keys()).forEach((state) => {
-          const newData = filteredAllStateData.get(state);
-          const newWidth = this.svgRScale(newData.nodes.length) * 2;
-          // redrow inner force graph
-          this.restart(true, state, newData);
-          // global force graph update
           const svg = d3
             .select("#svg-container")
             .select("#total-svg")
             .select("g.node-group")
             .select(`.${state}-state`);
-          svg
-            .transition()
-            .duration(this.durationTime * 2)
-            .attr("width", newWidth)
-            .attr("height", newWidth);
 
-          svg.datum().width = newWidth;
-          svg.datum().height = newWidth;
-          svg.datum().nodeNum = newData.nodes.length;
+          const newData = filteredAllStateData.get(state);
 
-          // update link distance of svg
-          this.globalSimulation.force("link").distance((d) => {
-            const nodeNumS = d.source.nodeNum;
-            const nodeNumT = d.target.nodeNum;
-            return (
-              this.linkDistanceScale(nodeNumS) +
-              this.linkDistanceScale(nodeNumT)
-            );
-          });
+          // redraw inner force graph
+          this.restart(true, state, newData);
+          // global force graph update
+          this.updateSvgSize(svg, this.svgRScale, newData.nodes.length);
+        });
+        // update link distance of svg
+        this.globalSimulation.force("link").distance((d) => {
+          const nodeNumS = d.source.nodeNum;
+          const nodeNumT = d.target.nodeNum;
+          return (
+            this.linkDistanceScale(nodeNumS) + this.linkDistanceScale(nodeNumT)
+          );
         });
         // update bundle line attr
         this.updateGlobalBundle(globalBundleData);
@@ -617,6 +670,8 @@ export default {
       if (newVal) {
         const state = this.focusState;
         const simulation = this.simulations.get(state);
+        this.selectedDatas.set(state, newVal);
+
         if (simulation) {
           simulation.stop();
           this.restart(true, state, newVal);
@@ -652,26 +707,268 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    addSvgIcon(svg, iconType, boundary, boundaryR) {
+      const that = this;
+      switch (iconType) {
+        case "amplify":
+          svg
+            .append("use")
+            .attr("class", "focus-icon")
+            .attr("href", "#defs-amplify")
+            .attr("x", boundary[0] + 5)
+            .attr("y", boundary[1] + 5)
+            .attr("width", boundaryR / 2.5)
+            .attr("height", boundaryR / 2.5)
+            .attr("cursor", "pointer")
+            .on("click", function () {
+              const state = d3.select(this.parentNode).datum().id;
+            });
+          break;
+        case "focus":
+          svg
+            .append("use")
+            .attr("class", "focus-icon")
+            .attr("href", "#defs-focus")
+            .attr("x", boundary[0] + 5)
+            .attr("y", boundary[1] + 5)
+            .attr("width", boundaryR / 2.5)
+            .attr("height", boundaryR / 2.5)
+            .attr("cursor", "pointer")
+            .on("click", function () {
+              // load new data
+              const state = d3.select(this.parentNode).datum().id;
+              that.oldFocusState = that.focusState;
+              that.focusState = state;
+              that.$store.dispatch("force/loadData", {
+                state: state,
+              });
+            });
+          break;
+      }
+    },
+    updateSvgSize(svg, svgRScale, nodeNum) {
+      const newBoundaryR = svgRScale(nodeNum);
+      const newWidth = newBoundaryR * 2;
+      const newHeight = newWidth;
+      svg
+        .transition()
+        .duration(this.durationTime * 2)
+        .attr("width", newWidth)
+        .attr("height", newWidth);
+
+      svg.datum().nodeNum = nodeNum;
+      svg.datum().width = newWidth;
+      svg.datum().height = newHeight;
+      return newBoundaryR;
+    },
+    updateGlobalForce(nodes, links) {
+      const simulation = this.globalSimulation;
+      simulation.nodes(nodes);
+      simulation.force("link").links(links);
+      simulation.alphaDecay(this.defaultBaseConfig.alphaDecay);
+      simulation.alpha(this.defaultBaseConfig.alpha);
+      simulation.restart();
+    },
+    updateGlobalDom(showStateList, newStates, oldStates) {
+      const nodeGTop = d3
+        .select("#svg-container")
+        .select("#total-svg")
+        .select("g.node-group");
+      const linkGTop = d3
+        .select("#svg-container")
+        .select("#total-svg")
+        .select("g.link-group");
+      const svgNodeDatas = this.svgNodeDatas;
+      const svgLinkDatas = this.svgLinkDatas;
+
+      // 生成新的全局 svg data 和 link data
+      const newSvgData = showStateList.map((state) => {
+        if (svgNodeDatas.has(state)) {
+          return svgNodeDatas.get(state);
+        } else {
+          const newData = {
+            nodeNum: 0,
+            id: state,
+          };
+          svgNodeDatas.set(state, newData);
+          return newData;
+        }
+      });
+
+      // 原来的linkData，去掉筛去的state
+      const newLinkData1 = svgLinkDatas
+        .filter(
+          (d) =>
+            !oldStates.includes(d.source.id) && !oldStates.includes(d.target.id)
+        )
+        .map((d) => ({
+          source: d.source.id,
+          target: d.target.id,
+        }));
+
+      // 新的link
+      const newLinkData2 = newStates.map((state) => ({
+        source: this.focusState,
+        target: state,
+      }));
+
+      const newLinkData = newLinkData1.concat(newLinkData2);
+
+      // update sub-svg dom element
+      nodeGTop
+        .selectChildren("svg")
+        .data(newSvgData, (d) => d.id)
+        .join(
+          (enter) => {
+            enter
+              .append("svg")
+              .attr("class", (d) => `${d.id}-state`)
+              .attr("preserveAspectRatio", "xMinYMin meet");
+          },
+          (update) => update,
+          (exit) => {
+            exit
+              .attr("opacity", 1)
+              .transition()
+              .duration(this.durationTime)
+              .attr("opacity", 0)
+              .remove();
+          }
+        );
+      linkGTop
+        .selectChildren("line")
+        .data(newLinkData, (d) => `${d.source}_${d.target}`)
+        .join(
+          (enter) => {
+            enter
+              .append("line")
+              .attr("class", (d) => {
+                return `${d.source}_${d.target}`;
+              })
+              .attr("stroke", "none");
+          },
+          (update) => update,
+          (exit) => {
+            exit
+              .attr("opacity", 1)
+              .transition()
+              .duration(this.durationTime)
+              .attr("opacity", 0)
+              .remove();
+          }
+        );
+      return [newSvgData, newLinkData];
+    },
+    addNewState(newStates) {
+      newStates.forEach((state) => {
+        this.drawSubGraph({
+          state: state,
+          data: {
+            nodes: this.nodeStateMaps.get(state).map((d) => d.id),
+            links: this.linkStateMaps.get(state),
+          },
+        });
+      });
+    },
+    getSvgInnterSizeScale(nodes) {
+      let maxVegaLiteNum = 0;
+      nodes.forEach((node) => {
+        const vegaLiteNum = node["insight-list"].length;
+        if (vegaLiteNum > maxVegaLiteNum) maxVegaLiteNum = vegaLiteNum;
+      });
+
+      const circleRScale = d3
+        .scaleLog([1, maxVegaLiteNum], [this.circleR, this.circleR * 2])
+        .base(2);
+      const insightSizeScale = d3
+        .scaleLog(
+          [1, maxVegaLiteNum],
+          [this.insightIconSize, this.insightIconSize * 2]
+        )
+        .base(2);
+      return [circleRScale, insightSizeScale];
+    },
     updateNewFocusState(state) {
+      const that = this;
       const nodeData = this.nodeStateMaps.get(state);
-      const linkData = this.linksStateMaps.get(state);
-      const nodeIds = nodeData.map((d) => d.id);
-      this.nodeIdMaps.get(state);
-      // this.restart(true, state, {
-      //   links: linkData,
-      //   nodes: nodeData,
-      // });
+      const linkData = this.linkStateMaps.get(state);
+      const svg = d3
+        .select("#svg-container")
+        .select("#total-svg")
+        .select("g.node-group")
+        .select(`.${state}-state`)
+        .classed("focus-svg", true);
+
+      // 重设focus svg的宽和高
+      this.updateSvgSize(svg, this.svgRScale, nodeData.length);
+      svg.datum().pinned = true;
+      svg.datum().fx = this.containerWidth / 2;
+      svg.datum().fy = this.containerHeight / 2;
+
+      svg
+        .select("use.focus-icon")
+        .attr("href", "#defs-amplify")
+        .on("click", function () {
+          const state = d3.select(this.parentNode).datum().id;
+        });
+
+      // 更新nodeIdMap (如果需要的话)
+      const nodeIdMap = this.nodeIdMaps.get(state);
+      const originNodeIdMap = new Map();
+
+      const oldNodeIds = Array.from(nodeIdMap.keys());
+      const [circleRScale, insightSizeScale] =
+        this.getSvgInnterSizeScale(nodeData);
+      this.circleRScales.set(state, circleRScale);
+      this.insightSizeScales.set(state, insightSizeScale);
+
+      nodeData.forEach((d) => {
+        originNodeIdMap.set(d.id, d);
+        if (!oldNodeIds.includes(d.id)) {
+          const insightNum = d["insight-list"].length;
+          nodeIdMap.set(d.id, {
+            ...d,
+            insightIndex: 0,
+            insightIndexList: [...Array(insightNum).keys()],
+            circleR: circleRScale(insightNum),
+            iconSize: insightSizeScale(insightNum),
+            showDetail: false,
+            pinned: false,
+            checked: false,
+            view: null,
+            img: null,
+            rect: null,
+          });
+        }
+      });
+      this.originNodeIdMaps.set(state, originNodeIdMap);
+      this.$store.dispatch("force/setStatisticGraph", {
+        state: state,
+        data: {
+          nodes: nodeData,
+          links: linkData,
+        },
+      });
+
+      // 更新辅助数据结构
+      this.showIndex = this.showIndexs.get(state);
+      this.pinnedIndex = this.pinnedIndexs.get(state);
+      this.hoverIndex = this.hoverIndexs.get(state);
+      this.selectedNode = this.selectedNodes.get(state);
+      this.checkIndex = this.checkIndexs.get(state);
     },
 
     updateOldFocusState(state) {
+      const that = this;
       const OldFocusSvg = d3
         .select("#svg-container")
         .select("#total-svg")
         .select("g.node-group")
-        .select(".focus-svg");
+        .select(".focus-svg")
+        .classed("focus-svg", false);
       // 获取需要保存的nodes和links数据
       const preservedNodeIds = Array.from(this.checkIndex.keys());
-      const linkData = this.linksStateMaps.get(state);
+      const linkData = this.selectedDatas.get(state).links;
       const preservedLinks = linkData.filter(
         (d) =>
           preservedNodeIds.includes(d.source) &&
@@ -682,8 +979,24 @@ export default {
         links: preservedLinks,
         nodes: preservedNodeIds,
       });
+
+      OldFocusSvg.select("use.focus-icon")
+        .attr("href", "#defs-focus")
+        .on("click", function () {
+          // load new data
+          const state = d3.select(this.parentNode).datum().id;
+          that.oldFocusState = that.focusState;
+          that.focusState = state;
+          that.$store.dispatch("force/loadData", {
+            state: state,
+          });
+        });
+
+      this.updateSvgSize(OldFocusSvg, this.svgRScale, preservedNodeIds.length);
       // change data in sub-svg
-      OldFocusSvg.datum().nodeNum = preservedNodeIds.length;
+      OldFocusSvg.datum().fx = null;
+      OldFocusSvg.datum().fy = null;
+      OldFocusSvg.datum().pinned = false;
     },
     filterOldState() {
       const that = this;
@@ -692,46 +1005,15 @@ export default {
       const filteredSvgs = svgTop
         .select("g.node-group")
         .selectChildren("svg")
-        .filter((d) => d.nodeNum === 0 && d.id !== this.focusState);
+        .filter(
+          (d) =>
+            d.nodeNum === 0 &&
+            d.id !== this.oldFocusState &&
+            d.id !== this.focusState
+        );
       const filteredIds = [];
       filteredSvgs.each((d) => filteredIds.push(d.id));
-      // 获取需要删除的全局line
-      const filteredLinks = svgTop
-        .select("g.link-group")
-        .selectChildren("line")
-        .filter(function () {
-          const className = d3.select(this).attr("class");
-          return filteredIds.includes(className.split("_")[1]);
-        });
 
-      // 删除dom元素
-      filteredSvgs
-        .attr("opacity", 1)
-        .transition()
-        .duration(this.durationTime)
-        .attr("opacity", 0)
-        .remove();
-      filteredLinks
-        .attr("opacity", 1)
-        .transition()
-        .duration(this.durationTime)
-        .attr("opacity", 0)
-        .remove();
-      // 删除数据结构
-      filteredIds.forEach((state) => {
-        this.selectedNodes.delete(state);
-        this.checkIndexs.delete(state);
-        this.selectedNodes.delete(state);
-        this.hoverIndexs.delete(state);
-        this.showIndexs.delete(state);
-        this.pinnedIndexs.delete(state);
-        this.simulations.delete(state);
-        this.neighborMaps.delete(state);
-        this.nodeIdMaps.delete(state);
-        this.circleRScales.delete(state);
-        this.insightSizeScales.delete(state);
-        this.selectedIds.delete(state);
-      });
       return filteredIds;
     },
     updateGlobalBundle(globalBundleData) {
@@ -763,6 +1045,7 @@ export default {
     },
 
     getFilterSubGraphData(relatedNodeIdMap) {
+      const newStateList = this.newStateList;
       const filteredNodeData = new Map();
       for (const [state, nodeIds] of relatedNodeIdMap) {
         const oldNodeData = filteredNodeData.get(state);
@@ -775,7 +1058,10 @@ export default {
 
       const filteredLinkData = new Map();
       for (const [state, nodeIds] of relatedNodeIdMap) {
-        const linkData = this.linksStateMaps.get(state);
+        let linkData = this.linkStateMaps.get(state);
+        if (this.selectedDatas.get(state)) {
+          linkData = this.selectedDatas.get(state).links;
+        }
 
         filteredLinkData.set(
           state,
@@ -786,20 +1072,20 @@ export default {
       }
 
       const allStatesData = new Map();
-      this.showStateList.forEach((state) => {
-        if (state !== this.focusState) {
-          const nodes = filteredNodeData.get(state);
-          if (nodes) {
-            allStatesData.set(state, {
-              links: filteredLinkData.get(state),
-              nodes: filteredNodeData.get(state),
-            });
-          } else {
-            allStatesData.set(state, {
-              links: [],
-              nodes: [],
-            });
-          }
+      newStateList.forEach((state) => {
+        // 只对当前新增的直接邻居做改变
+
+        const nodes = filteredNodeData.get(state);
+        if (nodes) {
+          allStatesData.set(state, {
+            links: filteredLinkData.get(state),
+            nodes: filteredNodeData.get(state),
+          });
+        } else {
+          allStatesData.set(state, {
+            links: [],
+            nodes: [],
+          });
         }
       });
       return allStatesData;
@@ -950,10 +1236,10 @@ export default {
           ? this.containerHeight
           : this.containerWidth) / 2.5;
 
-      this.svgRScale = d3.scaleLinear([0, maxNodeNum], [75, maxR]);
+      this.svgRScale = d3.scaleLinear([0, maxNodeNum], [100, maxR]);
       this.linkDistanceScale = d3.scaleLinear(
         [0, maxNodeNum],
-        [50, maxR * 1.5]
+        [100, maxR * 1.5]
       );
       this.chargeStrengthScale = d3.scaleLinear(
         [0, maxNodeNum],
@@ -1223,21 +1509,12 @@ export default {
       function circleMouseover(event, that, hoverIndex) {
         const d = d3.select(that.parentNode).datum();
 
-        // hoverIndex.id = d.id;
-        // hoverIndex.col = d.col;
-        // hoverIndex.row = d.row;
         Object.assign(hoverIndex, {
           id: d.id,
           col: d.col,
           row: d.row,
         });
-        // hoverIndex = {
-        //   ...{
-        //     id: d.id,
-        //     col: d.col,
-        //     row: d.row,
-        //   },
-        // };
+
         if (!d.showDetail) {
           d3.select(that)
             .attr("fill", function () {
@@ -2093,21 +2370,8 @@ export default {
       const links = newVal.links.map((d) => ({ ...d }));
 
       // 创建每个node insight num到 circleR & insight icon size的映射
-      let maxVegaLiteNum = 0;
-      originNodes.forEach((node) => {
-        const vegaLiteNum = node["insight-list"].length;
-        if (vegaLiteNum > maxVegaLiteNum) maxVegaLiteNum = vegaLiteNum;
-      });
-
-      const circleRScale = d3
-        .scaleLog([1, maxVegaLiteNum], [this.circleR, this.circleR * 2])
-        .base(2);
-      const insightSizeScale = d3
-        .scaleLog(
-          [1, maxVegaLiteNum],
-          [this.insightIconSize, this.insightIconSize * 2]
-        )
-        .base(2);
+      const [circleRScale, insightSizeScale] =
+        this.getSvgInnterSizeScale(originNodes);
 
       this.circleRScales.set(this.focusState, circleRScale);
       this.insightSizeScales.set(this.focusState, insightSizeScale);
@@ -2145,8 +2409,16 @@ export default {
       const width = this.containerWidth;
       const height = this.containerHeight;
 
-      // 先把svg图和nodes+links 元素画出来
-      const boundaryR = this.svgRScale(nodes.length);
+      // 选择top node g
+      const gTop = svgContainer
+        .select("#total-svg")
+        .selectChild("g.node-group");
+
+      const svg = gTop.select(`svg.${this.focusState}-state`);
+
+      // 设置svg 宽和高 (根据 nodeNum属性)
+      this.updateSvgSize(svg, this.svgRScale, this.maxNodeNum);
+      const boundaryR = this.svgRScale(this.maxNodeNum);
 
       const boundary = [
         -boundaryR * 1.5,
@@ -2154,42 +2426,18 @@ export default {
         boundaryR * 5,
         boundaryR * 5,
       ];
-      // 选择top node g
-      const gTop = svgContainer
-        .select("#total-svg")
-        .selectChild("g.node-group");
 
-      const originalX = width * 0.5 - boundaryR;
-      const originalY = height * 0.5 - boundaryR;
-      const originalWidth = boundaryR * 2;
-      const originalHeight = originalWidth;
-      const svg = gTop
-        .select(`svg.${this.focusState}-state`)
-        .attr("width", originalWidth)
-        .attr("height", originalWidth)
+      svg
         .attr("viewBox", boundary)
         .classed("focus-svg", true)
         .attr("fill", "#fff")
         .attr("overflow", "visible");
 
-      svg.datum().width = originalWidth;
-      svg.datum().height = originalHeight;
       svg.datum().pinned = true;
       svg.datum().fx = width * 0.5;
       svg.datum().fy = height * 0.5;
 
-      // // 创建圆角矩形的 clip-path
-      // svg
-      //   .append("defs")
-      //   .append("clipPath")
-      //   .attr("id", "rounded-rect-clip")
-      //   .append("rect")
-      //   .attr("x", boundary[0])
-      //   .attr("y", boundary[1])
-      //   .attr("width", boundary[2])
-      //   .attr("height", boundary[3])
-      //   .attr("rx", 10);
-      //   svg.style("clip-path", "url(#rounded-rect-clip)");
+      this.svgNodeDatas.set(this.focusState, svg.datum());
 
       const backgroundShape = svg
         .append("rect")
@@ -2197,10 +2445,26 @@ export default {
         .attr("x", boundary[0])
         .attr("y", boundary[1])
         .attr("width", boundary[2])
-        .attr("height", boundary[3]);
+        .attr("height", boundary[3])
+        .on("dblclick", function () {
+          const svgData = d3.select(this.parentNode).datum();
+          svgData.pinned = !svgData.pinned;
+          if (svgData.pinned) {
+            svgData.fx = svgData.x;
+            svgData.fy = svgData.y;
+          } else {
+            svgData.fx = null;
+            svgData.fy = null;
+          }
+        })
+        .on("dblclick.zoom", function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        });
 
       // this.createObserver(svg.node());
       //data binding
+
       const linkG = svg
         .append("g")
         .attr("class", "link-group")
@@ -2221,23 +2485,13 @@ export default {
         .data(nodes, (d) => d.id)
         .join("g");
 
-      const AmplifyIcon = svg
-        .append("use")
-        .attr("class", "focus-icon")
-        .attr("href", "#defs-amplify")
-        .attr("x", boundary[0] + 5)
-        .attr("y", boundary[1] + 5)
-        .attr("width", boundaryR / 5)
-        .attr("height", boundaryR / 5)
-        .attr("cursor", "pointer")
-        .on("click", function () {
-          const state = d3.select(this.parentNode).datum().id;
-        });
+      //      const AmplifyIcon =
+      this.addSvgIcon(svg, "amplify", boundary, boundaryR);
 
       const stateText = svg
         .append("text")
         .text(this.focusState)
-        .attr("font-size", boundaryR / 5)
+        .attr("font-size", boundaryR / 4)
         .attr("font-weight", "bold")
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "hanging")
@@ -2295,22 +2549,9 @@ export default {
       const data = graphInfo.data;
       const originNodes = this.nodeStateMaps.get(state);
 
-      // 创建自己的 circle scale 和 insight scale函数
-      let maxVegaLiteNum = 0;
-      originNodes.forEach((node) => {
-        const vegaLiteNum = node["insight-list"].length;
-        if (vegaLiteNum > maxVegaLiteNum) maxVegaLiteNum = vegaLiteNum;
-      });
-
-      const circleRScale = d3
-        .scaleLog([1, maxVegaLiteNum], [this.circleR, this.circleR * 2])
-        .base(2);
-      const insightSizeScale = d3
-        .scaleLog(
-          [1, maxVegaLiteNum],
-          [this.insightIconSize, this.insightIconSize * 2]
-        )
-        .base(2);
+      // 创建每个node insight num到 circleR & insight icon size的映射
+      const [circleRScale, insightSizeScale] =
+        this.getSvgInnterSizeScale(originNodes);
       this.circleRScales.set(state, circleRScale);
       this.insightSizeScales.set(state, insightSizeScale);
       // 获取内部nodes和links数据
@@ -2370,29 +2611,23 @@ export default {
         .select("#total-svg")
         .selectChild("g.node-group");
       const svg = gTop.select(`svg.${state}-state`);
-      // 先设置 nodeNum属性为0
-      svg.datum().nodeNum = 0;
 
-      // 设置子svg图的宽和高，
-      const boundaryR = this.svgRScale(svg.datum().nodeNum);
+      // 更新svg 宽高
+      this.updateSvgSize(svg, this.svgRScale, 0);
+      const boundaryR = this.svgRScale(this.maxNodeNum);
       const boundary = [
         -boundaryR * 1.5,
         -boundaryR * 1.5,
         boundaryR * 5,
         boundaryR * 5,
       ];
-      const originalWidth = boundaryR * 2;
-      const originalHeight = originalWidth;
-      svg
-        .attr("width", originalWidth)
-        .attr("height", originalHeight)
-        .attr("viewBox", boundary)
-        .attr("overflow", "visible");
+
+      svg.attr("viewBox", boundary).attr("overflow", "visible");
 
       // 设置svg子元素的绑定的data属性
-      svg.datum().width = originalWidth;
-      svg.datum().height = originalHeight;
       svg.datum().pinned = false;
+
+      this.svgNodeDatas.set(state, svg.datum());
 
       // 添加背景rect元素
       const backgroundShape = svg
@@ -2446,29 +2681,12 @@ export default {
         .join("g");
 
       // 顶层 icon
-      const focusIcon = svg
-        .append("use")
-        .attr("class", "focus-icon")
-        .attr("href", "#defs-focus")
-        .attr("x", boundary[0] + 5)
-        .attr("y", boundary[1] + 5)
-        .attr("width", boundaryR / 2)
-        .attr("height", boundaryR / 2)
-        .attr("cursor", "pointer")
-        .on("click", function () {
-          // load new data
-          const state = d3.select(this.parentNode).datum().id;
-          that.oldFocusState = that.focusState;
-          that.focusState = state;
-          that.$store.dispatch("force/loadData", {
-            state: state,
-          });
-        });
+      this.addSvgIcon(svg, "focus", boundary, boundaryR);
       // 顶层 text
       const stateText = svg
         .append("text")
         .text(state)
-        .attr("font-size", boundaryR / 5)
+        .attr("font-size", boundaryR / 4)
         .attr("font-weight", "bold")
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "hanging")
@@ -2632,7 +2850,6 @@ export default {
       const svgData = Array.from(newVal.entries()).map((stateInfo) => ({
         id: stateInfo[0],
         nodeNum: stateInfo[1].nodes.length,
-        inner: false,
       }));
 
       const svgLinks = Array.from(newVal.keys()).map((state) => ({
@@ -2640,6 +2857,9 @@ export default {
         target: state,
       }));
       svgLinks.shift();
+
+      this.svgLinkDatas.push(...svgLinks);
+
       // 绑定顶层svg与links数据到对应的g中，生成子svg元素和state links
       const svgGroups = nodeGTop
         .selectChildren("svg")
@@ -2679,14 +2899,12 @@ export default {
           });
           this.originNodeIdMaps.set(state, originNodeIdMap);
 
-          this.$store.commit("force/setTotalData", {
-            nodes: nodesData,
-            links: focusLinks,
-          });
-          this.$store.dispatch("force/groupByLinkType", focusLinks);
-          this.$store.dispatch("force/groupByNodeType", {
-            data: nodesData,
-            firstFlag: true,
+          this.$store.dispatch("force/setStatisticGraph", {
+            state: state,
+            data: {
+              nodes: nodesData,
+              links: focusLinks,
+            },
           });
         } else {
           // 非focus state的内容生成
@@ -3206,9 +3424,10 @@ export default {
     }
     .focus-svg {
       .background-shape {
-        stroke: #545b77;
-        stroke-opacity: 0.5;
-        stroke-width: 3px;
+        // stroke: #545b77;
+        // stroke-opacity: 0.5;
+        // stroke-width: 3px;
+        filter: url(#rect-shadow-focus);
       }
     }
   }
