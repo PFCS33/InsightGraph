@@ -55,6 +55,27 @@
               <feMergeNode></feMergeNode>
             </feMerge>
           </filter>
+
+          <filter
+            id="inset-shadow-circle"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
+            <feComponentTransfer in="SourceAlpha">
+              <feFuncA type="table" tableValues="1 0"></feFuncA>
+            </feComponentTransfer>
+            <feGaussianBlur stdDeviation="6"></feGaussianBlur>
+            <feOffset dx="0" dy="0" result="offsetblur"></feOffset>
+            <feFlood flood-color="#545b77" result="color"></feFlood>
+            <feComposite in2="offsetblur" operator="in"></feComposite>
+            <feComposite in2="SourceAlpha" operator="in"></feComposite>
+            <feMerge>
+              <feMergeNode in="SourceGraphic"></feMergeNode>
+              <feMergeNode></feMergeNode>
+            </feMerge>
+          </filter>
           <filter id="rect-shadow">
             <feDropShadow
               dx="3"
@@ -1607,7 +1628,7 @@ export default {
             .on("click", function () {
               g.datum().showDetail = false;
               g.datum().pinned = false;
-              g.datum().checked = false;
+
               g.classed("pinned", false);
               g.datum().fx = null;
               g.datum().fy = null;
@@ -1638,7 +1659,6 @@ export default {
                 };
               }
 
-              g.selectChildren("rect").classed("svg-inset", false);
               g.selectChildren(".vega-lite-icon").remove();
               self.deleteVegaLite(g, state);
               const collideForce = simulation.force("collide");
@@ -1682,7 +1702,7 @@ export default {
             .attr("class", "check vega-lite-icon")
             .attr("cursor", "pointer")
             .on("click", function () {
-              toggleCheck(this, checkIndex);
+              toggleCheck(self, this, checkIndex);
             });
 
           self.drawVegaLite(g, "img", state);
@@ -1819,22 +1839,25 @@ export default {
         }
       }
 
-      function toggleCheck(that, checkIndex) {
-        const g = d3.select(that.parentNode);
-        const checked = !g.datum().checked;
-        g.datum().checked = checked;
-        if (checked) {
-          checkIndex.set(g.datum().id, {
-            row: g.datum().row,
-            col: g.datum().col,
-          });
+      function toggleCheck(self, that, checkIndex) {
+        //  只能focus状态togglecheck
+        if (state === self.focusState) {
+          const g = d3.select(that.parentNode);
+          const checked = !g.datum().checked;
+          g.datum().checked = checked;
+          if (checked) {
+            checkIndex.set(g.datum().id, {
+              row: g.datum().row,
+              col: g.datum().col,
+            });
 
-          g.select(".check").classed("icon-pinned", true);
-          g.selectChildren("rect").classed("svg-inset", true);
-        } else {
-          checkIndex.delete(g.datum().id);
-          g.select(".check").classed("icon-pinned", false);
-          g.selectChildren("rect").classed("svg-inset", false);
+            g.select(".check").classed("icon-pinned", true);
+            g.selectChildren("rect, circle").classed("svg-inset", true);
+          } else {
+            checkIndex.delete(g.datum().id);
+            g.select(".check").classed("icon-pinned", false);
+            g.selectChildren("rect,circle").classed("svg-inset", false);
+          }
         }
       }
     },
@@ -2232,6 +2255,10 @@ export default {
             },${-translateY + that.iconOffset})`
           );
 
+          if (g.datum().checked) {
+            checkIcon.classed("icon-pinned", true);
+          }
+
           switch (mode) {
             case "img":
               // 创建反应新状态的img
@@ -2286,13 +2313,13 @@ export default {
     deleteVegaLite(g, state) {
       const showIndex = this.showIndexs.get(state);
       const pinnedIndex = this.pinnedIndexs.get(state);
-      const checkIndex = this.checkIndexs.get(state);
+
       const id = g.datum().id;
       showIndex.get(id).finalize();
       g.selectAll(".vega-lite-graph").remove();
       g.datum().view = null;
       g.datum().img = null;
-      checkIndex.delete(id);
+
       pinnedIndex.delete(id);
       showIndex.delete(id);
     },
@@ -3494,10 +3521,19 @@ export default {
 .svg {
   width: 100%;
 }
-.svg-inset {
+
+rect.svg-inset {
   stroke: steelblue !important;
-  //  stroke-width: 0 !important;
+
   stroke-opacity: 0.3;
   filter: url(#inset-shadow);
+}
+
+circle.svg-inset {
+  stroke: #545b77 !important;
+  stroke-width: 5px !important;
+
+  // filter: url(#inset-shadow-circle);
+  //  stroke-width: 0 !important;
 }
 </style>
