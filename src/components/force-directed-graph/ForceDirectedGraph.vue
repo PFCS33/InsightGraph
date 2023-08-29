@@ -462,10 +462,11 @@ export default {
           // 获取需要被完全删除的states (不包含 oldFocusState 和 new focus state)
           const filteredStates = this.filterOldState();
           //  获取当前需要展示的state列表
-          // 新加入的 直接邻居 state (old 和 new focus 都不包含)
+          // 新加入的 直接邻居 state ( new focus 都不包含)
           const newStates = Array.from(newVal.keys()).filter(
-            (state) => state !== this.oldFocusState && state !== this.focusState
+            (state) => state !== this.focusState
           );
+          newStates.push(this.oldFocusState);
 
           const originStates = this.showStateList;
           const showStateList = [
@@ -491,7 +492,10 @@ export default {
           this.updateOldFocusState(this.oldFocusState);
           // 画新加入的svg图
           this.addNewState(
-            newStates.filter((state) => state !== this.focusState)
+            newStates.filter(
+              (state) =>
+                state !== this.focusState && state !== this.oldFocusState
+            )
           );
 
           // 更新新focus图内的点 (checkIndex的更新（空白），会导致新加入的，当前focus的直接邻居重画大小)
@@ -521,8 +525,10 @@ export default {
     },
     filterNode(newVal, oldVal) {
       const state = newVal.state;
+      const oldState = oldVal.state;
       const oldSelectedId = this.selectedIds.get(state);
-      if (oldSelectedId !== newVal.id) {
+
+      if (oldSelectedId !== newVal.id || state !== oldState) {
         // get id array of neighbour
         const neighborMap = this.neighborMaps.get(state);
         const neighborSet = neighborMap.get(newVal.id);
@@ -639,6 +645,17 @@ export default {
           }
         }
 
+        const oldFocusState = this.oldFocusState;
+        const originIds = relatedNodeIdMap.get(oldFocusState);
+        if (oldFocusState) {
+          relatedNodeIdMap.set(
+            oldFocusState,
+            this.addOldFocusCheckedData(
+              oldFocusState,
+              originIds ? originIds : []
+            )
+          );
+        }
         // get new sub graph Data
         const filteredAllStateData =
           this.getFilterSubGraphData(relatedNodeIdMap);
@@ -704,8 +721,8 @@ export default {
     },
 
     selectedNode(newVal, oldVal) {
+      this.filterNode = newVal;
       if (newVal.id !== oldVal.id) {
-        this.filterNode = newVal;
         if (newVal.id) {
           this.$store.dispatch("table/convertCheckSelection", {
             mode: "clicked",
@@ -728,6 +745,10 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    addOldFocusCheckedData(state, originNodeIds) {
+      const oldCheckedIds = Array.from(this.checkIndexs.get(state).keys());
+      return [...new Set(originNodeIds.concat(oldCheckedIds))];
+    },
     addSvgIcon(svg, iconType, boundary, boundaryR) {
       const that = this;
       switch (iconType) {
@@ -833,7 +854,11 @@ export default {
         target: state,
       }));
 
-      const newLinkData = newLinkData1.concat(newLinkData2);
+      const newLinkData = newLinkData1
+        .concat(newLinkData2)
+        .filter(
+          (d) => d.source !== this.oldFocusState || d.target !== this.focusState
+        );
 
       // update sub-svg dom element
       nodeGTop
@@ -987,19 +1012,20 @@ export default {
         .select("g.node-group")
         .select(".focus-svg")
         .classed("focus-svg", false);
-      // 获取需要保存的nodes和links数据
-      const preservedNodeIds = Array.from(this.checkIndex.keys());
-      const linkData = this.selectedDatas.get(state).links;
-      const preservedLinks = linkData.filter(
-        (d) =>
-          preservedNodeIds.includes(d.source) &&
-          preservedNodeIds.includes(d.target)
-      );
+      // // 获取需要保存的nodes和links数据
+      // const preservedNodeIds = Array.from(this.checkIndex.keys());
 
-      this.restart(true, state, {
-        links: preservedLinks,
-        nodes: preservedNodeIds,
-      });
+      // const linkData = this.selectedDatas.get(state).links;
+      // const preservedLinks = linkData.filter(
+      //   (d) =>
+      //     preservedNodeIds.includes(d.source) &&
+      //     preservedNodeIds.includes(d.target)
+      // );
+
+      // this.restart(true, state, {
+      //   links: preservedLinks,
+      //   nodes: preservedNodeIds,
+      // });
 
       OldFocusSvg.select("use.focus-icon")
         .attr("href", "#defs-focus")
@@ -1013,7 +1039,6 @@ export default {
           });
         });
 
-      this.updateSvgSize(OldFocusSvg, this.svgRScale, preservedNodeIds.length);
       // change data in sub-svg
       OldFocusSvg.datum().fx = null;
       OldFocusSvg.datum().fy = null;
