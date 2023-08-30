@@ -289,6 +289,7 @@ export default {
   },
   data() {
     return {
+      backMode: false,
       // vega-lite filter
       filterNode: {
         id: null,
@@ -333,6 +334,7 @@ export default {
 
       crossStatesHoveredNeighbor: null,
       globalSimulation: null,
+      globalDragDefine: null,
 
       // focus control
       // (id,view)
@@ -471,53 +473,56 @@ export default {
         }
 
         if (oldVal) {
-          // update
-          this.preservedBundleData = this.preservedBundleData.concat(
-            this.globalBundleData
-          );
-          // 获取需要被完全删除的states (不包含 oldFocusState 和 new focus state)
-          const filteredStates = this.filterOldState();
-          //  获取当前需要展示的state列表
-          // 新加入的 直接邻居 state ( new & old focus 都不包含)
-          const newStates = Array.from(newVal.keys()).filter(
-            (state) => state !== this.focusState
-          );
+          if (this.backMode) {
+            this.backMode = false;
+            console.log("back");
+          } else {
+            // update
 
-          const originStates = this.showStateList;
-          const showStateList = [
-            ...new Set(
-              originStates
-                .filter((item) => !filteredStates.includes(item))
-                .concat(newStates)
-            ),
-          ];
+            // 获取需要被完全删除的states (不包含 oldFocusState 和 new focus state)
+            const filteredStates = this.filterOldState();
+            //  获取当前需要展示的state列表
+            // 新加入的 直接邻居 state ( new & old focus 都不包含)
+            const newStates = Array.from(newVal.keys()).filter(
+              (state) => state !== this.focusState
+            );
 
-          // 更新全局state 信息
-          this.showStateList = showStateList;
-          this.newStateList = newStates;
-          // 更新重绑定数据，顶层DOM元素（svg 和 svgLinks）
-          const [newSvgData, newLinkData] = this.updateGlobalDom(
-            showStateList,
-            newStates,
-            filteredStates
-          );
-          this.svgLinkDatas = newLinkData;
+            const originStates = this.showStateList;
+            const showStateList = [
+              ...new Set(
+                originStates
+                  .filter((item) => !filteredStates.includes(item))
+                  .concat(newStates)
+              ),
+            ];
 
-          // 更新旧的focus state内的点
-          this.updateOldFocusState(this.oldFocusState);
-          // 画新加入的svg图
-          this.addNewState(
-            newStates.filter(
-              (state) =>
-                state !== this.focusState && state !== this.oldFocusState
-            )
-          );
+            // 更新全局state 信息
+            this.showStateList = showStateList;
+            this.newStateList = newStates;
+            // 更新重绑定数据，顶层DOM元素（svg 和 svgLinks）
+            const [newSvgData, newLinkData] = this.updateGlobalDom(
+              showStateList,
+              newStates,
+              filteredStates
+            );
+            this.svgLinkDatas = newLinkData;
 
-          // 更新新focus图内的点 (checkIndex的更新（空白），会导致新加入的，当前focus的直接邻居重画大小)
-          this.updateNewFocusState(this.focusState);
+            // 更新旧的focus state内的点
+            this.updateOldFocusState(this.oldFocusState);
+            // 画新加入的svg图
+            this.addNewState(
+              newStates.filter(
+                (state) =>
+                  state !== this.focusState && state !== this.oldFocusState
+              )
+            );
 
-          // 更新全局力导图
-          this.updateGlobalForce(newSvgData, newLinkData);
+            // 更新新focus图内的点 (checkIndex的更新（空白），会导致新加入的，当前focus的直接邻居重画大小)
+            this.updateNewFocusState(this.focusState);
+
+            // 更新全局力导图
+            this.updateGlobalForce(newSvgData, newLinkData);
+          }
         } else {
           // 获取当前需要展示的state 列表
           this.showStateList = Array.from(newVal.keys());
@@ -699,9 +704,18 @@ export default {
         });
         // 保存当前的bundleData
         this.globalBundleData = globalBundleData;
-        // update bundle line attr
+        const selectedNodeIds = this.selectedData.nodes;
+
+        // update bundle line attr, 对于新旧focus之间的bundle，需要判断新focus中的点有没有被filter掉， restart函数也要进行 oldBundle的筛选
         this.updateGlobalBundle(
-          globalBundleData.concat(this.preservedBundleData)
+          globalBundleData.concat(
+            this.preservedBundleData.filter(
+              (d) =>
+                d.middle.source.id !== this.oldFocusState ||
+                d.middle.target.id !== this.focusState ||
+                selectedNodeIds.includes(d.target.id)
+            )
+          )
         );
       },
       deep: true,
@@ -732,6 +746,16 @@ export default {
         if (simulation) {
           simulation.stop();
           this.restart(true, state, newVal);
+          this.updateGlobalBundle(
+            this.globalBundleData.concat(
+              this.preservedBundleData.filter(
+                (d) =>
+                  d.middle.source.id !== this.oldFocusState ||
+                  d.middle.target.id !== this.focusState ||
+                  newVal.nodes.includes(d.target.id)
+              )
+            )
+          );
         } else {
           // draw force graph
           this.drawGraph(newVal);
@@ -764,6 +788,21 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    updatePreservedBundle() {
+      const newCheckedIds = Array.from(this.checkIndex.keys());
+
+      // console.log(newCheckedIds);
+      // console.log('preserved:',this.preservedBundleData);
+      // console.log(this.globalBundleData);
+      return this.preservedBundleData
+        .filter(
+          (d) =>
+            d.middle.source.id !== this.oldFocusState ||
+            d.middle.target.id !== this.focusState ||
+            newCheckedIds.includes(d.target.id)
+        )
+        .concat(this.globalBundleData);
+    },
     addOldFocusCheckedData(state, originNodeIds) {
       const oldCheckedIds = Array.from(this.checkIndexs.get(state).keys());
       return [...new Set(originNodeIds.concat(oldCheckedIds))];
@@ -796,6 +835,8 @@ export default {
             .attr("height", boundaryR / 2.5)
             .attr("cursor", "pointer")
             .on("click", function () {
+              // 更新 preservedBundleData
+              that.preservedBundleData = that.updatePreservedBundle();
               // load new data
               const state = d3.select(this.parentNode).datum().id;
               that.oldFocusState = that.focusState;
@@ -884,7 +925,8 @@ export default {
             enter
               .append("svg")
               .attr("class", (d) => `${d.id}-state`)
-              .attr("preserveAspectRatio", "xMinYMin meet");
+              .attr("preserveAspectRatio", "xMinYMin meet")
+              .call(this.globalDragDefine);
           },
           (update) => {
             update
@@ -1054,8 +1096,11 @@ export default {
         .select("use.focus-icon")
         .attr("href", "#defs-back")
         .on("click", function () {
+          that.backMode = true;
+
           // load new data
           const state = d3.select(this.parentNode).datum().id;
+
           that.oldFocusState = that.focusState;
           that.focusState = state;
           that.$store.dispatch("force/loadData", {
@@ -1100,8 +1145,8 @@ export default {
             enter
               .append("path")
               .attr("fill", "none")
-              .attr("stroke", "#ccc")
-              .attr("stroke-opacity", "0.4");
+              .attr("stroke", "#858eb5")
+              .attr("stroke-opacity", "0.3");
           },
           (update) => update,
           (exit) => {
@@ -3027,6 +3072,7 @@ export default {
         .on("end", dragendedSvg);
 
       svgGroups.call(dragDefine);
+      this.globalDragDefine = dragDefine;
 
       // 创建全局力道图布局
       const defaultBaseConfig = this.defaultBaseConfig;
