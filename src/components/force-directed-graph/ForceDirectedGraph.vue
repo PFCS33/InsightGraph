@@ -324,6 +324,8 @@ export default {
       svgLinkDatas: [],
       globalBundleData: [],
       preservedBundleData: [],
+      pathStack: [],
+      focusedStates: new Set(),
 
       // 原始数据
       linkStateMaps: new Map(),
@@ -476,6 +478,10 @@ export default {
         if (oldVal) {
           if (this.backMode) {
             this.backMode = false;
+            const newOldFocusInfo = this.pathStack.pop();
+
+            this.preservedBundleData = newOldFocusInfo.bundleData;
+
             const oldNewStates = this.newStateList;
             const oldShowStates = this.showStateList;
 
@@ -489,7 +495,7 @@ export default {
             const showStateList = [
               ...new Set(preservedStates.concat(Array.from(newVal.keys()))),
             ];
-            // 这里的newStates会有 olf focus state
+            // 本状态下，需要刷新bundle的state，这里的newStates会有 old focus state，且不包含回退后的“new old focus state”
             const newStates = Array.from(newVal.keys()).filter(
               (state) => state !== this.focusState
             );
@@ -502,12 +508,18 @@ export default {
               showStateList,
               newAddedStates,
               oldNewStates,
-              true
+              true,
+              newOldFocusInfo.state
             );
+
             this.svgLinkDatas = newLinkData;
             this.updateOldFocusState(this.oldFocusState, true);
             this.addNewState(newAddedStates);
+
+            this.oldFocusState = newOldFocusInfo.state;
+
             this.updateNewFocusState(this.focusState, true);
+
             this.updateGlobalForce(newSvgData, newLinkData);
           } else {
             // update
@@ -556,8 +568,10 @@ export default {
 
             // 更新全局力导图
             this.updateGlobalForce(newSvgData, newLinkData);
+            this.focusedStates.add(this.focusState);
           }
         } else {
+          this.focusedStates.add(this.focusState);
           // 获取当前需要展示的state 列表
           this.showStateList = Array.from(newVal.keys());
           this.newStateList = this.showStateList.filter(
@@ -649,6 +663,8 @@ export default {
           data: newVal,
         });
 
+        console.log(this.focusState, newVal);
+
         // global links
         const globalBundleData = [];
         const linkGTop = d3
@@ -699,17 +715,6 @@ export default {
           }
         }
 
-        // const oldFocusState = this.oldFocusState;
-        // const originIds = relatedNodeIdMap.get(oldFocusState);
-        // if (oldFocusState) {
-        //   relatedNodeIdMap.set(
-        //     oldFocusState,
-        //     this.addOldFocusCheckedData(
-        //       oldFocusState,
-        //       originIds ? originIds : []
-        //     )
-        //   );
-        // }
         // get new sub graph Data
         const filteredAllStateData =
           this.getFilterSubGraphData(relatedNodeIdMap);
@@ -740,6 +745,17 @@ export default {
         this.globalBundleData = globalBundleData;
         const selectedNodeIds = this.selectedData.nodes;
 
+        console.log(
+          "from checkIndex",
+          globalBundleData.concat(
+            this.preservedBundleData.filter(
+              (d) =>
+                d.middle.source.id !== this.oldFocusState ||
+                d.middle.target.id !== this.focusState ||
+                selectedNodeIds.includes(d.target.id)
+            )
+          )
+        );
         // update bundle line attr, 对于新旧focus之间的bundle，需要判断新focus中的点有没有被filter掉， restart函数也要进行 oldBundle的筛选
         this.updateGlobalBundle(
           globalBundleData.concat(
@@ -780,6 +796,17 @@ export default {
         if (simulation) {
           simulation.stop();
           this.restart(true, state, newVal);
+          console.log(
+            "from selected Data ",
+            this.globalBundleData.concat(
+              this.preservedBundleData.filter(
+                (d) =>
+                  d.middle.source.id !== this.oldFocusState ||
+                  d.middle.target.id !== this.focusState ||
+                  newVal.nodes.includes(d.target.id)
+              )
+            )
+          );
           this.updateGlobalBundle(
             this.globalBundleData.concat(
               this.preservedBundleData.filter(
@@ -823,6 +850,11 @@ export default {
   },
   methods: {
     updatePreservedBundle() {
+      // 先保存oldState的bundle进栈
+      this.pathStack.push({
+        state: this.oldFocusState,
+        bundleData: this.preservedBundleData,
+      });
       const newCheckedIds = Array.from(this.checkIndex.keys());
 
       return this.preservedBundleData
@@ -902,7 +934,13 @@ export default {
       simulation.alpha(this.defaultBaseConfig.alpha);
       simulation.restart();
     },
-    updateGlobalDom(showStateList, newStates, oldStates, darkMode) {
+    updateGlobalDom(
+      showStateList,
+      newStates,
+      oldStates,
+      darkMode,
+      oldNewFocusState
+    ) {
       const nodeGTop = d3
         .select("#svg-container")
         .select("#total-svg")
@@ -967,6 +1005,15 @@ export default {
                 )
                 .select("use.focus-icon")
                 .classed("not-show", true);
+            } else {
+              update
+                .filter(
+                  (d) =>
+                    this.newStateList.includes(d.id) ||
+                    d.id === oldNewFocusState
+                )
+                .select("use.focus-icon")
+                .classed("not-show", false);
             }
           },
           (exit) => {
@@ -1058,6 +1105,7 @@ export default {
 
       // 更新nodeIdMap (如果需要的话)
       if (!backMode) {
+        console.log(state);
         const nodeIdMap = this.nodeIdMaps.get(state);
         const originNodeIdMap = new Map();
 
@@ -1112,13 +1160,14 @@ export default {
         .select("g.node-group")
         .select(".focus-svg")
         .classed("focus-svg", false);
-      console.log(oldFocusSvg);
 
       if (backMode) {
         oldFocusSvg
           .select("use.focus-icon")
           .attr("href", "#defs-focus")
           .on("click", function () {
+            // 更新 preservedBundleData
+            that.preservedBundleData = that.updatePreservedBundle();
             // load new data
             const state = d3.select(this.parentNode).datum().id;
 
@@ -1189,28 +1238,38 @@ export default {
       return filteredIds;
     },
     updateGlobalBundle(globalBundleData) {
+      console.log(this.oldFocusState);
+      console.log("bindData", globalBundleData);
       const bundleG = d3
         .select("#svg-container")
         .select("#total-svg")
         .select("g.bundle-group");
       bundleG
         .selectAll("path")
-        .data(globalBundleData)
+        .data(globalBundleData, (d) => `${d.source.id}-${d.target.id}`)
         .join(
           (enter) => {
             enter
+
               .append("path")
               .attr("fill", "none")
               .attr("stroke", "#858eb5")
               .attr("stroke-opacity", "0.3");
           },
-          (update) => update,
-          (exit) => {
-            exit
-              .attr("opacity", 1)
+          (update) => {
+            update
+              .attr("opacity", 0)
               .transition()
               .duration(this.durationTime)
+              .attr("opacity", 1);
+          },
+          (exit) => {
+            exit
+
               .attr("opacity", 0)
+              .transition()
+              .duration(this.durationTime)
+              .attr("opacity", 1)
               .remove();
           }
         );

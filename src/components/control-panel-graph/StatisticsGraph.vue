@@ -680,7 +680,6 @@ export default {
             const brush = this.histogramConfig.brushes.get(type).func;
 
             brushContainer.selectAll("*").remove();
-            console.log(this.histogramConfig.brushes.get(type).position);
             brushContainer.call(brush);
             brushContainer.call(
               brush.move,
