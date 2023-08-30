@@ -74,6 +74,9 @@ export default {
       // 中间数据
       filteredNodes: null,
       filterdLinks: null,
+
+      // 是否刷新histogra图的axis
+      refreshHistogram: false,
     };
   },
 
@@ -327,6 +330,7 @@ export default {
         this.histogramConfig = {};
         this.histogramConfig.xTicks = {};
         this.histogramConfig.xFuncs = {};
+        this.histogramConfig.brushes = new Map();
 
         // 获取 总insight-type 类型
         const types = Array.from(newVal.keys());
@@ -437,28 +441,27 @@ export default {
             .attr("width", 15)
             .attr("height", 15)
             .attr("cursor", "pointer")
-            .attr("color", "#858eb5")
-            .attr("fill", "#fff")
+            .classed("histogram-type-selected", true)
             .on("mouseover", function () {
-              d3.select(this).attr("color", "#545b77").attr("fill", "#fff");
+              d3.select(this).classed("histogram-type-hovered", true);
             })
             .on("mouseout", function (event, d) {
               if (!d.selected)
                 d3.select(this)
-                  .attr("color", "transparent")
-                  .attr("fill", "#545b77");
+                  .classed("histogram-type-unselected", true)
+                  .classed("histogram-type-hovered", false);
               else {
-                d3.select(this).attr("color", "#858eb5").attr("fill", "#fff");
+                d3.select(this)
+                  .classed("histogram-type-unselected", false)
+                  .classed("histogram-type-hovered", false);
               }
             })
             .on("click", function (event, d) {
               d.selected = !d.selected;
-              if (d.selected) {
-                d3.select(this).attr("color", "#858eb5").attr("fill", "#fff");
-              } else {
-                d3.select(this)
-                  .attr("fill", "#545b77")
-                  .attr("color", "transparent");
+              if (!d.selected)
+                d3.select(this).classed("histogram-type-unselected", true);
+              else {
+                d3.select(this).classed("histogram-type-unselected", false);
               }
               that.changeTypeSelected({
                 type: d.type,
@@ -480,6 +483,7 @@ export default {
           all_ticks.forEach((d, index) => {
             if (index !== 0)
               g.append("line")
+                .attr("class", "brush-line")
                 .attr("x1", x(d))
                 .attr("x2", x(d))
                 .attr("y1", subHeight - sliderHeight)
@@ -501,6 +505,11 @@ export default {
               brushended(this, event, type);
             });
           g.append("g").attr("class", "brush").call(brush);
+
+          this.histogramConfig.brushes.set(type, {
+            func: brush,
+            position: null,
+          });
 
           function brushended(brushContainer, event, type) {
             // 获取选择的两端的svg坐标
@@ -531,10 +540,11 @@ export default {
                 ? tick
                 : acc;
             }, all_ticks[0]);
+            const position = x1 > x0 ? [x0, x1].map(x) : null;
 
-            d3.select(brushContainer)
-              .transition()
-              .call(brush.move, x1 > x0 ? [x0, x1].map(x) : null);
+            d3.select(brushContainer).transition().call(brush.move, position);
+
+            that.histogramConfig.brushes.get(type).position = position;
 
             that.changeTypeSelection({
               type: type,
@@ -604,11 +614,12 @@ export default {
         this.histogramConfig.marginLeftType = marginLeftType;
         this.histogramConfig.marginRightType = marginRightType;
         this.histogramConfig.subHeight = subHeight;
+        this.histogramConfig.sliderHeight = sliderHeight;
+        this.histogramConfig.sliderRectHeight = sliderRectHeight;
         this.histogramConfig.tooltip = tooltip;
         this.histogramConfig.types = types;
         this.histogramConfig.yTypeFunc = yType;
         this.histogramConfig.typeColor = typeColor;
-
         this.histogramConfigs.set(this.focusState, this.histogramConfig);
       } else {
         const types = this.histogramConfig.types;
@@ -617,6 +628,66 @@ export default {
           const value = newVal.get(type);
           // get old x
           const x = this.histogramConfig.xFuncs[type];
+
+          const subGraph = this.histogramConfig.container
+            .select("svg")
+            .select(`.${type}-box`);
+          if (this.refreshHistogram) {
+            const all_ticks = xTicks[type];
+            const selected = this.scoreSelectionMap.get(type).selected;
+            // 刷新小x轴
+            const xAxis = subGraph.select("g.x-axis");
+            xAxis.selectAll("*").remove();
+            xAxis
+              .call(d3.axisBottom(x).tickValues(all_ticks).tickSizeInner(3))
+              .call((g) => g.attr("font-size", "0.8rem"));
+
+            // type 的选择标签
+            subGraph
+              .select("g.sub-title")
+              .select("use")
+              .datum({
+                selected: selected,
+                type: type,
+              })
+              .classed("histogram-type-unselected", (d) => {
+                return !d.selected;
+              });
+
+            // brush 刷选框
+            subGraph.selectChildren(".brush-line").remove();
+            all_ticks.forEach((d, index) => {
+              if (index !== 0)
+                subGraph
+                  .append("line")
+                  .attr("class", "brush-line")
+                  .attr("x1", x(d))
+                  .attr("x2", x(d))
+                  .attr(
+                    "y1",
+                    this.histogramConfig.subHeight -
+                      this.histogramConfig.sliderHeight
+                  )
+                  .attr(
+                    "y2",
+                    this.histogramConfig.subHeight -
+                      this.histogramConfig.sliderHeight +
+                      this.histogramConfig.sliderRectHeight
+                  )
+                  .attr("stroke", "#fff");
+            });
+            const brushContainer = subGraph.select("g.brush");
+            const brush = this.histogramConfig.brushes.get(type).func;
+
+            brushContainer.selectAll("*").remove();
+            console.log(this.histogramConfig.brushes.get(type).position);
+            brushContainer.call(brush);
+            brushContainer.call(
+              brush.move,
+              this.histogramConfig.brushes.get(type).position
+            );
+          }
+
           // get new bins
           let bins = [];
           let maxBin = null;
@@ -641,9 +712,7 @@ export default {
               this.histogramConfig.marginTop,
             ]);
 
-          this.histogramConfig.container
-            .select("svg")
-            .select(`.${type}-box`)
+          subGraph
             .select(".max-value")
             .selectChildren("text")
             .data(maxBin ? [maxBin] : [])
@@ -669,9 +738,7 @@ export default {
               }
             );
 
-          this.histogramConfig.container
-            .select("svg")
-            .select(`.${type}-box`)
+          subGraph
             .select(".rect-group")
             .selectAll("rect")
             .data(bins, (d, index) => index)
@@ -746,6 +813,7 @@ export default {
               }
             );
         });
+        if (this.refreshHistogram) this.refreshHistogram = false;
       }
 
       const yType = this.histogramConfig.yTypeFunc;
@@ -883,7 +951,8 @@ export default {
         this.barchartConfig = this.barchartConfigs.get(newVal);
         this.histogramConfig = this.histogramConfigs.get(newVal);
         this.selectedLinkType = this.selectedLinkTypes.get(newVal);
-        console.log(this.selectedLinkType);
+        this.refreshHistogram = true;
+
         // swich state
       } else {
         this.barchartConfig = null;
@@ -1078,5 +1147,18 @@ export default {
   filter: brightness(110%);
 
   transition: filter 0.2s;
+}
+
+.histogram-type-selected {
+  color: #858eb5;
+  fill: #fff;
+}
+.histogram-type-unselected {
+  color: transparent;
+  fill: #545b77;
+}
+.histogram-type-hovered {
+  color: #545b77;
+  fill: #fff;
 }
 </style>

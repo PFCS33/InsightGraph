@@ -467,15 +467,48 @@ export default {
       // don't watch deep
       handler(newVal, oldVal) {
         // 记录 links和nodes原始数据
-        for (const [state, value] of newVal.entries()) {
-          this.linkStateMaps.set(state, value.links);
-          this.nodeStateMaps.set(state, value.nodes);
-        }
+        if (!this.backMode)
+          for (const [state, value] of newVal.entries()) {
+            this.linkStateMaps.set(state, value.links);
+            this.nodeStateMaps.set(state, value.nodes);
+          }
 
         if (oldVal) {
           if (this.backMode) {
             this.backMode = false;
-            console.log("back");
+            const oldNewStates = this.newStateList;
+            const oldShowStates = this.showStateList;
+
+            const preservedStates = oldShowStates.filter(
+              (state) => !oldNewStates.includes(state)
+            );
+
+            const newAddedStates = Array.from(newVal.keys()).filter(
+              (state) => !preservedStates.includes(state)
+            );
+            const showStateList = [
+              ...new Set(preservedStates.concat(Array.from(newVal.keys()))),
+            ];
+            // 这里的newStates会有 olf focus state
+            const newStates = Array.from(newVal.keys()).filter(
+              (state) => state !== this.focusState
+            );
+
+            // 更新全局state 信息
+            this.showStateList = showStateList;
+            this.newStateList = newStates;
+            // 更新全局svg dom元素
+            const [newSvgData, newLinkData] = this.updateGlobalDom(
+              showStateList,
+              newAddedStates,
+              oldNewStates,
+              true
+            );
+            this.svgLinkDatas = newLinkData;
+            this.updateOldFocusState(this.oldFocusState, true);
+            this.addNewState(newAddedStates);
+            this.updateNewFocusState(this.focusState, true);
+            this.updateGlobalForce(newSvgData, newLinkData);
           } else {
             // update
 
@@ -503,12 +536,13 @@ export default {
             const [newSvgData, newLinkData] = this.updateGlobalDom(
               showStateList,
               newStates,
-              filteredStates
+              filteredStates,
+              false
             );
             this.svgLinkDatas = newLinkData;
 
             // 更新旧的focus state内的点
-            this.updateOldFocusState(this.oldFocusState);
+            this.updateOldFocusState(this.oldFocusState, false);
             // 画新加入的svg图
             this.addNewState(
               newStates.filter(
@@ -518,7 +552,7 @@ export default {
             );
 
             // 更新新focus图内的点 (checkIndex的更新（空白），会导致新加入的，当前focus的直接邻居重画大小)
-            this.updateNewFocusState(this.focusState);
+            this.updateNewFocusState(this.focusState, false);
 
             // 更新全局力导图
             this.updateGlobalForce(newSvgData, newLinkData);
@@ -791,9 +825,6 @@ export default {
     updatePreservedBundle() {
       const newCheckedIds = Array.from(this.checkIndex.keys());
 
-      // console.log(newCheckedIds);
-      // console.log('preserved:',this.preservedBundleData);
-      // console.log(this.globalBundleData);
       return this.preservedBundleData
         .filter(
           (d) =>
@@ -871,7 +902,7 @@ export default {
       simulation.alpha(this.defaultBaseConfig.alpha);
       simulation.restart();
     },
-    updateGlobalDom(showStateList, newStates, oldStates) {
+    updateGlobalDom(showStateList, newStates, oldStates, darkMode) {
       const nodeGTop = d3
         .select("#svg-container")
         .select("#total-svg")
@@ -929,12 +960,14 @@ export default {
               .call(this.globalDragDefine);
           },
           (update) => {
-            update
-              .filter(
-                (d) => d.id !== this.oldFocusState && d.id !== this.focusState
-              )
-              .select("use.focus-icon")
-              .classed("not-show", true);
+            if (!darkMode) {
+              update
+                .filter(
+                  (d) => d.id !== this.oldFocusState && d.id !== this.focusState
+                )
+                .select("use.focus-icon")
+                .classed("not-show", true);
+            }
           },
           (exit) => {
             exit
@@ -999,7 +1032,7 @@ export default {
         .base(2);
       return [circleRScale, insightSizeScale];
     },
-    updateNewFocusState(state) {
+    updateNewFocusState(state, backMode) {
       const that = this;
       const nodeData = this.nodeStateMaps.get(state);
       const linkData = this.linkStateMaps.get(state);
@@ -1024,35 +1057,37 @@ export default {
         });
 
       // 更新nodeIdMap (如果需要的话)
-      const nodeIdMap = this.nodeIdMaps.get(state);
-      const originNodeIdMap = new Map();
+      if (!backMode) {
+        const nodeIdMap = this.nodeIdMaps.get(state);
+        const originNodeIdMap = new Map();
 
-      const oldNodeIds = Array.from(nodeIdMap.keys());
-      const [circleRScale, insightSizeScale] =
-        this.getSvgInnterSizeScale(nodeData);
-      this.circleRScales.set(state, circleRScale);
-      this.insightSizeScales.set(state, insightSizeScale);
+        const oldNodeIds = Array.from(nodeIdMap.keys());
+        const [circleRScale, insightSizeScale] =
+          this.getSvgInnterSizeScale(nodeData);
+        this.circleRScales.set(state, circleRScale);
+        this.insightSizeScales.set(state, insightSizeScale);
 
-      nodeData.forEach((d) => {
-        originNodeIdMap.set(d.id, d);
-        if (!oldNodeIds.includes(d.id)) {
-          const insightNum = d["insight-list"].length;
-          nodeIdMap.set(d.id, {
-            ...d,
-            insightIndex: 0,
-            insightIndexList: [...Array(insightNum).keys()],
-            circleR: circleRScale(insightNum),
-            iconSize: insightSizeScale(insightNum),
-            showDetail: false,
-            pinned: false,
-            checked: false,
-            view: null,
-            img: null,
-            rect: null,
-          });
-        }
-      });
-      this.originNodeIdMaps.set(state, originNodeIdMap);
+        nodeData.forEach((d) => {
+          originNodeIdMap.set(d.id, d);
+          if (!oldNodeIds.includes(d.id)) {
+            const insightNum = d["insight-list"].length;
+            nodeIdMap.set(d.id, {
+              ...d,
+              insightIndex: 0,
+              insightIndexList: [...Array(insightNum).keys()],
+              circleR: circleRScale(insightNum),
+              iconSize: insightSizeScale(insightNum),
+              showDetail: false,
+              pinned: false,
+              checked: false,
+              view: null,
+              img: null,
+              rect: null,
+            });
+          }
+        });
+        this.originNodeIdMaps.set(state, originNodeIdMap);
+      }
       this.$store.dispatch("force/setStatisticGraph", {
         state: state,
         data: {
@@ -1069,7 +1104,7 @@ export default {
       this.checkIndex = this.checkIndexs.get(state);
     },
 
-    updateOldFocusState(state) {
+    updateOldFocusState(state, backMode) {
       const that = this;
       const oldFocusSvg = d3
         .select("#svg-container")
@@ -1077,38 +1112,59 @@ export default {
         .select("g.node-group")
         .select(".focus-svg")
         .classed("focus-svg", false);
-      // 获取需要保存的nodes和links数据
-      const preservedNodeIds = Array.from(this.checkIndex.keys());
+      console.log(oldFocusSvg);
 
-      const linkData = this.selectedDatas.get(state).links;
-      const preservedLinks = linkData.filter(
-        (d) =>
-          preservedNodeIds.includes(d.source) &&
-          preservedNodeIds.includes(d.target)
-      );
+      if (backMode) {
+        oldFocusSvg
+          .select("use.focus-icon")
+          .attr("href", "#defs-focus")
+          .on("click", function () {
+            // load new data
+            const state = d3.select(this.parentNode).datum().id;
 
-      this.restart(true, state, {
-        links: preservedLinks,
-        nodes: preservedNodeIds,
-      });
-
-      oldFocusSvg
-        .select("use.focus-icon")
-        .attr("href", "#defs-back")
-        .on("click", function () {
-          that.backMode = true;
-
-          // load new data
-          const state = d3.select(this.parentNode).datum().id;
-
-          that.oldFocusState = that.focusState;
-          that.focusState = state;
-          that.$store.dispatch("force/loadData", {
-            state: state,
+            that.oldFocusState = that.focusState;
+            that.focusState = state;
+            that.$store.dispatch("force/loadData", {
+              state: state,
+            });
           });
-        });
+      } else {
+        // 获取需要保存的nodes和links数据
+        const preservedNodeIds = Array.from(this.checkIndex.keys());
 
-      this.updateSvgSize(oldFocusSvg, this.svgRScale, preservedNodeIds.length);
+        const linkData = this.selectedDatas.get(state).links;
+        const preservedLinks = linkData.filter(
+          (d) =>
+            preservedNodeIds.includes(d.source) &&
+            preservedNodeIds.includes(d.target)
+        );
+
+        this.restart(true, state, {
+          links: preservedLinks,
+          nodes: preservedNodeIds,
+        });
+        this.updateSvgSize(
+          oldFocusSvg,
+          this.svgRScale,
+          preservedNodeIds.length
+        );
+        oldFocusSvg
+          .select("use.focus-icon")
+          .attr("href", "#defs-back")
+          .on("click", function () {
+            that.backMode = true;
+
+            // load new data
+            const state = d3.select(this.parentNode).datum().id;
+
+            that.oldFocusState = that.focusState;
+            that.focusState = state;
+            that.$store.dispatch("force/loadData", {
+              state: state,
+            });
+          });
+      }
+
       // change data in sub-svg
       oldFocusSvg.datum().fx = null;
       oldFocusSvg.datum().fy = null;
