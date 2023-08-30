@@ -212,6 +212,17 @@
               href="/pic/amplify.png"
             ></image>
           </symbol>
+          <symbol
+            id="defs-back"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <image
+              :width="insightIconSize"
+              :height="insightIconSize"
+              href="/pic/back.png"
+            ></image>
+          </symbol>
         </defs>
       </svg>
     </div>
@@ -310,6 +321,8 @@ export default {
       selectedDatas: new Map(),
       svgNodeDatas: new Map(),
       svgLinkDatas: [],
+      globalBundleData: [],
+      preservedBundleData: [],
 
       // 原始数据
       linkStateMaps: new Map(),
@@ -459,14 +472,16 @@ export default {
 
         if (oldVal) {
           // update
+          this.preservedBundleData = this.preservedBundleData.concat(
+            this.globalBundleData
+          );
           // 获取需要被完全删除的states (不包含 oldFocusState 和 new focus state)
           const filteredStates = this.filterOldState();
           //  获取当前需要展示的state列表
-          // 新加入的 直接邻居 state ( new focus 都不包含)
+          // 新加入的 直接邻居 state ( new & old focus 都不包含)
           const newStates = Array.from(newVal.keys()).filter(
             (state) => state !== this.focusState
           );
-          newStates.push(this.oldFocusState);
 
           const originStates = this.showStateList;
           const showStateList = [
@@ -645,17 +660,17 @@ export default {
           }
         }
 
-        const oldFocusState = this.oldFocusState;
-        const originIds = relatedNodeIdMap.get(oldFocusState);
-        if (oldFocusState) {
-          relatedNodeIdMap.set(
-            oldFocusState,
-            this.addOldFocusCheckedData(
-              oldFocusState,
-              originIds ? originIds : []
-            )
-          );
-        }
+        // const oldFocusState = this.oldFocusState;
+        // const originIds = relatedNodeIdMap.get(oldFocusState);
+        // if (oldFocusState) {
+        //   relatedNodeIdMap.set(
+        //     oldFocusState,
+        //     this.addOldFocusCheckedData(
+        //       oldFocusState,
+        //       originIds ? originIds : []
+        //     )
+        //   );
+        // }
         // get new sub graph Data
         const filteredAllStateData =
           this.getFilterSubGraphData(relatedNodeIdMap);
@@ -682,8 +697,12 @@ export default {
             this.linkDistanceScale(nodeNumS) + this.linkDistanceScale(nodeNumT)
           );
         });
+        // 保存当前的bundleData
+        this.globalBundleData = globalBundleData;
         // update bundle line attr
-        this.updateGlobalBundle(globalBundleData);
+        this.updateGlobalBundle(
+          globalBundleData.concat(this.preservedBundleData)
+        );
       },
       deep: true,
     },
@@ -854,11 +873,7 @@ export default {
         target: state,
       }));
 
-      const newLinkData = newLinkData1
-        .concat(newLinkData2)
-        .filter(
-          (d) => d.source !== this.oldFocusState || d.target !== this.focusState
-        );
+      const newLinkData = newLinkData1.concat(newLinkData2);
 
       // update sub-svg dom element
       nodeGTop
@@ -871,7 +886,14 @@ export default {
               .attr("class", (d) => `${d.id}-state`)
               .attr("preserveAspectRatio", "xMinYMin meet");
           },
-          (update) => update,
+          (update) => {
+            update
+              .filter(
+                (d) => d.id !== this.oldFocusState && d.id !== this.focusState
+              )
+              .select("use.focus-icon")
+              .classed("not-show", true);
+          },
           (exit) => {
             exit
               .attr("opacity", 1)
@@ -891,6 +913,7 @@ export default {
               .attr("class", (d) => {
                 return `${d.source}_${d.target}`;
               })
+              // .attr("stroke", "#000");
               .attr("stroke", "none");
           },
           (update) => update,
@@ -1006,29 +1029,30 @@ export default {
 
     updateOldFocusState(state) {
       const that = this;
-      const OldFocusSvg = d3
+      const oldFocusSvg = d3
         .select("#svg-container")
         .select("#total-svg")
         .select("g.node-group")
         .select(".focus-svg")
         .classed("focus-svg", false);
-      // // 获取需要保存的nodes和links数据
-      // const preservedNodeIds = Array.from(this.checkIndex.keys());
+      // 获取需要保存的nodes和links数据
+      const preservedNodeIds = Array.from(this.checkIndex.keys());
 
-      // const linkData = this.selectedDatas.get(state).links;
-      // const preservedLinks = linkData.filter(
-      //   (d) =>
-      //     preservedNodeIds.includes(d.source) &&
-      //     preservedNodeIds.includes(d.target)
-      // );
+      const linkData = this.selectedDatas.get(state).links;
+      const preservedLinks = linkData.filter(
+        (d) =>
+          preservedNodeIds.includes(d.source) &&
+          preservedNodeIds.includes(d.target)
+      );
 
-      // this.restart(true, state, {
-      //   links: preservedLinks,
-      //   nodes: preservedNodeIds,
-      // });
+      this.restart(true, state, {
+        links: preservedLinks,
+        nodes: preservedNodeIds,
+      });
 
-      OldFocusSvg.select("use.focus-icon")
-        .attr("href", "#defs-focus")
+      oldFocusSvg
+        .select("use.focus-icon")
+        .attr("href", "#defs-back")
         .on("click", function () {
           // load new data
           const state = d3.select(this.parentNode).datum().id;
@@ -1039,10 +1063,11 @@ export default {
           });
         });
 
+      this.updateSvgSize(oldFocusSvg, this.svgRScale, preservedNodeIds.length);
       // change data in sub-svg
-      OldFocusSvg.datum().fx = null;
-      OldFocusSvg.datum().fy = null;
-      OldFocusSvg.datum().pinned = false;
+      oldFocusSvg.datum().fx = null;
+      oldFocusSvg.datum().fy = null;
+      oldFocusSvg.datum().pinned = false;
     },
     filterOldState() {
       const that = this;
@@ -1806,13 +1831,6 @@ export default {
                 : +that.defaultBaseConfig.alphaTarget + 0.3
             )
             .restart();
-          that.globalSimulation
-            .alphaTarget(
-              +that.defaultBaseConfig.alphaTarget + 0.3 > 1
-                ? 1
-                : +that.defaultBaseConfig.alphaTarget + 0.3
-            )
-            .restart();
         }
 
         event.subject.fx = event.subject.x;
@@ -1830,8 +1848,6 @@ export default {
       function dragended(event) {
         if (!event.active) {
           simulation.alphaTarget(that.defaultBaseConfig.alphaTarget);
-
-          that.globalSimulation.alphaTarget(that.defaultBaseConfig.alphaTarget);
         }
 
         if (event.subject.pinned) {
@@ -2828,12 +2844,16 @@ export default {
         simulation.force("x").x(newCenterCoord[0]);
         simulation.force("y").y(newCenterCoord[1]);
         simulation.force("center").x(newCenterCoord[0]).y(newCenterCoord[1]);
-        simulation.alpha(that.defaultBaseConfig.alpha / 2);
+        simulation.alpha(that.defaultBaseConfig.alpha);
         simulation.restart();
+
+        that.globalSimulation.restart();
       }
     },
     createTickFunction(svg, boundaryRect) {
+      const that = this;
       return function ticked() {
+        that.globalSimulation.restart();
         // 只通过transform.translate 更新父元素g的位置
         svg
           .select(".node-group")
@@ -2933,6 +2953,8 @@ export default {
         .attr("class", (d) => {
           return `${d.source}_${d.target}`;
         })
+        // .attr("stroke", "#000");
+
         .attr("stroke", "none");
 
       /* -------------------------------------------------------------------------- */
@@ -3048,7 +3070,9 @@ export default {
         .line()
         .x((d) => d.x)
         .y((d) => d.y)
+        // .curve(d3.curveCardinal.tension(1));
         .curve(d3.curveBundle.beta(1));
+
       function globalTicked() {
         // 移动svg时，由于左上角是x，y坐标，要记得减去高和宽的偏移
         nodeGTop.selectChildren("svg").attr("x", (d) => d.x - d.width / 2);
@@ -3075,21 +3099,21 @@ export default {
             },
             {
               x: zoomTransform.applyX(
-                ((d.middle.source.x + d.middle.target.x) * 4) / 9
+                (d.middle.source.x + d.middle.target.x) / 2
               ),
               y: zoomTransform.applyY(
-                ((d.middle.source.y + d.middle.target.y) * 4) / 9
+                (d.middle.source.y + d.middle.target.y) / 2
+              ),
+            },
+            {
+              x: zoomTransform.applyX(
+                (d.middle.source.x + d.middle.target.x * 2) / 3
+              ),
+              y: zoomTransform.applyY(
+                (d.middle.source.y + d.middle.target.y * 2) / 3
               ),
             },
 
-            {
-              x: zoomTransform.applyX(
-                ((d.middle.source.x + d.middle.target.x) * 2) / 3
-              ),
-              y: zoomTransform.applyY(
-                ((d.middle.source.y + d.middle.target.y) * 2) / 3
-              ),
-            },
             {
               x: transformToParentSVGX(
                 d.target.x,
@@ -3107,7 +3131,6 @@ export default {
         const transform = event.transform;
         // 更新地理路径组的变换属性
         groupsTop.attr("transform", transform);
-        that.globalSimulation.alpha(that.defaultBaseConfig.alpha);
         that.globalSimulation.restart();
       }
       function dragstartedSvg(event) {
