@@ -32,7 +32,7 @@
       <svg
         xmlns="http://www.w3.org/2000/svg"
         id="total-svg"
-        style="width: 100%; height: 100%"
+        style="width: 100%; height: 100%; user-select: none"
       >
         <defs>
           <filter
@@ -290,6 +290,7 @@ export default {
   data() {
     return {
       backMode: false,
+      firstUpdateFlag: true,
       // vega-lite filter
       filterNode: {
         id: null,
@@ -328,8 +329,10 @@ export default {
       focusedStates: new Set(),
 
       // 原始数据
+      // 当前要用的 link 和 node
       linkStateMaps: new Map(),
       nodeStateMaps: new Map(),
+      // 累计的 nodeIdMaps
       originNodeIdMaps: new Map(),
       showStateList: [],
       newStateList: [],
@@ -471,9 +474,12 @@ export default {
         // 记录 links和nodes原始数据
         if (!this.backMode)
           for (const [state, value] of newVal.entries()) {
-            this.linkStateMaps.set(state, value.links);
-            this.nodeStateMaps.set(state, value.nodes);
+            if (!this.focusedStates.has(state)) {
+              this.linkStateMaps.set(state, value.links);
+              this.nodeStateMaps.set(state, value.nodes);
+            }
           }
+        this.firstUpdateFlag = true;
 
         if (oldVal) {
           if (this.backMode) {
@@ -663,8 +669,6 @@ export default {
           data: newVal,
         });
 
-        console.log(this.focusState, newVal);
-
         // global links
         const globalBundleData = [];
         const linkGTop = d3
@@ -792,12 +796,13 @@ export default {
         const state = this.focusState;
         const simulation = this.simulations.get(state);
         this.selectedDatas.set(state, newVal);
+        console.log("selected:", newVal);
 
         if (simulation) {
           simulation.stop();
           this.restart(true, state, newVal);
           console.log(
-            "from selected Data ",
+            "from selected data",
             this.globalBundleData.concat(
               this.preservedBundleData.filter(
                 (d) =>
@@ -807,16 +812,19 @@ export default {
               )
             )
           );
-          this.updateGlobalBundle(
-            this.globalBundleData.concat(
-              this.preservedBundleData.filter(
-                (d) =>
-                  d.middle.source.id !== this.oldFocusState ||
-                  d.middle.target.id !== this.focusState ||
-                  newVal.nodes.includes(d.target.id)
+          if (!this.firstUpdateFlag) {
+            this.updateGlobalBundle(
+              this.globalBundleData.concat(
+                this.preservedBundleData.filter(
+                  (d) =>
+                    d.middle.source.id !== this.oldFocusState ||
+                    d.middle.target.id !== this.focusState ||
+                    newVal.nodes.includes(d.target.id)
+                )
               )
-            )
-          );
+            );
+          }
+          this.firstUpdateFlag = false;
         } else {
           // draw force graph
           this.drawGraph(newVal);
@@ -1104,8 +1112,7 @@ export default {
         });
 
       // 更新nodeIdMap (如果需要的话)
-      if (!backMode) {
-        console.log(state);
+      if (!backMode && !this.focusedStates.has(state)) {
         const nodeIdMap = this.nodeIdMaps.get(state);
         const originNodeIdMap = new Map();
 
@@ -1238,38 +1245,41 @@ export default {
       return filteredIds;
     },
     updateGlobalBundle(globalBundleData) {
-      console.log(this.oldFocusState);
-      console.log("bindData", globalBundleData);
+      console.log("from func", globalBundleData);
       const bundleG = d3
         .select("#svg-container")
         .select("#total-svg")
         .select("g.bundle-group");
       bundleG
         .selectAll("path")
-        .data(globalBundleData, (d) => `${d.source.id}-${d.target.id}`)
+        .data(globalBundleData, (d) => {
+          return `${d.source.id}-${d.target.id}`;
+        })
         .join(
           (enter) => {
+            // console.log("enter", enter);
             enter
-
               .append("path")
               .attr("fill", "none")
               .attr("stroke", "#858eb5")
-              .attr("stroke-opacity", "0.3");
-          },
-          (update) => {
-            update
+              .attr("stroke-opacity", "0.3")
               .attr("opacity", 0)
               .transition()
               .duration(this.durationTime)
               .attr("opacity", 1);
           },
+          (update) => {
+            // console.log("update", update);
+            update.transition().duration(this.durationTime);
+          },
           (exit) => {
+            // console.log("exit", exit);
             exit
 
-              .attr("opacity", 0)
+              .attr("opacity", 1)
               .transition()
               .duration(this.durationTime)
-              .attr("opacity", 1)
+              .attr("opacity", 0)
               .remove();
           }
         );
