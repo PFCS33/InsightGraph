@@ -2,9 +2,14 @@ export default {
   namespaced: true,
   state() {
     return {
+      baseUrl: "http://127.0.0.1:4523/m1/3208600-0-default/",
+
       // load state
       loading: null,
-      error: null,
+      error: {
+        state: true,
+        message: "",
+      },
       // statistic graph data, single state
       focusState: null,
       totalData: null,
@@ -19,6 +24,9 @@ export default {
     };
   },
   getters: {
+    baseUrl(state) {
+      return state.baseUrl;
+    },
     totalData(state) {
       return state.totalData;
     },
@@ -66,18 +74,58 @@ export default {
     setError(state, payload) {
       state.error = payload;
     },
-
     setFocusState(state, payload) {
       state.focusState = payload;
     },
   },
   actions: {
+    clearData(context) {
+      context.commit("setFocusState", null);
+      context.commit("setTotalData", null);
+      context.commit("setSelectedData", null);
+      context.commit("setAllStateLinksMap", null);
+      context.commit("setAllStatesData", null);
+
+      context.getters.scoreSelectionMaps.clear();
+    },
     setStatisticGraph(context, payload) {
       const state = payload.state;
       const data = payload.data;
       // reset total data and focus state
       context.commit("setTotalData", data);
       context.commit("setFocusState", state);
+    },
+    uploadData(context, payload) {
+      const formData = new FormData();
+      formData.append("file", payload);
+      const url = context.getters.baseUrl + "table";
+      context.commit("setLoading", true);
+      fetch(url, {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("RESPONSE ERROR");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          context.commit("setError", {
+            state: false,
+            message: "",
+          });
+          context.commit("setLoading", false);
+          context.dispatch("handleData", data);
+        })
+        .catch((error) => {
+          context.commit("setError", {
+            state: true,
+            message: error.message,
+          });
+          context.commit("setLoading", false);
+          console.error("error:", error.message);
+        });
     },
 
     // load test data
@@ -86,8 +134,7 @@ export default {
       // const url = `data/${file}`;
       const targetState = payload.state;
       context.commit("setLoading", true);
-      const url =
-        "http://127.0.0.1:4523/m1/3208600-0-default/getState/" + targetState;
+      const url = context.getters.baseUrl + "state/" + targetState;
       fetch(url)
         .then((response) => {
           if (!response.ok) {
@@ -101,58 +148,7 @@ export default {
             state: false,
             message: "",
           });
-          // get table data
-          const tableData = data.table;
-          context.dispatch("table/loadHeadData", tableData, { root: true });
-
-          // 获取不同state的对应的links和nodes map
-          const allStatesNodes = d3.group(data.graph.nodes, (d) => d.state);
-          const allStatesLinks = getLinksByNodes(
-            allStatesNodes,
-            data.graph.links
-          );
-          const allStatesData = new Map();
-
-          Array.from(allStatesNodes.keys()).forEach((state) => {
-            allStatesData.set(state, {
-              links: allStatesLinks.get(state),
-              nodes: allStatesNodes.get(state),
-            });
-          });
-
-          context.commit("setAllStatesData", allStatesData);
-          const stateLinksMap = new Map();
-          const stateLinks = data["state_links"];
-
-          Object.keys(stateLinks).forEach((nodeId) => {
-            const stateObj = stateLinks[nodeId];
-            const stateMaps = new Map();
-            Object.keys(stateObj).forEach((state) => {
-              stateMaps.set(state, stateObj[state]);
-            });
-            stateLinksMap.set(nodeId, stateMaps);
-          });
-
-          context.commit("setAllStateLinksMap", stateLinksMap);
-
-          function getLinksByNodes(filteredNodes, allLinks) {
-            const allStatesLinks = new Map();
-            Array.from(filteredNodes.keys()).forEach((state) =>
-              allStatesLinks.set(state, [])
-            );
-            allLinks.forEach((link) => {
-              for (let [state, nodes] of filteredNodes.entries()) {
-                if (
-                  nodes.find((d) => d.id === link.source) &&
-                  nodes.find((d) => d.id === link.target)
-                ) {
-                  allStatesLinks.get(state).push(link);
-                  break;
-                }
-              }
-            });
-            return allStatesLinks;
-          }
+          context.dispatch("handleData", data);
         })
         .catch((error) => {
           context.commit("setError", {
@@ -162,6 +158,60 @@ export default {
           context.commit("setLoading", false);
           console.error("error:", error.message);
         });
+    },
+
+    handleData(context, payload) {
+      const data = payload;
+
+      // get table data
+      const tableData = data.table;
+      context.dispatch("table/loadHeadData", tableData, { root: true });
+
+      // 获取不同state的对应的links和nodes map
+      const allStatesNodes = d3.group(data.graph.nodes, (d) => d.state);
+      const allStatesLinks = getLinksByNodes(allStatesNodes, data.graph.links);
+      const allStatesData = new Map();
+
+      Array.from(allStatesNodes.keys()).forEach((state) => {
+        allStatesData.set(state, {
+          links: allStatesLinks.get(state),
+          nodes: allStatesNodes.get(state),
+        });
+      });
+
+      context.commit("setAllStatesData", allStatesData);
+      const stateLinksMap = new Map();
+      const stateLinks = data["state_links"];
+
+      Object.keys(stateLinks).forEach((nodeId) => {
+        const stateObj = stateLinks[nodeId];
+        const stateMaps = new Map();
+        Object.keys(stateObj).forEach((state) => {
+          stateMaps.set(state, stateObj[state]);
+        });
+        stateLinksMap.set(nodeId, stateMaps);
+      });
+
+      context.commit("setAllStateLinksMap", stateLinksMap);
+
+      function getLinksByNodes(filteredNodes, allLinks) {
+        const allStatesLinks = new Map();
+        Array.from(filteredNodes.keys()).forEach((state) =>
+          allStatesLinks.set(state, [])
+        );
+        allLinks.forEach((link) => {
+          for (let [state, nodes] of filteredNodes.entries()) {
+            if (
+              nodes.find((d) => d.id === link.source) &&
+              nodes.find((d) => d.id === link.target)
+            ) {
+              allStatesLinks.get(state).push(link);
+              break;
+            }
+          }
+        });
+        return allStatesLinks;
+      }
     },
   },
 };

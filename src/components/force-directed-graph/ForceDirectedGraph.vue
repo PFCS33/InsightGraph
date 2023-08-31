@@ -287,6 +287,9 @@ export default {
       return this.$store.getters["force/scoreSelectionMaps"];
     },
   },
+  beforeUnmount() {
+    console.log("destroyed");
+  },
   data() {
     return {
       backMode: false,
@@ -818,6 +821,90 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    clearData() {
+      this.backMode = false;
+      this.firstUpdateFlag = true;
+      // vega-lite filter
+      this.filterNode = {
+        id: null,
+        state: null,
+        insightIndex: null,
+        "insight-list": null,
+      };
+      // top svg force control
+      this.maxNodeNum = 0;
+      this.svgRScale = null;
+      this.linkDistanceScale = null;
+      this.chargeStrengthScale = null;
+      this.containerWidth = null;
+      this.containerHeight = null;
+      // mutiple states
+      this.focusState = "S0";
+      this.oldFocusState = null;
+      this.selectedNodes = new Map();
+      this.checkIndexs = new Map();
+      this.hoverIndexs = new Map();
+      this.pinnedIndexs = new Map();
+      this.simulations = new Map();
+      this.neighborMaps = new Map(); // (id; gdata)
+      this.nodeIdMaps = new Map();
+      this.circleRScales = new Map();
+      this.insightSizeScales = new Map();
+      this.selectedIds = new Map();
+
+      this.selectedDatas = new Map();
+      this.svgNodeDatas = new Map();
+      this.svgLinkDatas = [];
+      this.globalBundleData = [];
+      this.preservedBundleData = [];
+      this.pathStack = [];
+      this.focusedStates = new Set();
+
+      // 原始数据
+      // 当前要用的 link 和 node
+      this.linkStateMaps = new Map();
+      this.nodeStateMaps = new Map();
+      // 累计的 nodeIdMaps
+      this.originNodeIdMaps = new Map();
+      this.showStateList = [];
+      this.newStateList = [];
+
+      this.crossStatesHoveredNeighbor = null;
+      this.globalSimulation = null;
+      this.globalDragDefine = null;
+
+      // focus control
+      // (id;view)
+      this.showIndex = new Map();
+      // (id; g)
+      this.pinnedIndex = new Map();
+      // (id; row; col)
+      this.checkIndex = new Map();
+      // (id; row;col)
+      this.hoverIndex = {
+        id: null,
+        row: null,
+        col: null,
+      };
+      // id
+      this.selectedNode = {
+        id: null,
+        state: null,
+        insightIndex: null,
+        "insight-list": null,
+        col: null,
+        row: null,
+      };
+      this.nodeTypeColor = null;
+
+      this.circleRScale = null;
+      this.insightSizeScale = null;
+      this.showMoreIcon = false;
+      this.showMorePanel = false;
+      this.hidePanelMode = false;
+
+      this.editMode = false;
+    },
     filterBundleBySelection(bundleData) {
       console.log(this.preservedBundleData);
       const focusSelectedIds = this.selectedDatas.get(this.focusState).nodes;
