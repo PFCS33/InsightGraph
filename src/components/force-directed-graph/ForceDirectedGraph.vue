@@ -287,9 +287,7 @@ export default {
       return this.$store.getters["force/scoreSelectionMaps"];
     },
   },
-  beforeUnmount() {
-    console.log("destroyed");
-  },
+
   data() {
     return {
       backMode: false,
@@ -750,7 +748,6 @@ export default {
         // 保存当前的bundleData
         this.globalBundleData = globalBundleData;
 
-        console.log("from checkIndex");
         // update bundle line attr, 对于新旧focus之间的bundle，需要判断新focus中的点有没有被filter掉， restart函数也要进行 oldBundle的筛选
         this.updateGlobalBundle(this.filterBundleBySelection(globalBundleData));
       },
@@ -906,7 +903,6 @@ export default {
       this.editMode = false;
     },
     filterBundleBySelection(bundleData) {
-      console.log(this.preservedBundleData);
       const focusSelectedIds = this.selectedDatas.get(this.focusState).nodes;
 
       return bundleData
@@ -3155,6 +3151,7 @@ export default {
       const nodeGTop = svgTop.append("g").attr("class", "node-group");
       const bundleGTop = svgTop.append("g").attr("class", "bundle-group");
       const groupsTop = svgTop.selectChildren("g.link-group,g.node-group");
+      // const groupsTop = svgTop.selectChildren("g");
 
       /* -------------------------------------------------------------------------- */
       // svg子图初步生成
@@ -3326,16 +3323,19 @@ export default {
           .attr("y2", (d) => d.target.y);
 
         const zoomTransform = d3.zoomTransform(svgTop.node());
+
         bundleGTop.selectChildren("path").attr("d", (d) => {
           return lineGenerator([
             {
               x: transformToParentSVGX(
                 d.source.x,
-                nodeGTop.select(`.${d.source.state}-state`).node()
+                nodeGTop.select(`.${d.source.state}-state`).node(),
+                svgTop.node()
               ),
               y: transformToParentSVGY(
                 d.source.y,
-                nodeGTop.select(`.${d.source.state}-state`).node()
+                nodeGTop.select(`.${d.source.state}-state`).node(),
+                svgTop.node()
               ),
             },
             {
@@ -3358,11 +3358,13 @@ export default {
             {
               x: transformToParentSVGX(
                 d.target.x,
-                nodeGTop.select(`.${d.target.state}-state`).node()
+                nodeGTop.select(`.${d.target.state}-state`).node(),
+                svgTop.node()
               ),
               y: transformToParentSVGY(
                 d.target.y,
-                nodeGTop.select(`.${d.target.state}-state`).node()
+                nodeGTop.select(`.${d.target.state}-state`).node(),
+                svgTop.node()
               ),
             },
           ]);
@@ -3409,47 +3411,59 @@ export default {
         }
       }
 
-      function transformToParentSVGX(x, childSVGElement) {
+      function transformToParentSVGX(x, childSVGElement, parentSVGElement) {
         let point = childSVGElement.createSVGPoint();
         point.x = x;
         point.y = 0;
-
-        // 获取子 SVG 的 CTM
-        let childMatrix = childSVGElement.getCTM();
-
-        // 创建一个表示 d3.zoom 转换的 SVGMatrix
         let zoomTransform = d3.zoomTransform(childSVGElement);
+
         let zoomMatrix = childSVGElement
           .createSVGMatrix()
           .translate(zoomTransform.x, zoomTransform.y)
           .scale(zoomTransform.k);
-        // 结合两个转换
-        let combinedMatrix = childMatrix.multiply(zoomMatrix);
-        // 使用组合的转换来转换点
-        let transformedPoint = point.matrixTransform(combinedMatrix);
 
-        return transformedPoint.x;
+        point = point.matrixTransform(zoomMatrix);
+        // 获取子 SVG 到屏幕的转换
+        let childToScreenMatrix = childSVGElement.getScreenCTM();
+
+        // 获取屏幕到父 SVG 的转换
+        let screenToParentMatrix = parentSVGElement.getScreenCTM().inverse();
+
+        // 将点从子SVG坐标转换到屏幕坐标
+        let screenPoint = point.matrixTransform(childToScreenMatrix);
+
+        // 然后将屏幕坐标转换为父SVG的坐标
+        let parentPoint = screenPoint.matrixTransform(screenToParentMatrix);
+
+        return parentPoint.x;
       }
 
-      function transformToParentSVGY(y, childSVGElement) {
-        let point = childSVGElement.ownerSVGElement.createSVGPoint();
+      function transformToParentSVGY(y, childSVGElement, parentSVGElement) {
+        let point = childSVGElement.createSVGPoint();
         point.x = 0;
         point.y = y;
 
-        // 获取子 SVG 的 CTM
-        let childMatrix = childSVGElement.getCTM();
-
-        // 创建一个表示 d3.zoom 转换的 SVGMatrix
         let zoomTransform = d3.zoomTransform(childSVGElement);
         let zoomMatrix = childSVGElement
           .createSVGMatrix()
           .translate(zoomTransform.x, zoomTransform.y)
           .scale(zoomTransform.k);
-        // 结合两个转换
-        let combinedMatrix = childMatrix.multiply(zoomMatrix);
-        // 使用组合的转换来转换点
-        let transformedPoint = point.matrixTransform(combinedMatrix);
-        return transformedPoint.y;
+
+        point = point.matrixTransform(zoomMatrix);
+
+        // 获取子 SVG 到屏幕的转换
+        let childToScreenMatrix = childSVGElement.getScreenCTM();
+
+        // 获取屏幕到父 SVG 的转换
+        let screenToParentMatrix = parentSVGElement.getScreenCTM().inverse();
+
+        // 将点从子SVG坐标转换到屏幕坐标
+        let screenPoint = point.matrixTransform(childToScreenMatrix);
+
+        // 然后将屏幕坐标转换为父SVG的坐标
+        let parentPoint = screenPoint.matrixTransform(screenToParentMatrix);
+
+        return parentPoint.y;
       }
     },
 
