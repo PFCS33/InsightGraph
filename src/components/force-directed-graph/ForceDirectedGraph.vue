@@ -483,7 +483,6 @@ export default {
 
         if (oldVal) {
           if (this.backMode) {
-            this.backMode = false;
             const newOldFocusInfo = this.pathStack.pop();
 
             this.preservedBundleData = newOldFocusInfo.bundleData;
@@ -747,30 +746,10 @@ export default {
         });
         // 保存当前的bundleData
         this.globalBundleData = globalBundleData;
-        const selectedNodeIds = this.selectedData.nodes;
 
-        console.log(
-          "from checkIndex",
-          globalBundleData.concat(
-            this.preservedBundleData.filter(
-              (d) =>
-                d.middle.source.id !== this.oldFocusState ||
-                d.middle.target.id !== this.focusState ||
-                selectedNodeIds.includes(d.target.id)
-            )
-          )
-        );
+        console.log("from checkIndex");
         // update bundle line attr, 对于新旧focus之间的bundle，需要判断新focus中的点有没有被filter掉， restart函数也要进行 oldBundle的筛选
-        this.updateGlobalBundle(
-          globalBundleData.concat(
-            this.preservedBundleData.filter(
-              (d) =>
-                d.middle.source.id !== this.oldFocusState ||
-                d.middle.target.id !== this.focusState ||
-                selectedNodeIds.includes(d.target.id)
-            )
-          )
-        );
+        this.updateGlobalBundle(this.filterBundleBySelection(globalBundleData));
       },
       deep: true,
     },
@@ -796,32 +775,14 @@ export default {
         const state = this.focusState;
         const simulation = this.simulations.get(state);
         this.selectedDatas.set(state, newVal);
-        console.log("selected:", newVal);
 
         if (simulation) {
           simulation.stop();
           this.restart(true, state, newVal);
-          console.log(
-            "from selected data",
-            this.globalBundleData.concat(
-              this.preservedBundleData.filter(
-                (d) =>
-                  d.middle.source.id !== this.oldFocusState ||
-                  d.middle.target.id !== this.focusState ||
-                  newVal.nodes.includes(d.target.id)
-              )
-            )
-          );
+
           if (!this.firstUpdateFlag) {
             this.updateGlobalBundle(
-              this.globalBundleData.concat(
-                this.preservedBundleData.filter(
-                  (d) =>
-                    d.middle.source.id !== this.oldFocusState ||
-                    d.middle.target.id !== this.focusState ||
-                    newVal.nodes.includes(d.target.id)
-                )
-              )
+              this.filterBundleBySelection(this.globalBundleData)
             );
           }
           this.firstUpdateFlag = false;
@@ -857,6 +818,30 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    filterBundleBySelection(bundleData) {
+      console.log(this.preservedBundleData);
+      const focusSelectedIds = this.selectedDatas.get(this.focusState).nodes;
+
+      return bundleData
+        .filter((d) => {
+          const targetState = d.target.state;
+          const targetSelectedData = this.selectedDatas.get(targetState);
+          if (targetSelectedData) {
+            return targetSelectedData.nodes.includes(d.target.id);
+          } else {
+            return true;
+          }
+        })
+        .concat(
+          this.preservedBundleData.filter((d) => {
+            return (
+              d.source.state !== this.oldFocusState ||
+              d.target.state !== this.focusState ||
+              focusSelectedIds.includes(d.target.id)
+            );
+          })
+        );
+    },
     updatePreservedBundle() {
       // 先保存oldState的bundle进栈
       this.pathStack.push({
@@ -906,6 +891,7 @@ export default {
             .attr("height", boundaryR / 2.5)
             .attr("cursor", "pointer")
             .on("click", function () {
+              that.backMode = false;
               // 更新 preservedBundleData
               that.preservedBundleData = that.updatePreservedBundle();
               // load new data
@@ -1173,6 +1159,7 @@ export default {
           .select("use.focus-icon")
           .attr("href", "#defs-focus")
           .on("click", function () {
+            that.backMode = false;
             // 更新 preservedBundleData
             that.preservedBundleData = that.updatePreservedBundle();
             // load new data
@@ -1245,7 +1232,6 @@ export default {
       return filteredIds;
     },
     updateGlobalBundle(globalBundleData) {
-      console.log("from func", globalBundleData);
       const bundleG = d3
         .select("#svg-container")
         .select("#total-svg")
@@ -1257,7 +1243,6 @@ export default {
         })
         .join(
           (enter) => {
-            // console.log("enter", enter);
             enter
               .append("path")
               .attr("fill", "none")
@@ -1269,11 +1254,9 @@ export default {
               .attr("opacity", 1);
           },
           (update) => {
-            // console.log("update", update);
             update.transition().duration(this.durationTime);
           },
           (exit) => {
-            // console.log("exit", exit);
             exit
 
               .attr("opacity", 1)
