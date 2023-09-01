@@ -223,6 +223,17 @@
               href="/pic/back.png"
             ></image>
           </symbol>
+          <symbol
+            id="defs-shrink"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <image
+              :width="insightIconSize"
+              :height="insightIconSize"
+              href="/pic/shrink.png"
+            ></image>
+          </symbol>
         </defs>
       </svg>
     </div>
@@ -290,6 +301,7 @@ export default {
 
   data() {
     return {
+      amplifyMode: false,
       backMode: false,
       firstUpdateFlag: true,
       // vega-lite filter
@@ -818,89 +830,64 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
-    clearData() {
-      this.backMode = false;
-      this.firstUpdateFlag = true;
-      // vega-lite filter
-      this.filterNode = {
-        id: null,
-        state: null,
-        insightIndex: null,
-        "insight-list": null,
-      };
-      // top svg force control
-      this.maxNodeNum = 0;
-      this.svgRScale = null;
-      this.linkDistanceScale = null;
-      this.chargeStrengthScale = null;
-      this.containerWidth = null;
-      this.containerHeight = null;
-      // mutiple states
-      this.focusState = "S0";
-      this.oldFocusState = null;
-      this.selectedNodes = new Map();
-      this.checkIndexs = new Map();
-      this.hoverIndexs = new Map();
-      this.pinnedIndexs = new Map();
-      this.simulations = new Map();
-      this.neighborMaps = new Map(); // (id; gdata)
-      this.nodeIdMaps = new Map();
-      this.circleRScales = new Map();
-      this.insightSizeScales = new Map();
-      this.selectedIds = new Map();
+    enterAmplifyMode(state, mode) {
+      const that = this;
 
-      this.selectedDatas = new Map();
-      this.svgNodeDatas = new Map();
-      this.svgLinkDatas = [];
-      this.globalBundleData = [];
-      this.preservedBundleData = [];
-      this.pathStack = [];
-      this.focusedStates = new Set();
+      const svgTop = d3.select("#svg-container").select("#total-svg");
+      svgTop
+        .transition()
+        .duration(this.durationTime)
+        .style("background-color", () => (mode ? "#fff" : "transparent"));
 
-      // 原始数据
-      // 当前要用的 link 和 node
-      this.linkStateMaps = new Map();
-      this.nodeStateMaps = new Map();
-      // 累计的 nodeIdMaps
-      this.originNodeIdMaps = new Map();
-      this.showStateList = [];
-      this.newStateList = [];
+      svgTop
+        .selectChildren("g.link-group,g.bundle-group")
+        .attr("opacity", mode ? 1 : 0)
+        .transition()
+        .duration(this.durationTime)
+        .attr("opacity", mode ? 0 : 1)
+        .on("end", function () {
+          d3.select(this).classed("not-show", mode);
+        });
+      svgTop
+        .select("g.node-group")
+        .selectChildren("svg")
+        .each(function (d) {
+          if (d.id !== state) {
+            d3.select(this)
+              .attr("opacity", mode ? 1 : 0)
+              .transition()
+              .duration(that.durationTime)
+              .attr("opacity", mode ? 0 : 1)
+              .on("end", function () {
+                d3.select(this).classed("not-show", mode);
+              });
+          }
+        });
 
-      this.crossStatesHoveredNeighbor = null;
-      this.globalSimulation = null;
-      this.globalDragDefine = null;
+      const svg = d3
+        .select("#svg-container")
+        .select("#total-svg")
+        .select("g.node-group")
+        .select(`.${state}-state`);
 
-      // focus control
-      // (id;view)
-      this.showIndex = new Map();
-      // (id; g)
-      this.pinnedIndex = new Map();
-      // (id; row; col)
-      this.checkIndex = new Map();
-      // (id; row;col)
-      this.hoverIndex = {
-        id: null,
-        row: null,
-        col: null,
-      };
-      // id
-      this.selectedNode = {
-        id: null,
-        state: null,
-        insightIndex: null,
-        "insight-list": null,
-        col: null,
-        row: null,
-      };
-      this.nodeTypeColor = null;
-
-      this.circleRScale = null;
-      this.insightSizeScale = null;
-      this.showMoreIcon = false;
-      this.showMorePanel = false;
-      this.hidePanelMode = false;
-
-      this.editMode = false;
+      svg
+        .selectChildren(".background-shape, text, use")
+        .attr("opacity", mode ? 1 : 0)
+        .transition()
+        .duration(this.durationTime)
+        .attr("opacity", mode ? 0 : 1)
+        .on("end", function () {
+          d3.select(this).classed("not-show", mode);
+        });
+      svgTop
+        .select(".shrink-icon")
+        .attr("opacity", mode ? 0 : 1)
+        .transition()
+        .duration(this.durationTime)
+        .attr("opacity", mode ? 1 : 0)
+        .on("end", function () {
+          d3.select(this).classed("not-show", !mode);
+        });
     },
     filterBundleBySelection(bundleData) {
       const focusSelectedIds = this.selectedDatas.get(this.focusState).nodes;
@@ -956,11 +943,13 @@ export default {
             .attr("href", "#defs-amplify")
             .attr("x", boundary[0] + 5)
             .attr("y", boundary[1] + 5)
-            .attr("width", boundaryR / 2.5)
-            .attr("height", boundaryR / 2.5)
+            .attr("width", "6%")
+            .attr("height", "6%")
             .attr("cursor", "pointer")
             .on("click", function () {
+              that.amplifyMode = true;
               const state = d3.select(this.parentNode).datum().id;
+              that.enterAmplifyMode(state, true);
             });
           break;
         case "focus":
@@ -970,8 +959,8 @@ export default {
             .attr("href", "#defs-focus")
             .attr("x", boundary[0] + 5)
             .attr("y", boundary[1] + 5)
-            .attr("width", boundaryR / 2.5)
-            .attr("height", boundaryR / 2.5)
+            .attr("width", "6%")
+            .attr("height", "6%")
             .attr("cursor", "pointer")
             .on("click", function () {
               that.backMode = false;
@@ -1178,6 +1167,8 @@ export default {
         .attr("href", "#defs-amplify")
         .on("click", function () {
           const state = d3.select(this.parentNode).datum().id;
+          that.amplifyMode = true;
+          that.enterAmplifyMode(state, true);
         });
 
       // 更新nodeIdMap (如果需要的话)
@@ -2724,12 +2715,14 @@ export default {
       this.updateSvgSize(svg, this.svgRScale, this.maxNodeNum);
       const boundaryR = this.svgRScale(this.maxNodeNum);
 
-      const boundary = [
-        -boundaryR * 1.5,
-        -boundaryR * 1.5,
-        boundaryR * 5,
-        boundaryR * 5,
-      ];
+      // const boundary = [
+      //   -boundaryR * 1.5,
+      //   -boundaryR * 1.5,
+      //   boundaryR * 5,
+      //   boundaryR * 5,
+      // ];
+      const boundary = [0, 0, boundaryR * 5, boundaryR * 5];
+      const center = boundaryR * 2.5;
 
       svg
         .attr("viewBox", boundary)
@@ -2748,8 +2741,8 @@ export default {
         .attr("class", "background-shape")
         .attr("x", boundary[0])
         .attr("y", boundary[1])
-        .attr("width", boundary[2])
-        .attr("height", boundary[3])
+        .attr("width", "100%")
+        .attr("height", "100%")
         .on("dblclick", function () {
           const svgData = d3.select(this.parentNode).datum();
           svgData.pinned = !svgData.pinned;
@@ -2800,8 +2793,8 @@ export default {
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "hanging")
         .style("fill", "#aaa")
-        .attr("x", boundary[0] + boundary[2] - 5)
-        .attr("y", boundary[1] + 5);
+        .attr("x", boundary[2] - 5)
+        .attr("y", 5);
       /* -------------------------------------------------------------------------- */
 
       const oldBoundaryRect = [
@@ -2823,7 +2816,7 @@ export default {
         ticked,
         neighborMap,
         showIndex,
-        boundaryR
+        center
       );
       this.simulations.set(this.focusState, simulation);
 
@@ -2919,13 +2912,14 @@ export default {
       // 更新svg 宽高
       this.updateSvgSize(svg, this.svgRScale, 0);
       const boundaryR = this.svgRScale(this.maxNodeNum);
-      const boundary = [
-        -boundaryR * 1.5,
-        -boundaryR * 1.5,
-        boundaryR * 5,
-        boundaryR * 5,
-      ];
-
+      // const boundary = [
+      //   -boundaryR * 1.5,
+      //   -boundaryR * 1.5,
+      //   boundaryR * 5,
+      //   boundaryR * 5,
+      // ];
+      const boundary = [0, 0, boundaryR * 5, boundaryR * 5];
+      const center = boundaryR * 2.5;
       svg.attr("viewBox", boundary).attr("overflow", "visible");
 
       // 设置svg子元素的绑定的data属性
@@ -2939,8 +2933,8 @@ export default {
         .attr("class", "background-shape")
         .attr("x", boundary[0])
         .attr("y", boundary[1])
-        .attr("width", boundary[2])
-        .attr("height", boundary[3])
+        .attr("width", "100%")
+        .attr("height", "100%")
         .on("dblclick", function () {
           const svgData = d3.select(this.parentNode).datum();
           svgData.pinned = !svgData.pinned;
@@ -2995,8 +2989,8 @@ export default {
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "hanging")
         .style("fill", "#aaa")
-        .attr("x", boundary[0] + boundary[2] - 5)
-        .attr("y", boundary[1] + 5);
+        .attr("x", boundary[2] - 5)
+        .attr("y", 5);
 
       /* -------------------------------------------------------------------------- */
       //力导向系统创建;
@@ -3019,7 +3013,7 @@ export default {
         ticked,
         neighborMap,
         showIndex,
-        boundaryR
+        center
       );
       this.simulations.set(state, simulation);
       /* -------------------------------------------------------------------------- */
@@ -3050,7 +3044,6 @@ export default {
       const zoom = d3
         .zoom()
         .scaleExtent([0.3, 8]) // 设置缩放的范围
-
         .on("zoom", zoomed)
         .filter((event) => {
           return event.shiftKey;
@@ -3091,25 +3084,32 @@ export default {
       return function ticked() {
         that.globalSimulation.restart();
         // 只通过transform.translate 更新父元素g的位置
-        svg
-          .select(".node-group")
-          .selectChildren("g")
-          .style("transform", (d) => {
-            if (d.x < boundaryRect[0]) {
-              d.x = boundaryRect[0];
-            } else if (d.x > boundaryRect[2]) {
-              d.x = boundaryRect[2];
-            }
 
-            if (d.y < boundaryRect[1]) {
-              d.y = boundaryRect[1];
-            } else if (d.y > boundaryRect[3]) {
-              d.y = boundaryRect[3];
-            }
+        if (!that.amplifyMode) {
+          svg
+            .select(".node-group")
+            .selectChildren("g")
+            .style("transform", (d) => {
+              if (d.x < boundaryRect[0]) {
+                d.x = boundaryRect[0];
+              } else if (d.x > boundaryRect[2]) {
+                d.x = boundaryRect[2];
+              }
 
-            return `translate(${d.x}px,${d.y}px)`;
-          });
+              if (d.y < boundaryRect[1]) {
+                d.y = boundaryRect[1];
+              } else if (d.y > boundaryRect[3]) {
+                d.y = boundaryRect[3];
+              }
 
+              return `translate(${d.x}px,${d.y}px)`;
+            });
+        } else {
+          svg
+            .select(".node-group")
+            .selectChildren("g")
+            .style("transform", (d) => `translate(${d.x}px,${d.y}px)`);
+        }
         svg
           .select(".link-group")
           .selectChildren("g")
@@ -3153,6 +3153,23 @@ export default {
       const groupsTop = svgTop.selectChildren("g.link-group,g.node-group");
       // const groupsTop = svgTop.selectChildren("g");
 
+      svgTop
+        .append("use")
+        .attr("href", "#defs-shrink")
+        .attr("class", "shrink-icon")
+        .attr("x", 0)
+        .attr("y", 5)
+        .attr("width", "6%")
+        .attr("height", "6%")
+        .attr("cursor", "pointer")
+        .classed("not-show", true)
+        .on("click", function () {
+          that.amplifyMode = false;
+          that.enterAmplifyMode(that.focusState, false);
+          that.globalSimulation.restart();
+          that.simulations.get(that.focusState).restart();
+        });
+
       /* -------------------------------------------------------------------------- */
       // svg子图初步生成
       // 生成全局力道图对应的nodes和links数据
@@ -3191,7 +3208,6 @@ export default {
           return `${d.source}_${d.target}`;
         })
         // .attr("stroke", "#000");
-
         .attr("stroke", "none");
 
       /* -------------------------------------------------------------------------- */
@@ -3474,7 +3490,7 @@ export default {
       ticked,
       neighborMap,
       showIndex,
-      boundaryR
+      center
     ) {
       const defaultBaseConfig = this.defaultBaseConfig;
       const defaultForceConfig = this.defaultForceConfig;
@@ -3590,18 +3606,18 @@ export default {
         .force(
           "center",
           d3
-            .forceCenter(boundaryR, boundaryR)
+            .forceCenter(center, center)
             .strength(defaultForceConfig.center.Strength)
         )
         .force(
           "x",
 
-          d3.forceX().x(boundaryR).strength(defaultForceConfig.x.Strength)
+          d3.forceX().x(center).strength(defaultForceConfig.x.Strength)
         )
         .force(
           "y",
 
-          d3.forceY().y(boundaryR).strength(defaultForceConfig.y.Strength)
+          d3.forceY().y(center).strength(defaultForceConfig.y.Strength)
         )
         .force(
           "collide",

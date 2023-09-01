@@ -97,30 +97,6 @@ export default {
   },
 
   methods: {
-    clearData() {
-      this.stateList = [];
-      this.barchartConfig = null;
-      this.histogramConfig = null;
-      this.selectedLinkType = {
-        siblings: true,
-        "parent-child": true,
-        "same-name": true,
-      };
-      this.barchartConfigs = new Map();
-      this.histogramConfigs = new Map();
-      this.selectedLinkTypes = new Map();
-
-      // 画图数据
-      this.linkGroup = null;
-      this.nodeGroup = null;
-
-      // 中间数据
-      this.filteredNodes = null;
-      this.filterdLinks = null;
-
-      // 是否刷新histogra图的axis
-      this.refreshHistogram = false;
-    },
     graphDataUpdate(links, nodes) {
       this.groupByLinkType(links);
       this.groupByNodeType({
