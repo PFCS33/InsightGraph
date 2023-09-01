@@ -156,10 +156,6 @@ export default {
     // },
   },
   methods: {
-    clearData() {
-      this.$refs.forceGraph.clearData();
-      this.$refs.controlGraph.clearData();
-    },
     handleFileChange() {
       const file = event.target.files[0];
       if (file) {
@@ -176,9 +172,13 @@ export default {
 
         this.refreshFlag = true;
         this.$store.dispatch("force/clearData");
+
         this.$nextTick(() => {
           this.refreshFlag = false;
-          this.$store.dispatch("force/uploadData", file);
+          this.editMode = true;
+          this.$nextTick(() => {
+            this.$store.dispatch("force/uploadData", file);
+          });
         });
       }
     },
@@ -198,8 +198,10 @@ export default {
       );
     },
     toggleEditMode() {
-      this.animationDone = false;
-      this.editMode = !this.editMode;
+      if (!this.error.state) {
+        this.animationDone = false;
+        this.editMode = !this.editMode;
+      }
     },
 
     handleTransitionEnd(event) {
