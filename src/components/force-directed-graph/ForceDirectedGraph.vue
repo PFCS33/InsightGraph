@@ -333,6 +333,7 @@ export default {
       circleRScales: new Map(),
       insightSizeScales: new Map(),
       selectedIds: new Map(),
+      zooms: new Map(),
 
       selectedDatas: new Map(),
       svgNodeDatas: new Map(),
@@ -963,8 +964,8 @@ export default {
             .attr("href", "#defs-focus")
             .attr("x", "1%")
             .attr("y", "1%")
-            .attr("width", "6%")
-            .attr("height", "6%")
+            .attr("width", "8%")
+            .attr("height", "8%")
             .attr("cursor", "pointer")
             .on("click", function () {
               that.backMode = false;
@@ -987,6 +988,12 @@ export default {
       const newWidth = newBoundaryR * 2;
       const newHeight = newWidth;
       const viewBoxSize = newBoundaryR * newViewBoxScale;
+
+      // reset transform
+      const zoom = this.zooms.get(svg.datum().id);
+      if (zoom) {
+        svg.call(zoom.transform, d3.zoomIdentity);
+      }
       // change both size & viewBox
       svg
         .transition()
@@ -1001,14 +1008,34 @@ export default {
       svg.datum().nodeNum = nodeNum;
       svg.datum().viewBoxR = viewBoxSize;
       svg.datum().boundaryR = newBoundaryR;
-      svg.datum().boundaryRectTmp = [0, 0, viewBoxSize, viewBoxSize];
+
+      svg.select(".state-text").attr("font-size", (d) => {
+        if (d.id == this.focusState) return d.viewBoxR / 14;
+        else return d.viewBoxR / 12;
+      });
+
+      const boundaryRectTmp = svg.datum().boundaryRectTmp;
+      if (!boundaryRectTmp) {
+        svg.datum().boundaryRectTmp = [0, 0, viewBoxSize, viewBoxSize];
+      } else {
+        // const transform = d3.zoomTransform(svg.node());
+        // [boundaryRectTmp[0], boundaryRectTmp[1]] = transform.invert([0, 0]);
+        // [boundaryRectTmp[2], boundaryRectTmp[3]] = transform.invert([
+        //   viewBoxSize,
+        //   viewBoxSize,
+        // ]);
+
+        boundaryRectTmp[0] = 0;
+        boundaryRectTmp[1] = 0;
+        boundaryRectTmp[2] = viewBoxSize;
+        boundaryRectTmp[3] = viewBoxSize;
+      }
       if (this.simulations.has(svg.datum().id)) {
         this.updatePositionForce(this.simulations.get(svg.datum().id), [
-          viewBoxSize,
-          viewBoxSize,
+          viewBoxSize / 2,
+          viewBoxSize / 2,
         ]);
       }
-      return newBoundaryR;
     },
     updateGlobalForce(nodes, links) {
       const simulation = this.globalSimulation;
@@ -1183,6 +1210,8 @@ export default {
       svg
         .select("use.focus-icon")
         .attr("href", "#defs-amplify")
+        .attr("width", "6%")
+        .attr("height", "6%")
         .on("click", function () {
           const state = d3.select(this.parentNode).datum().id;
           that.amplifyMode = true;
@@ -1250,6 +1279,8 @@ export default {
         oldFocusSvg
           .select("use.focus-icon")
           .attr("href", "#defs-focus")
+          .attr("width", "8%")
+          .attr("height", "8%")
           .on("click", function () {
             that.backMode = false;
             // 更新 preservedBundleData
@@ -1288,10 +1319,8 @@ export default {
           .attr("href", "#defs-back")
           .on("click", function () {
             that.backMode = true;
-
             // load new data
             const state = d3.select(this.parentNode).datum().id;
-
             that.oldFocusState = that.focusState;
             that.focusState = state;
             that.$store.dispatch("force/loadData", {
@@ -1555,13 +1584,13 @@ export default {
       this.svgRScale = d3.scaleLinear([0, maxNodeNum], [100, maxR]);
       this.linkDistanceScale = d3.scaleLinear(
         [0, maxNodeNum],
-        [100, maxR * 1.5]
+        [150, maxR * 1.5]
       );
       this.chargeStrengthScale = d3.scaleLinear(
         [0, maxNodeNum],
         [-2000, -5000]
       );
-      this.svgViewBoxScale = d3.scaleLinear([0, maxNodeNum], [1, 5]);
+      this.svgViewBoxScale = d3.scaleLinear([0, maxNodeNum], [2, 4]);
     },
     hideMoreBox() {
       this.hidePanelMode = true;
@@ -2731,12 +2760,7 @@ export default {
       const svg = gTop.select(`svg.${this.focusState}-state`);
 
       // 设置svg 宽和高 (根据 nodeNum属性)
-
-      const boundaryR = this.updateSvgSize(
-        svg,
-        this.svgRScale,
-        this.maxNodeNum
-      );
+      this.updateSvgSize(svg, this.svgRScale, this.maxNodeNum);
       const center = svg.datum().viewBoxR / 2;
 
       svg
@@ -2800,8 +2824,9 @@ export default {
 
       const stateText = svg
         .append("text")
+        .attr("class", "state-text")
         .text(this.focusState)
-        .attr("font-size", (d) => d.viewBoxR / 12)
+        .attr("font-size", (d) => d.viewBoxR / 14)
         .attr("font-weight", "bold")
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "hanging")
@@ -2906,7 +2931,7 @@ export default {
 
       // 更新svg 宽高
 
-      const boundaryR = this.updateSvgSize(svg, this.svgRScale, 0);
+      this.updateSvgSize(svg, this.svgRScale, 0);
       const center = svg.datum().viewBoxR / 2;
 
       svg.attr("overflow", "visible");
@@ -2972,6 +2997,7 @@ export default {
       // 顶层 text
       const stateText = svg
         .append("text")
+        .attr("class", "state-text")
         .text(state)
         .attr("font-size", (d) => d.viewBoxR / 12)
         .attr("font-weight", "bold")
@@ -3028,22 +3054,19 @@ export default {
 
       // 仅将缩放行为应用到顶层元素/
       svg.call(zoom);
+      // 记录zoom的引用
+      this.zooms.set(svg.datum().id, zoom);
       // 定义zoom的回调函数
       function zoomed(event, d) {
-        const boundaryRect = [0, 0, d.viewBoxR, d.viewBoxR];
-        const boundaryRectTmp = [0, 0, 0, 0];
         const transform = event.transform;
 
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
         // change boundary coord
-        [d.boundaryRectTmp[0], d.boundaryRectTmp[1]] = transform.invert([
-          boundaryRect[0],
-          boundaryRect[1],
-        ]);
+        [d.boundaryRectTmp[0], d.boundaryRectTmp[1]] = transform.invert([0, 0]);
         [d.boundaryRectTmp[2], d.boundaryRectTmp[3]] = transform.invert([
-          boundaryRect[2],
-          boundaryRect[3],
+          d.viewBoxR,
+          d.viewBoxR,
         ]);
 
         const newCenterCoord = [

@@ -1,396 +1,560 @@
 {
   "table": {
-    "colDepth": 2,
-    "rowDepth": 3,
-    "rowNum": 40,
-    "colNum": 32,
-    "rows": [
-      {
-        "name": "Europe",
-        "children": [
-          {
-            "name": "Nintendo 3DS (3DS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [0, 0] }
-            ],
-            "rowSpan": [0, 0]
-          },
-          {
-            "name": "Nintendo DS (DS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [1, 1] }
-            ],
-            "rowSpan": [1, 1]
-          },
-          {
-            "name": "Nintendo Switch (NS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [2, 2] }
-            ],
-            "rowSpan": [2, 2]
-          },
-          {
-            "name": "PlayStation 3 (PS3)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [3, 3] }
-            ],
-            "rowSpan": [3, 3]
-          },
-          {
-            "name": "PlayStation 4 (PS4)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [4, 4] }
-            ],
-            "rowSpan": [4, 4]
-          },
-          {
-            "name": "PlayStation Vita (PSV)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [5, 5] }
-            ],
-            "rowSpan": [5, 5]
-          },
-          {
-            "name": "Wii (Wii)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [6, 6] }
-            ],
-            "rowSpan": [6, 6]
-          },
-          {
-            "name": "Wii U (WiiU)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [7, 7] }
-            ],
-            "rowSpan": [7, 7]
-          },
-          {
-            "name": "Xbox 360 (X360)",
-            "children": [
-              { "name": "Microsoft", "children": null, "rowSpan": [8, 8] }
-            ],
-            "rowSpan": [8, 8]
-          },
-          {
-            "name": "Xbox One (XOne)",
-            "children": [
-              { "name": "Microsoft", "children": null, "rowSpan": [9, 9] }
-            ],
-            "rowSpan": [9, 9]
-          }
-        ],
-        "rowSpan": [0, 9]
-      },
-      {
-        "name": "Japan",
-        "children": [
-          {
-            "name": "Nintendo 3DS (3DS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [10, 10] }
-            ],
-            "rowSpan": [10, 10]
-          },
-          {
-            "name": "Nintendo DS (DS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [11, 11] }
-            ],
-            "rowSpan": [11, 11]
-          },
-          {
-            "name": "Nintendo Switch (NS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [12, 12] }
-            ],
-            "rowSpan": [12, 12]
-          },
-          {
-            "name": "PlayStation 3 (PS3)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [13, 13] }
-            ],
-            "rowSpan": [13, 13]
-          },
-          {
-            "name": "PlayStation 4 (PS4)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [14, 14] }
-            ],
-            "rowSpan": [14, 14]
-          },
-          {
-            "name": "PlayStation Vita (PSV)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [15, 15] }
-            ],
-            "rowSpan": [15, 15]
-          },
-          {
-            "name": "Wii (Wii)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [16, 16] }
-            ],
-            "rowSpan": [16, 16]
-          },
-          {
-            "name": "Wii U (WiiU)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [17, 17] }
-            ],
-            "rowSpan": [17, 17]
-          },
-          {
-            "name": "Xbox 360 (X360)",
-            "children": [
-              { "name": "Microsoft", "children": null, "rowSpan": [18, 18] }
-            ],
-            "rowSpan": [18, 18]
-          },
-          {
-            "name": "Xbox One (XOne)",
-            "children": [
-              { "name": "Microsoft", "children": null, "rowSpan": [19, 19] }
-            ],
-            "rowSpan": [19, 19]
-          }
-        ],
-        "rowSpan": [10, 19]
-      },
-      {
-        "name": "North America",
-        "children": [
-          {
-            "name": "Nintendo 3DS (3DS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [20, 20] }
-            ],
-            "rowSpan": [20, 20]
-          },
-          {
-            "name": "Nintendo DS (DS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [21, 21] }
-            ],
-            "rowSpan": [21, 21]
-          },
-          {
-            "name": "Nintendo Switch (NS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [22, 22] }
-            ],
-            "rowSpan": [22, 22]
-          },
-          {
-            "name": "PlayStation 3 (PS3)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [23, 23] }
-            ],
-            "rowSpan": [23, 23]
-          },
-          {
-            "name": "PlayStation 4 (PS4)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [24, 24] }
-            ],
-            "rowSpan": [24, 24]
-          },
-          {
-            "name": "PlayStation Vita (PSV)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [25, 25] }
-            ],
-            "rowSpan": [25, 25]
-          },
-          {
-            "name": "Wii (Wii)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [26, 26] }
-            ],
-            "rowSpan": [26, 26]
-          },
-          {
-            "name": "Wii U (WiiU)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [27, 27] }
-            ],
-            "rowSpan": [27, 27]
-          },
-          {
-            "name": "Xbox 360 (X360)",
-            "children": [
-              { "name": "Microsoft", "children": null, "rowSpan": [28, 28] }
-            ],
-            "rowSpan": [28, 28]
-          },
-          {
-            "name": "Xbox One (XOne)",
-            "children": [
-              { "name": "Microsoft", "children": null, "rowSpan": [29, 29] }
-            ],
-            "rowSpan": [29, 29]
-          }
-        ],
-        "rowSpan": [20, 29]
-      },
-      {
-        "name": "Other",
-        "children": [
-          {
-            "name": "Nintendo 3DS (3DS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [30, 30] }
-            ],
-            "rowSpan": [30, 30]
-          },
-          {
-            "name": "Nintendo DS (DS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [31, 31] }
-            ],
-            "rowSpan": [31, 31]
-          },
-          {
-            "name": "Nintendo Switch (NS)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [32, 32] }
-            ],
-            "rowSpan": [32, 32]
-          },
-          {
-            "name": "PlayStation 3 (PS3)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [33, 33] }
-            ],
-            "rowSpan": [33, 33]
-          },
-          {
-            "name": "PlayStation 4 (PS4)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [34, 34] }
-            ],
-            "rowSpan": [34, 34]
-          },
-          {
-            "name": "PlayStation Vita (PSV)",
-            "children": [
-              { "name": "Sony", "children": null, "rowSpan": [35, 35] }
-            ],
-            "rowSpan": [35, 35]
-          },
-          {
-            "name": "Wii (Wii)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [36, 36] }
-            ],
-            "rowSpan": [36, 36]
-          },
-          {
-            "name": "Wii U (WiiU)",
-            "children": [
-              { "name": "Nintendo", "children": null, "rowSpan": [37, 37] }
-            ],
-            "rowSpan": [37, 37]
-          },
-          {
-            "name": "Xbox 360 (X360)",
-            "children": [
-              { "name": "Microsoft", "children": null, "rowSpan": [38, 38] }
-            ],
-            "rowSpan": [38, 38]
-          },
-          {
-            "name": "Xbox One (XOne)",
-            "children": [
-              { "name": "Microsoft", "children": null, "rowSpan": [39, 39] }
-            ],
-            "rowSpan": [39, 39]
-          }
-        ],
-        "rowSpan": [30, 39]
-      }
-    ],
-    "cols": [
-      {
-        "name": "2013",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [0, 0] },
-          { "name": "JUN", "children": null, "colSpan": [1, 1] },
-          { "name": "SEP", "children": null, "colSpan": [2, 2] },
-          { "name": "DEC", "children": null, "colSpan": [3, 3] }
-        ],
-        "colSpan": [0, 3]
-      },
-      {
-        "name": "2014",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [4, 4] },
-          { "name": "JUN", "children": null, "colSpan": [5, 5] },
-          { "name": "SEP", "children": null, "colSpan": [6, 6] },
-          { "name": "DEC", "children": null, "colSpan": [7, 7] }
-        ],
-        "colSpan": [4, 7]
-      },
-      {
-        "name": "2015",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [8, 8] },
-          { "name": "JUN", "children": null, "colSpan": [9, 9] },
-          { "name": "SEP", "children": null, "colSpan": [10, 10] },
-          { "name": "DEC", "children": null, "colSpan": [11, 11] }
-        ],
-        "colSpan": [8, 11]
-      },
-      {
-        "name": "2016",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [12, 12] },
-          { "name": "JUN", "children": null, "colSpan": [13, 13] },
-          { "name": "SEP", "children": null, "colSpan": [14, 14] },
-          { "name": "DEC", "children": null, "colSpan": [15, 15] }
-        ],
-        "colSpan": [12, 15]
-      },
-      {
-        "name": "2017",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [16, 16] },
-          { "name": "JUN", "children": null, "colSpan": [17, 17] },
-          { "name": "SEP", "children": null, "colSpan": [18, 18] },
-          { "name": "DEC", "children": null, "colSpan": [19, 19] }
-        ],
-        "colSpan": [16, 19]
-      },
-      {
-        "name": "2018",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [20, 20] },
-          { "name": "JUN", "children": null, "colSpan": [21, 21] },
-          { "name": "SEP", "children": null, "colSpan": [22, 22] },
-          { "name": "DEC", "children": null, "colSpan": [23, 23] }
-        ],
-        "colSpan": [20, 23]
-      },
-      {
-        "name": "2019",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [24, 24] },
-          { "name": "JUN", "children": null, "colSpan": [25, 25] },
-          { "name": "SEP", "children": null, "colSpan": [26, 26] },
-          { "name": "DEC", "children": null, "colSpan": [27, 27] }
-        ],
-        "colSpan": [24, 27]
-      },
-      {
-        "name": "2020",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [28, 28] },
-          { "name": "JUN", "children": null, "colSpan": [29, 29] },
-          { "name": "SEP", "children": null, "colSpan": [30, 30] },
-          { "name": "DEC", "children": null, "colSpan": [31, 31] }
-        ],
-        "colSpan": [28, 31]
-      }
+    "structure": {
+      "colDepth": 2,
+      "rowDepth": 3,
+      "rowNum": 40,
+      "colNum": 32,
+      "rows": [
+        {
+          "name": "Europe",
+          "children": [
+            {
+              "name": "Nintendo 3DS (3DS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [0, 0] }
+              ],
+              "rowSpan": [0, 0]
+            },
+            {
+              "name": "Nintendo DS (DS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [1, 1] }
+              ],
+              "rowSpan": [1, 1]
+            },
+            {
+              "name": "Nintendo Switch (NS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [2, 2] }
+              ],
+              "rowSpan": [2, 2]
+            },
+            {
+              "name": "PlayStation 3 (PS3)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [3, 3] }
+              ],
+              "rowSpan": [3, 3]
+            },
+            {
+              "name": "PlayStation 4 (PS4)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [4, 4] }
+              ],
+              "rowSpan": [4, 4]
+            },
+            {
+              "name": "PlayStation Vita (PSV)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [5, 5] }
+              ],
+              "rowSpan": [5, 5]
+            },
+            {
+              "name": "Wii (Wii)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [6, 6] }
+              ],
+              "rowSpan": [6, 6]
+            },
+            {
+              "name": "Wii U (WiiU)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [7, 7] }
+              ],
+              "rowSpan": [7, 7]
+            },
+            {
+              "name": "Xbox 360 (X360)",
+              "children": [
+                { "name": "Microsoft", "children": null, "rowSpan": [8, 8] }
+              ],
+              "rowSpan": [8, 8]
+            },
+            {
+              "name": "Xbox One (XOne)",
+              "children": [
+                { "name": "Microsoft", "children": null, "rowSpan": [9, 9] }
+              ],
+              "rowSpan": [9, 9]
+            }
+          ],
+          "rowSpan": [0, 9]
+        },
+        {
+          "name": "Japan",
+          "children": [
+            {
+              "name": "Nintendo 3DS (3DS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [10, 10] }
+              ],
+              "rowSpan": [10, 10]
+            },
+            {
+              "name": "Nintendo DS (DS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [11, 11] }
+              ],
+              "rowSpan": [11, 11]
+            },
+            {
+              "name": "Nintendo Switch (NS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [12, 12] }
+              ],
+              "rowSpan": [12, 12]
+            },
+            {
+              "name": "PlayStation 3 (PS3)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [13, 13] }
+              ],
+              "rowSpan": [13, 13]
+            },
+            {
+              "name": "PlayStation 4 (PS4)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [14, 14] }
+              ],
+              "rowSpan": [14, 14]
+            },
+            {
+              "name": "PlayStation Vita (PSV)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [15, 15] }
+              ],
+              "rowSpan": [15, 15]
+            },
+            {
+              "name": "Wii (Wii)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [16, 16] }
+              ],
+              "rowSpan": [16, 16]
+            },
+            {
+              "name": "Wii U (WiiU)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [17, 17] }
+              ],
+              "rowSpan": [17, 17]
+            },
+            {
+              "name": "Xbox 360 (X360)",
+              "children": [
+                { "name": "Microsoft", "children": null, "rowSpan": [18, 18] }
+              ],
+              "rowSpan": [18, 18]
+            },
+            {
+              "name": "Xbox One (XOne)",
+              "children": [
+                { "name": "Microsoft", "children": null, "rowSpan": [19, 19] }
+              ],
+              "rowSpan": [19, 19]
+            }
+          ],
+          "rowSpan": [10, 19]
+        },
+        {
+          "name": "North America",
+          "children": [
+            {
+              "name": "Nintendo 3DS (3DS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [20, 20] }
+              ],
+              "rowSpan": [20, 20]
+            },
+            {
+              "name": "Nintendo DS (DS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [21, 21] }
+              ],
+              "rowSpan": [21, 21]
+            },
+            {
+              "name": "Nintendo Switch (NS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [22, 22] }
+              ],
+              "rowSpan": [22, 22]
+            },
+            {
+              "name": "PlayStation 3 (PS3)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [23, 23] }
+              ],
+              "rowSpan": [23, 23]
+            },
+            {
+              "name": "PlayStation 4 (PS4)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [24, 24] }
+              ],
+              "rowSpan": [24, 24]
+            },
+            {
+              "name": "PlayStation Vita (PSV)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [25, 25] }
+              ],
+              "rowSpan": [25, 25]
+            },
+            {
+              "name": "Wii (Wii)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [26, 26] }
+              ],
+              "rowSpan": [26, 26]
+            },
+            {
+              "name": "Wii U (WiiU)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [27, 27] }
+              ],
+              "rowSpan": [27, 27]
+            },
+            {
+              "name": "Xbox 360 (X360)",
+              "children": [
+                { "name": "Microsoft", "children": null, "rowSpan": [28, 28] }
+              ],
+              "rowSpan": [28, 28]
+            },
+            {
+              "name": "Xbox One (XOne)",
+              "children": [
+                { "name": "Microsoft", "children": null, "rowSpan": [29, 29] }
+              ],
+              "rowSpan": [29, 29]
+            }
+          ],
+          "rowSpan": [20, 29]
+        },
+        {
+          "name": "Other",
+          "children": [
+            {
+              "name": "Nintendo 3DS (3DS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [30, 30] }
+              ],
+              "rowSpan": [30, 30]
+            },
+            {
+              "name": "Nintendo DS (DS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [31, 31] }
+              ],
+              "rowSpan": [31, 31]
+            },
+            {
+              "name": "Nintendo Switch (NS)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [32, 32] }
+              ],
+              "rowSpan": [32, 32]
+            },
+            {
+              "name": "PlayStation 3 (PS3)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [33, 33] }
+              ],
+              "rowSpan": [33, 33]
+            },
+            {
+              "name": "PlayStation 4 (PS4)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [34, 34] }
+              ],
+              "rowSpan": [34, 34]
+            },
+            {
+              "name": "PlayStation Vita (PSV)",
+              "children": [
+                { "name": "Sony", "children": null, "rowSpan": [35, 35] }
+              ],
+              "rowSpan": [35, 35]
+            },
+            {
+              "name": "Wii (Wii)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [36, 36] }
+              ],
+              "rowSpan": [36, 36]
+            },
+            {
+              "name": "Wii U (WiiU)",
+              "children": [
+                { "name": "Nintendo", "children": null, "rowSpan": [37, 37] }
+              ],
+              "rowSpan": [37, 37]
+            },
+            {
+              "name": "Xbox 360 (X360)",
+              "children": [
+                { "name": "Microsoft", "children": null, "rowSpan": [38, 38] }
+              ],
+              "rowSpan": [38, 38]
+            },
+            {
+              "name": "Xbox One (XOne)",
+              "children": [
+                { "name": "Microsoft", "children": null, "rowSpan": [39, 39] }
+              ],
+              "rowSpan": [39, 39]
+            }
+          ],
+          "rowSpan": [30, 39]
+        }
+      ],
+      "cols": [
+        {
+          "name": "2013",
+          "children": [
+            { "name": "MAR", "children": null, "colSpan": [0, 0] },
+            { "name": "JUN", "children": null, "colSpan": [1, 1] },
+            { "name": "SEP", "children": null, "colSpan": [2, 2] },
+            { "name": "DEC", "children": null, "colSpan": [3, 3] }
+          ],
+          "colSpan": [0, 3]
+        },
+        {
+          "name": "2014",
+          "children": [
+            { "name": "MAR", "children": null, "colSpan": [4, 4] },
+            { "name": "JUN", "children": null, "colSpan": [5, 5] },
+            { "name": "SEP", "children": null, "colSpan": [6, 6] },
+            { "name": "DEC", "children": null, "colSpan": [7, 7] }
+          ],
+          "colSpan": [4, 7]
+        },
+        {
+          "name": "2015",
+          "children": [
+            { "name": "MAR", "children": null, "colSpan": [8, 8] },
+            { "name": "JUN", "children": null, "colSpan": [9, 9] },
+            { "name": "SEP", "children": null, "colSpan": [10, 10] },
+            { "name": "DEC", "children": null, "colSpan": [11, 11] }
+          ],
+          "colSpan": [8, 11]
+        },
+        {
+          "name": "2016",
+          "children": [
+            { "name": "MAR", "children": null, "colSpan": [12, 12] },
+            { "name": "JUN", "children": null, "colSpan": [13, 13] },
+            { "name": "SEP", "children": null, "colSpan": [14, 14] },
+            { "name": "DEC", "children": null, "colSpan": [15, 15] }
+          ],
+          "colSpan": [12, 15]
+        },
+        {
+          "name": "2017",
+          "children": [
+            { "name": "MAR", "children": null, "colSpan": [16, 16] },
+            { "name": "JUN", "children": null, "colSpan": [17, 17] },
+            { "name": "SEP", "children": null, "colSpan": [18, 18] },
+            { "name": "DEC", "children": null, "colSpan": [19, 19] }
+          ],
+          "colSpan": [16, 19]
+        },
+        {
+          "name": "2018",
+          "children": [
+            { "name": "MAR", "children": null, "colSpan": [20, 20] },
+            { "name": "JUN", "children": null, "colSpan": [21, 21] },
+            { "name": "SEP", "children": null, "colSpan": [22, 22] },
+            { "name": "DEC", "children": null, "colSpan": [23, 23] }
+          ],
+          "colSpan": [20, 23]
+        },
+        {
+          "name": "2019",
+          "children": [
+            { "name": "MAR", "children": null, "colSpan": [24, 24] },
+            { "name": "JUN", "children": null, "colSpan": [25, 25] },
+            { "name": "SEP", "children": null, "colSpan": [26, 26] },
+            { "name": "DEC", "children": null, "colSpan": [27, 27] }
+          ],
+          "colSpan": [24, 27]
+        },
+        {
+          "name": "2020",
+          "children": [
+            { "name": "MAR", "children": null, "colSpan": [28, 28] },
+            { "name": "JUN", "children": null, "colSpan": [29, 29] },
+            { "name": "SEP", "children": null, "colSpan": [30, 30] },
+            { "name": "DEC", "children": null, "colSpan": [31, 31] }
+          ],
+          "colSpan": [28, 31]
+        }
+      ]
+    },
+    "heat": [
+      [
+        3, 3, 4, 3, 3, 3, 4, 4, 3, 3, 4, 3, 5, 6, 5, 4, 5, 5, 6, 5, 3, 3, 3, 4,
+        4, 3, 3, 3, 4, 4, 4, 4
+      ],
+      [
+        2, 2, 3, 2, 2, 2, 3, 3, 2, 2, 3, 2, 4, 5, 4, 3, 4, 4, 5, 4, 2, 2, 2, 3,
+        3, 2, 2, 2, 3, 3, 3, 3
+      ],
+      [
+        3, 3, 4, 3, 3, 3, 4, 4, 3, 3, 4, 3, 5, 6, 5, 4, 5, 5, 6, 5, 3, 3, 3, 4,
+        4, 3, 3, 3, 4, 4, 4, 4
+      ],
+      [
+        2, 2, 3, 2, 2, 2, 3, 3, 2, 2, 3, 2, 4, 5, 4, 3, 4, 4, 5, 4, 2, 2, 2, 3,
+        3, 2, 2, 2, 3, 3, 3, 3
+      ],
+      [
+        2, 2, 3, 2, 2, 2, 3, 3, 2, 2, 3, 2, 4, 5, 4, 3, 4, 4, 5, 4, 2, 2, 2, 3,
+        3, 2, 2, 2, 3, 3, 3, 3
+      ],
+      [
+        3, 3, 4, 3, 3, 3, 4, 4, 3, 3, 4, 3, 5, 6, 5, 4, 5, 5, 6, 5, 3, 3, 3, 4,
+        4, 3, 3, 3, 4, 4, 4, 4
+      ],
+      [
+        2, 2, 3, 2, 2, 2, 3, 3, 2, 2, 3, 2, 4, 5, 4, 3, 4, 4, 5, 4, 2, 2, 2, 3,
+        3, 2, 2, 2, 3, 3, 3, 3
+      ],
+      [
+        3, 3, 4, 3, 3, 3, 4, 4, 3, 3, 4, 3, 5, 6, 5, 4, 5, 5, 6, 5, 3, 3, 3, 4,
+        4, 3, 3, 3, 4, 4, 4, 4
+      ],
+      [
+        2, 2, 3, 2, 2, 2, 3, 3, 2, 2, 3, 2, 4, 5, 4, 3, 4, 4, 5, 4, 2, 2, 2, 3,
+        3, 2, 2, 2, 3, 3, 3, 3
+      ],
+      [
+        2, 2, 3, 2, 2, 2, 3, 3, 2, 2, 3, 2, 4, 5, 4, 3, 4, 4, 5, 4, 2, 2, 2, 3,
+        3, 2, 2, 2, 3, 3, 3, 3
+      ],
+      [
+        6, 6, 6, 6, 5, 5, 5, 7, 6, 6, 5, 5, 5, 7, 6, 6, 6, 5, 6, 5, 4, 5, 4, 4,
+        5, 4, 4, 4, 4, 5, 4, 4
+      ],
+      [
+        4, 4, 4, 4, 3, 3, 3, 5, 4, 4, 3, 3, 3, 5, 4, 4, 4, 3, 4, 3, 2, 3, 2, 2,
+        3, 2, 2, 2, 2, 3, 2, 2
+      ],
+      [
+        5, 5, 5, 5, 4, 4, 4, 6, 5, 5, 4, 4, 4, 6, 5, 5, 5, 4, 5, 4, 3, 4, 3, 3,
+        4, 3, 3, 3, 3, 4, 3, 3
+      ],
+      [
+        5, 5, 5, 5, 4, 4, 4, 6, 5, 5, 4, 4, 4, 6, 5, 5, 5, 4, 5, 4, 3, 4, 3, 3,
+        4, 3, 3, 3, 3, 4, 3, 3
+      ],
+      [
+        4, 4, 4, 4, 3, 3, 3, 5, 4, 4, 3, 3, 3, 5, 4, 4, 4, 3, 4, 3, 2, 3, 2, 2,
+        3, 2, 2, 2, 2, 3, 2, 2
+      ],
+      [
+        5, 5, 5, 5, 4, 4, 4, 6, 5, 5, 4, 4, 4, 6, 5, 5, 5, 4, 5, 4, 3, 4, 3, 3,
+        4, 3, 3, 3, 3, 4, 3, 3
+      ],
+      [
+        4, 4, 4, 4, 3, 3, 3, 5, 4, 4, 3, 3, 3, 5, 4, 4, 4, 3, 4, 3, 2, 3, 2, 2,
+        3, 2, 2, 2, 2, 3, 2, 2
+      ],
+      [
+        5, 5, 5, 5, 4, 4, 4, 6, 5, 5, 4, 4, 4, 6, 5, 5, 5, 4, 5, 4, 3, 4, 3, 3,
+        4, 3, 3, 3, 3, 4, 3, 3
+      ],
+      [
+        4, 4, 4, 4, 3, 3, 3, 5, 4, 4, 3, 3, 3, 5, 4, 4, 4, 3, 4, 3, 2, 3, 2, 2,
+        3, 2, 2, 2, 2, 3, 2, 2
+      ],
+      [
+        4, 4, 4, 4, 3, 3, 3, 5, 4, 4, 3, 3, 3, 5, 4, 4, 4, 3, 4, 3, 2, 3, 2, 2,
+        3, 2, 2, 2, 2, 3, 2, 2
+      ],
+      [
+        3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 4, 4, 5, 5, 5, 5, 5, 4, 6, 4, 4, 3, 4, 3,
+        2, 3, 3, 3, 3, 4, 4, 4
+      ],
+      [
+        3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 4, 4, 5, 5, 5, 5, 5, 4, 6, 4, 4, 3, 4, 3,
+        2, 3, 3, 3, 3, 4, 4, 4
+      ],
+      [
+        3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 4, 4, 5, 5, 5, 5, 5, 4, 6, 4, 4, 3, 4, 3,
+        2, 3, 3, 3, 3, 4, 4, 4
+      ],
+      [
+        2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 3, 3, 4, 4, 4, 4, 4, 3, 5, 3, 3, 2, 3, 2,
+        1, 2, 2, 2, 2, 3, 3, 3
+      ],
+      [
+        2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 3, 3, 4, 4, 4, 4, 4, 3, 5, 3, 3, 2, 3, 2,
+        1, 2, 2, 2, 2, 3, 3, 3
+      ],
+      [
+        3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 4, 4, 5, 5, 5, 5, 5, 4, 6, 4, 4, 3, 4, 3,
+        2, 3, 3, 3, 3, 4, 4, 4
+      ],
+      [
+        2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 3, 3, 4, 4, 4, 4, 4, 3, 5, 3, 3, 2, 3, 2,
+        1, 2, 2, 2, 2, 3, 3, 3
+      ],
+      [
+        2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 3, 3, 4, 4, 4, 4, 4, 3, 5, 3, 3, 2, 3, 2,
+        1, 2, 2, 2, 2, 3, 3, 3
+      ],
+      [
+        3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 4, 4, 5, 5, 5, 5, 5, 4, 6, 4, 4, 3, 4, 3,
+        2, 3, 3, 3, 3, 4, 4, 4
+      ],
+      [
+        2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 3, 3, 4, 4, 4, 4, 4, 3, 5, 3, 3, 2, 3, 2,
+        1, 2, 2, 2, 2, 3, 3, 3
+      ],
+      [
+        4, 5, 5, 4, 3, 3, 3, 5, 3, 4, 4, 4, 5, 6, 5, 5, 5, 4, 5, 5, 5, 5, 5, 4,
+        4, 3, 3, 3, 2, 2, 3, 2
+      ],
+      [
+        3, 4, 4, 3, 2, 2, 2, 4, 2, 3, 3, 3, 4, 5, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3,
+        3, 2, 2, 2, 1, 1, 2, 1
+      ],
+      [
+        4, 5, 5, 4, 3, 3, 3, 5, 3, 4, 4, 4, 5, 6, 5, 5, 5, 4, 5, 5, 5, 5, 5, 4,
+        4, 3, 3, 3, 2, 2, 3, 2
+      ],
+      [
+        3, 4, 4, 3, 2, 2, 2, 4, 2, 3, 3, 3, 4, 5, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3,
+        3, 2, 2, 2, 1, 1, 2, 1
+      ],
+      [
+        3, 4, 4, 3, 2, 2, 2, 4, 2, 3, 3, 3, 4, 5, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3,
+        3, 2, 2, 2, 1, 1, 2, 1
+      ],
+      [
+        4, 5, 5, 4, 3, 3, 3, 5, 3, 4, 4, 4, 5, 6, 5, 5, 5, 4, 5, 5, 5, 5, 5, 4,
+        4, 3, 3, 3, 2, 2, 3, 2
+      ],
+      [
+        3, 4, 4, 3, 2, 2, 2, 4, 2, 3, 3, 3, 4, 5, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3,
+        3, 2, 2, 2, 1, 1, 2, 1
+      ],
+      [
+        4, 5, 5, 4, 3, 3, 3, 5, 3, 4, 4, 4, 5, 6, 5, 5, 5, 4, 5, 5, 5, 5, 5, 4,
+        4, 3, 3, 3, 2, 2, 3, 2
+      ],
+      [
+        3, 4, 4, 3, 2, 2, 2, 4, 2, 3, 3, 3, 4, 5, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3,
+        3, 2, 2, 2, 1, 1, 2, 1
+      ],
+      [
+        3, 4, 4, 3, 2, 2, 2, 4, 2, 3, 3, 3, 4, 5, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3,
+        3, 2, 2, 2, 1, 1, 2, 1
+      ]
     ]
   },
   "graph": {

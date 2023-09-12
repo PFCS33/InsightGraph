@@ -8,6 +8,7 @@ export default {
       checkedArea: null,
       hoveredArea: null,
       clickedArea: null,
+      heatValues: null,
     };
   },
   getters: {
@@ -29,6 +30,9 @@ export default {
     clickedArea(state) {
       return state.clickedArea;
     },
+    heatValues(state) {
+      return state.heatValues;
+    },
   },
   mutations: {
     setTableData(state, payload) {
@@ -48,6 +52,9 @@ export default {
     },
     setClickedArea(state, payload) {
       state.clickedArea = payload;
+    },
+    setHeatValues(state, payload) {
+      state.heatValues = payload;
     },
   },
   actions: {
@@ -108,11 +115,12 @@ export default {
     },
 
     loadHeadData(context, payload) {
-      const data = payload;
+      const data = payload.structure;
 
       context.commit("setTableData", data);
       context.commit("setRowDict", listToDict(data.rows));
       context.commit("setColDict", listToDict(data.cols));
+      context.commit("setHeatValues", payload.heat);
 
       function listToDict(list) {
         let obj = {};

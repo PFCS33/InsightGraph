@@ -19,6 +19,7 @@ export default {
     createTable() {
       const that = this;
       const container = d3.select("#table-container");
+      container.selectAll("*").remove();
 
       const tooltip = container
         .append("div")
@@ -35,8 +36,6 @@ export default {
 
       const cellWidth = width / (this.colNum + this.rowDepth);
       const cellHeight = height / (this.rowNum + this.colDepth);
-
-      // Convert 'rows' and 'cols' to a dictionary
 
       // Create table headers
       const thead = table.append("thead");
@@ -62,12 +61,25 @@ export default {
       this.tableData.rows.forEach((rowCell) => {
         addLeftCell(rowCell);
       });
+      // add heatValues
+      const heatValues = this.heatValues;
+      const color = d3
+        .scaleSequential(d3.interpolateReds)
+        .domain([0, d3.max(heatValues.flat()) + 1]);
+      tbody
+        .selectAll("td")
+        .data(heatValues.flat())
+        .style("background-color", (d) => {
+          let rgb = d3.rgb(color(d)).brighter(0.2);
+          return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`;
+        });
 
       table
         .selectAll("th")
         .on("mouseover", mouseover)
         .on("mousemove", mousemove)
         .on("mouseleave", mouseleave);
+
       function mouseover(event, d) {
         if (d) {
           tooltip.transition().duration(300).style("opacity", 1);
@@ -224,8 +236,15 @@ export default {
     clickedArea() {
       return this.$store.getters["table/clickedArea"];
     },
+    heatValues() {
+      return this.$store.getters["table/heatValues"];
+    },
   },
   watch: {
+    tableData(newVal) {
+      console.log(newVal);
+      this.createTable();
+    },
     clickedArea: {
       handler(newVal, oldVal) {
         this.addHighlightBorder(oldVal, false, true);
@@ -280,7 +299,8 @@ table.mini-table {
     border: 1.5px solid #545b77;
   }
   td {
-    border: 1px dashed #ccc;
+    // border: 1px dashed #ccc;
+    border: 0.5px dotted #ccc;
     transition: background-color 0.3s;
   }
   th.cell-border-tooltip-highlight {
@@ -288,34 +308,36 @@ table.mini-table {
     background-color: #ddd;
   }
   td.cell-border-left-highlight-clicked {
-    border-left: 3px dashed #ad89c6;
+    border-left: 3px dashed #636c8d;
   }
   td.cell-border-right-highlight-clicked {
-    border-right: 3px dashed #ad89c6;
+    border-right: 3px dashed #636c8d;
   }
 
   td.cell-border-top-highlight-clicked {
-    border-top: 2px dotted #ad89c6;
+    border-top: 2px dotted #636c8d;
   }
   td.cell-border-bottom-highlight-clicked {
-    border-bottom: 2px dotted #ad89c6;
+    border-bottom: 2px dotted #636c8d;
   }
 
   td.cell-border-left-highlight {
-    border-left: 2px solid #b42c97;
+    border-left: 2px solid #636c8d;
   }
   td.cell-border-right-highlight {
-    border-right: 2px solid #b42c97;
+    border-right: 2px solid #636c8d;
   }
 
   td.cell-border-top-highlight {
-    border-top: 2px solid #b42c97;
+    border-top: 2px solid #636c8d;
   }
   td.cell-border-bottom-highlight {
-    border-bottom: 2px solid #b42c97;
+    border-bottom: 2px solid #636c8d;
   }
   td.cell-background-highlight {
-    background-color: #e8e8e8d5;
+    // background-color: #e8e8e8d5;
+
+    opacity: 0.3;
   }
 }
 .tooltip {

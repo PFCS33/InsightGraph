@@ -79,15 +79,6 @@ export default {
     },
   },
   actions: {
-    clearData(context) {
-      context.commit("setFocusState", null);
-      context.commit("setTotalData", null);
-      context.commit("setSelectedData", null);
-      context.commit("setAllStateLinksMap", null);
-      context.commit("setAllStatesData", null);
-
-      context.getters.scoreSelectionMaps.clear();
-    },
     setStatisticGraph(context, payload) {
       const state = payload.state;
       const data = payload.data;

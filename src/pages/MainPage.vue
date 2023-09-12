@@ -150,11 +150,7 @@ export default {
       }
     },
   },
-  watch: {
-    // refreshFlag(newVal) {
-    //   if (newVal === true) this.refreshFlag = false;
-    // },
-  },
+
   methods: {
     handleFileChange() {
       const file = event.target.files[0];
@@ -171,7 +167,6 @@ export default {
         }
 
         this.refreshFlag = true;
-        this.$store.dispatch("force/clearData");
 
         this.$nextTick(() => {
           this.refreshFlag = false;
