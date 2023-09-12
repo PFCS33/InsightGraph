@@ -78,9 +78,9 @@
           </filter>
           <filter id="rect-shadow">
             <feDropShadow
-              dx="3"
-              dy="3"
-              stdDeviation="6"
+              dx="2"
+              dy="2"
+              stdDeviation="4"
               flood-color="#545b77"
               flood-opacity="0.5"
             />
@@ -313,6 +313,7 @@ export default {
       },
       // top svg force control
       maxNodeNum: 0,
+      svgViewBoxScale: null,
       svgRScale: null,
       linkDistanceScale: null,
       chargeStrengthScale: null,
@@ -748,6 +749,8 @@ export default {
           this.restart(true, state, newData);
           // global force graph update
           this.updateSvgSize(svg, this.svgRScale, newData.nodes.length);
+
+          // TODO: change position force
         });
         // update link distance of svg
         this.globalSimulation.force("link").distance((d) => {
@@ -933,16 +936,17 @@ export default {
       const oldCheckedIds = Array.from(this.checkIndexs.get(state).keys());
       return [...new Set(originNodeIds.concat(oldCheckedIds))];
     },
-    addSvgIcon(svg, iconType, boundary, boundaryR) {
+    addSvgIcon(svg, iconType) {
       const that = this;
+
       switch (iconType) {
         case "amplify":
           svg
             .append("use")
             .attr("class", "focus-icon")
             .attr("href", "#defs-amplify")
-            .attr("x", boundary[0] + 5)
-            .attr("y", boundary[1] + 5)
+            .attr("x", "1%")
+            .attr("y", "1%")
             .attr("width", "6%")
             .attr("height", "6%")
             .attr("cursor", "pointer")
@@ -957,8 +961,8 @@ export default {
             .append("use")
             .attr("class", "focus-icon")
             .attr("href", "#defs-focus")
-            .attr("x", boundary[0] + 5)
-            .attr("y", boundary[1] + 5)
+            .attr("x", "1%")
+            .attr("y", "1%")
             .attr("width", "6%")
             .attr("height", "6%")
             .attr("cursor", "pointer")
@@ -979,17 +983,31 @@ export default {
     },
     updateSvgSize(svg, svgRScale, nodeNum) {
       const newBoundaryR = svgRScale(nodeNum);
+      const newViewBoxScale = this.svgViewBoxScale(nodeNum);
       const newWidth = newBoundaryR * 2;
       const newHeight = newWidth;
+      const viewBoxSize = newBoundaryR * newViewBoxScale;
+      // change both size & viewBox
       svg
         .transition()
         .duration(this.durationTime * 2)
         .attr("width", newWidth)
-        .attr("height", newWidth);
+        .attr("height", newHeight)
+        .attr("viewBox", [0, 0, viewBoxSize, viewBoxSize]);
 
-      svg.datum().nodeNum = nodeNum;
+      // width 和 height 是为了 globalTick
       svg.datum().width = newWidth;
       svg.datum().height = newHeight;
+      svg.datum().nodeNum = nodeNum;
+      svg.datum().viewBoxR = viewBoxSize;
+      svg.datum().boundaryR = newBoundaryR;
+      svg.datum().boundaryRectTmp = [0, 0, viewBoxSize, viewBoxSize];
+      if (this.simulations.has(svg.datum().id)) {
+        this.updatePositionForce(this.simulations.get(svg.datum().id), [
+          viewBoxSize,
+          viewBoxSize,
+        ]);
+      }
       return newBoundaryR;
     },
     updateGlobalForce(nodes, links) {
@@ -1543,6 +1561,7 @@ export default {
         [0, maxNodeNum],
         [-2000, -5000]
       );
+      this.svgViewBoxScale = d3.scaleLinear([0, maxNodeNum], [1, 5]);
     },
     hideMoreBox() {
       this.hidePanelMode = true;
@@ -2712,20 +2731,15 @@ export default {
       const svg = gTop.select(`svg.${this.focusState}-state`);
 
       // 设置svg 宽和高 (根据 nodeNum属性)
-      this.updateSvgSize(svg, this.svgRScale, this.maxNodeNum);
-      const boundaryR = this.svgRScale(this.maxNodeNum);
 
-      // const boundary = [
-      //   -boundaryR * 1.5,
-      //   -boundaryR * 1.5,
-      //   boundaryR * 5,
-      //   boundaryR * 5,
-      // ];
-      const boundary = [0, 0, boundaryR * 5, boundaryR * 5];
-      const center = boundaryR * 2.5;
+      const boundaryR = this.updateSvgSize(
+        svg,
+        this.svgRScale,
+        this.maxNodeNum
+      );
+      const center = svg.datum().viewBoxR / 2;
 
       svg
-        .attr("viewBox", boundary)
         .classed("focus-svg", true)
         .attr("fill", "#fff")
         .attr("overflow", "visible");
@@ -2739,8 +2753,8 @@ export default {
       const backgroundShape = svg
         .append("rect")
         .attr("class", "background-shape")
-        .attr("x", boundary[0])
-        .attr("y", boundary[1])
+        .attr("x", 0)
+        .attr("y", 0)
         .attr("width", "100%")
         .attr("height", "100%")
         .on("dblclick", function () {
@@ -2782,34 +2796,21 @@ export default {
         .data(nodes, (d) => d.id)
         .join("g");
 
-      //      const AmplifyIcon =
-      this.addSvgIcon(svg, "amplify", boundary, boundaryR);
+      this.addSvgIcon(svg, "amplify");
 
       const stateText = svg
         .append("text")
         .text(this.focusState)
-        .attr("font-size", boundaryR / 4)
+        .attr("font-size", (d) => d.viewBoxR / 12)
         .attr("font-weight", "bold")
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "hanging")
         .style("fill", "#aaa")
-        .attr("x", boundary[2] - 5)
-        .attr("y", 5);
+        .attr("x", "99%")
+        .attr("y", "1%");
       /* -------------------------------------------------------------------------- */
 
-      const oldBoundaryRect = [
-        boundary[0],
-        boundary[1],
-        boundary[2] + boundary[0],
-        boundary[3] + boundary[1],
-      ];
-      const boundaryRect = [
-        boundary[0],
-        boundary[1],
-        boundary[2] + boundary[0],
-        boundary[3] + boundary[1],
-      ];
-      const ticked = this.createTickFunction(svg, boundaryRect);
+      const ticked = this.createTickFunction(svg);
       const simulation = this.createForceSimulation(
         nodes,
         links,
@@ -2822,13 +2823,7 @@ export default {
 
       this.setDomAttributes(linkG, circleG, this.focusState);
 
-      this.addZoomBehavior(
-        svg,
-        simulation,
-        backgroundShape,
-        boundaryRect,
-        oldBoundaryRect
-      );
+      this.addZoomBehavior(svg, simulation);
       // // initialize the default data
       // this.defaultForceConfig.center.X =
       //   this.defaultForceConfig.x.X =
@@ -2910,17 +2905,11 @@ export default {
       const svg = gTop.select(`svg.${state}-state`);
 
       // 更新svg 宽高
-      this.updateSvgSize(svg, this.svgRScale, 0);
-      const boundaryR = this.svgRScale(this.maxNodeNum);
-      // const boundary = [
-      //   -boundaryR * 1.5,
-      //   -boundaryR * 1.5,
-      //   boundaryR * 5,
-      //   boundaryR * 5,
-      // ];
-      const boundary = [0, 0, boundaryR * 5, boundaryR * 5];
-      const center = boundaryR * 2.5;
-      svg.attr("viewBox", boundary).attr("overflow", "visible");
+
+      const boundaryR = this.updateSvgSize(svg, this.svgRScale, 0);
+      const center = svg.datum().viewBoxR / 2;
+
+      svg.attr("overflow", "visible");
 
       // 设置svg子元素的绑定的data属性
       svg.datum().pinned = false;
@@ -2931,8 +2920,8 @@ export default {
       const backgroundShape = svg
         .append("rect")
         .attr("class", "background-shape")
-        .attr("x", boundary[0])
-        .attr("y", boundary[1])
+        .attr("x", 0)
+        .attr("y", 0)
         .attr("width", "100%")
         .attr("height", "100%")
         .on("dblclick", function () {
@@ -2979,34 +2968,34 @@ export default {
         .join("g");
 
       // 顶层 icon
-      this.addSvgIcon(svg, "focus", boundary, boundaryR);
+      this.addSvgIcon(svg, "focus");
       // 顶层 text
       const stateText = svg
         .append("text")
         .text(state)
-        .attr("font-size", boundaryR / 4)
+        .attr("font-size", (d) => d.viewBoxR / 12)
         .attr("font-weight", "bold")
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "hanging")
         .style("fill", "#aaa")
-        .attr("x", boundary[2] - 5)
-        .attr("y", 5);
+        .attr("x", "99%")
+        .attr("y", "1%");
 
       /* -------------------------------------------------------------------------- */
       //力导向系统创建;
-      const oldBoundaryRect = [
-        boundary[0],
-        boundary[1],
-        boundary[2] + boundary[0],
-        boundary[3] + boundary[1],
-      ];
-      const boundaryRect = [
-        boundary[0],
-        boundary[1],
-        boundary[2] + boundary[0],
-        boundary[3] + boundary[1],
-      ];
-      const ticked = this.createTickFunction(svg, boundaryRect);
+      // const oldBoundaryRect = [
+      //   boundary[0],
+      //   boundary[1],
+      //   boundary[2] + boundary[0],
+      //   boundary[3] + boundary[1],
+      // ];
+      // const boundaryRect = [
+      //   boundary[0],
+      //   boundary[1],
+      //   boundary[2] + boundary[0],
+      //   boundary[3] + boundary[1],
+      // ];
+      const ticked = this.createTickFunction(svg);
       const simulation = this.createForceSimulation(
         nodes,
         links,
@@ -3021,21 +3010,9 @@ export default {
       this.setDomAttributes(linkG, circleG, state);
       /* -------------------------------------------------------------------------- */
       // Zoom 添加
-      this.addZoomBehavior(
-        svg,
-        simulation,
-        backgroundShape,
-        boundaryRect,
-        oldBoundaryRect
-      );
+      this.addZoomBehavior(svg, simulation);
     },
-    addZoomBehavior(
-      svg,
-      simulation,
-      backgroundShape,
-      boundaryRect,
-      oldBoundaryRect
-    ) {
+    addZoomBehavior(svg, simulation) {
       const that = this;
       // 设置整体zoom行为,只选择最顶层的2个g即可
       const group = svg.selectChildren("g");
@@ -3052,35 +3029,45 @@ export default {
       // 仅将缩放行为应用到顶层元素/
       svg.call(zoom);
       // 定义zoom的回调函数
-      function zoomed(event) {
+      function zoomed(event, d) {
+        const boundaryRect = [0, 0, d.viewBoxR, d.viewBoxR];
+        const boundaryRectTmp = [0, 0, 0, 0];
         const transform = event.transform;
+
         // 更新地理路径组的变换属性
         group.attr("transform", transform);
         // change boundary coord
-        [boundaryRect[0], boundaryRect[1]] = transform.invert([
-          oldBoundaryRect[0],
-          oldBoundaryRect[1],
+        [d.boundaryRectTmp[0], d.boundaryRectTmp[1]] = transform.invert([
+          boundaryRect[0],
+          boundaryRect[1],
         ]);
-        [boundaryRect[2], boundaryRect[3]] = transform.invert([
-          oldBoundaryRect[2],
-          oldBoundaryRect[3],
+        [d.boundaryRectTmp[2], d.boundaryRectTmp[3]] = transform.invert([
+          boundaryRect[2],
+          boundaryRect[3],
         ]);
+
         const newCenterCoord = [
-          (boundaryRect[0] + boundaryRect[2]) / 2,
-          (boundaryRect[1] + boundaryRect[3]) / 2,
+          (d.boundaryRectTmp[0] + d.boundaryRectTmp[2]) / 2,
+          (d.boundaryRectTmp[1] + d.boundaryRectTmp[3]) / 2,
         ];
-        // change position force
-        simulation.force("x").x(newCenterCoord[0]);
-        simulation.force("y").y(newCenterCoord[1]);
-        simulation.force("center").x(newCenterCoord[0]).y(newCenterCoord[1]);
-        simulation.alpha(that.defaultBaseConfig.alpha);
-        simulation.restart();
+
+        that.updatePositionForce(simulation, newCenterCoord);
 
         that.globalSimulation.restart();
       }
     },
-    createTickFunction(svg, boundaryRect) {
+    updatePositionForce(simulation, centerCoord) {
+      // change position force
+      simulation.force("x").x(centerCoord[0]);
+      simulation.force("y").y(centerCoord[1]);
+      simulation.force("center").x(centerCoord[0]).y(centerCoord[1]);
+      simulation.alpha(this.defaultBaseConfig.alpha);
+      simulation.restart();
+    },
+    createTickFunction(svg) {
       const that = this;
+      const boundaryRect = svg.datum().boundaryRectTmp;
+
       return function ticked() {
         that.globalSimulation.restart();
         // 只通过transform.translate 更新父元素g的位置
@@ -3215,7 +3202,6 @@ export default {
       for (let [state, data] of newVal) {
         if (state === this.focusState) {
           // 针对focus state，提交数据，生成左侧 control panel需要的数据，并生成子svg图内容
-          const focusNodes = data.nodes;
           const focusLinks = data.links;
           const nodesData = this.nodeStateMaps.get(state);
 
