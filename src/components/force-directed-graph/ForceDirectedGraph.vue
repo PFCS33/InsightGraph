@@ -1380,7 +1380,6 @@ export default {
           },
           (exit) => {
             exit
-
               .attr("opacity", 1)
               .transition()
               .duration(this.durationTime)
@@ -1719,7 +1718,6 @@ export default {
             showIndexList.includes(targetId)
           ) {
             const linkType = d.type;
-            console.log(linkType);
 
             switch (linkType) {
               case "siblings":
@@ -2089,7 +2087,8 @@ export default {
               const linkForce = simulation.force("link");
               if (collideForce)
                 collideForce.initialize(simulation.nodes(), Math.random);
-              if (linkForce) linkForce.initialize(simulation.nodes());
+              if (linkForce)
+                linkForce.initialize(simulation.nodes(), Math.random);
               if (bodyForce) {
                 simulation.force("charge", null);
                 simulation.force("charge", bodyForce);
@@ -2562,7 +2561,7 @@ export default {
           showIndex.set(gData.id, view);
 
           const linkForce = simulation.force("link");
-          if (linkForce) linkForce.initialize(simulation.nodes());
+          if (linkForce) linkForce.initialize(simulation.nodes(), Math.random);
           const bodyForce = simulation.force("charge");
           if (bodyForce) {
             simulation.force("charge", null);
@@ -3504,18 +3503,52 @@ export default {
         const zoomTransform = d3.zoomTransform(svgTop.node());
 
         bundleGTop.selectChildren("path").attr("d", (d) => {
+          const sourceSvgElement = nodeGTop
+            .select(`.${d.source.state}-state`)
+            .node();
+          const targetSvgElement = nodeGTop
+            .select(`.${d.target.state}-state`)
+            .node();
+          const sourceMartix = getTransformationMatrix(
+            sourceSvgElement,
+            svgTop.node()
+          );
+          const targetMartix = getTransformationMatrix(
+            targetSvgElement,
+            svgTop.node()
+          );
+
+          const sourcePointOrigin = [d.source.x, d.source.y];
+          const targetPointOrigin = [d.target.x, d.target.y];
+          // const sourcePointOrigin = sourceSvgElement.createSVGPoint();
+          // sourcePointOrigin.x = d.source.x;
+          // sourcePointOrigin.y = d.source.y;
+
+          const sourcePoint = getClosetRectPoint(
+            sourcePointOrigin,
+            targetPointOrigin,
+            sourceMartix,
+            targetMartix,
+            d.source,
+            sourceSvgElement
+          );
+
+          const targetPoint = getClosetRectPoint(
+            targetPointOrigin,
+            sourcePointOrigin,
+            targetMartix,
+            sourceMartix,
+            d.target,
+            sourceSvgElement
+          );
+          // const targetPointOrigin = targetSvgElement.createSVGPoint();
+          // targetPointOrigin.x = d.target.x;
+          // targetPointOrigin.y = d.target.y;
+
           return lineGenerator([
             {
-              x: transformToParentSVGX(
-                d.source.x,
-                nodeGTop.select(`.${d.source.state}-state`).node(),
-                svgTop.node()
-              ),
-              y: transformToParentSVGY(
-                d.source.y,
-                nodeGTop.select(`.${d.source.state}-state`).node(),
-                svgTop.node()
-              ),
+              x: sourcePoint.x,
+              y: sourcePoint.y,
             },
             {
               x: zoomTransform.applyX(
@@ -3533,22 +3566,95 @@ export default {
                 (d.middle.source.y + d.middle.target.y * 2) / 3
               ),
             },
-
             {
-              x: transformToParentSVGX(
-                d.target.x,
-                nodeGTop.select(`.${d.target.state}-state`).node(),
-                svgTop.node()
-              ),
-              y: transformToParentSVGY(
-                d.target.y,
-                nodeGTop.select(`.${d.target.state}-state`).node(),
-                svgTop.node()
-              ),
+              x: targetPoint.x,
+              y: targetPoint.y,
             },
           ]);
         });
       }
+
+      function getTransformedPoint(p, martix, svg) {
+        const point = svg.createSVGPoint();
+        point.x = p.x;
+        point.y = p.y;
+        return point.matrixTransform(martix);
+      }
+      function getClosetRectPoint(point1, point2, martix1, martix2, d, svg) {
+        const rectInfo = d.rect;
+
+        const res = { x: point1[0], y: point1[1] };
+        const p1 = getTransformedPoint(
+          { x: point1[0], y: point1[1] },
+          martix1,
+          svg
+        );
+        if (d.showDetail) {
+          const p2 = getTransformedPoint(
+            { x: point2[0], y: point2[1] },
+            martix2,
+            svg
+          );
+          const rectPoint1 = getTransformedPoint(
+            {
+              x: point1[0] - rectInfo.width / 2,
+              y: point1[1] - rectInfo.height / 2,
+            },
+            martix1,
+            svg
+          );
+          const rectPoint2 = getTransformedPoint(
+            {
+              x: point1[0] + rectInfo.width / 2,
+              y: point1[1] + rectInfo.height / 2,
+            },
+            martix1,
+            svg
+          );
+
+          const transformedWidth = rectPoint2.x - rectPoint1.x;
+          const transformedHeight = rectPoint2.y - rectPoint1.y;
+          const dx = p2.x - p1.x;
+          const dy = p2.y - p1.x;
+
+          if (dx * transformedHeight > dy * transformedWidth) {
+            if (dx * transformedHeight > -dy * transformedWidth) {
+              res.x = point1[0] + rectInfo.width / 2;
+            } else {
+              res.y = point1[1] - rectInfo.height / 2;
+            }
+          } else {
+            if (dx * transformedHeight > -dy * transformedWidth) {
+              res.y = point1[1] + rectInfo.height / 2;
+            } else {
+              res.x = point1[0] - rectInfo.width / 2;
+            }
+          }
+        }
+        return getTransformedPoint({ x: res.x, y: res.y }, martix1, svg);
+      }
+      function getTransformationMatrix(childSVGElement, parentSVGElement) {
+        // 获取d3的缩放转换
+        let zoomTransform = d3.zoomTransform(childSVGElement);
+        let zoomMatrix = childSVGElement
+          .createSVGMatrix()
+          .translate(zoomTransform.x, zoomTransform.y)
+          .scale(zoomTransform.k);
+
+        // 获取子 SVG 到屏幕的转换矩阵
+        let childToScreenMatrix = childSVGElement.getScreenCTM();
+
+        // 获取屏幕到父 SVG 的转换矩阵
+        let screenToParentMatrix = parentSVGElement.getScreenCTM().inverse();
+
+        // 计算总的转换矩阵
+        let totalMatrix = screenToParentMatrix
+          .multiply(childToScreenMatrix)
+          .multiply(zoomMatrix);
+
+        return totalMatrix;
+      }
+
       function zoomedTop(event) {
         const transform = event.transform;
         // 更新地理路径组的变换属性
@@ -3588,61 +3694,6 @@ export default {
           event.subject.fx = null;
           event.subject.fy = null;
         }
-      }
-
-      function transformToParentSVGX(x, childSVGElement, parentSVGElement) {
-        let point = childSVGElement.createSVGPoint();
-        point.x = x;
-        point.y = 0;
-        let zoomTransform = d3.zoomTransform(childSVGElement);
-
-        let zoomMatrix = childSVGElement
-          .createSVGMatrix()
-          .translate(zoomTransform.x, zoomTransform.y)
-          .scale(zoomTransform.k);
-
-        point = point.matrixTransform(zoomMatrix);
-        // 获取子 SVG 到屏幕的转换
-        let childToScreenMatrix = childSVGElement.getScreenCTM();
-
-        // 获取屏幕到父 SVG 的转换
-        let screenToParentMatrix = parentSVGElement.getScreenCTM().inverse();
-
-        // 将点从子SVG坐标转换到屏幕坐标
-        let screenPoint = point.matrixTransform(childToScreenMatrix);
-
-        // 然后将屏幕坐标转换为父SVG的坐标
-        let parentPoint = screenPoint.matrixTransform(screenToParentMatrix);
-
-        return parentPoint.x;
-      }
-
-      function transformToParentSVGY(y, childSVGElement, parentSVGElement) {
-        let point = childSVGElement.createSVGPoint();
-        point.x = 0;
-        point.y = y;
-
-        let zoomTransform = d3.zoomTransform(childSVGElement);
-        let zoomMatrix = childSVGElement
-          .createSVGMatrix()
-          .translate(zoomTransform.x, zoomTransform.y)
-          .scale(zoomTransform.k);
-
-        point = point.matrixTransform(zoomMatrix);
-
-        // 获取子 SVG 到屏幕的转换
-        let childToScreenMatrix = childSVGElement.getScreenCTM();
-
-        // 获取屏幕到父 SVG 的转换
-        let screenToParentMatrix = parentSVGElement.getScreenCTM().inverse();
-
-        // 将点从子SVG坐标转换到屏幕坐标
-        let screenPoint = point.matrixTransform(childToScreenMatrix);
-
-        // 然后将屏幕坐标转换为父SVG的坐标
-        let parentPoint = screenPoint.matrixTransform(screenToParentMatrix);
-
-        return parentPoint.y;
       }
     },
 
