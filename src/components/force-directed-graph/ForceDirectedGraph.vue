@@ -1563,6 +1563,7 @@ export default {
         );
 
       this.setDomAttributes(linkG, nodeG, state);
+
       // rebind data of simulation
       simulation.nodes(nodes);
       simulation.force("link").links(links);
@@ -1712,7 +1713,7 @@ export default {
       linkGroup.each(function (d) {
         const sourceId = d.source;
         const targetId = d.target;
-        if (typeof sourceId === "string") {
+        if (typeof sourceId == "string") {
           if (
             showIndexList.includes(sourceId) ||
             showIndexList.includes(targetId)
@@ -2086,7 +2087,8 @@ export default {
               const collideForce = simulation.force("collide");
               const bodyForce = simulation.force("charge");
               const linkForce = simulation.force("link");
-              if (collideForce) collideForce.initialize(simulation.nodes());
+              if (collideForce)
+                collideForce.initialize(simulation.nodes(), Math.random);
               if (linkForce) linkForce.initialize(simulation.nodes());
               if (bodyForce) {
                 simulation.force("charge", null);
@@ -2600,7 +2602,8 @@ export default {
             height: rectHeight,
           };
           const collideForce = simulation.force("collide");
-          if (collideForce) collideForce.initialize(simulation.nodes());
+          if (collideForce)
+            collideForce.initialize(simulation.nodes(), Math.random);
 
           // add ainmation
           rect
