@@ -857,7 +857,7 @@ export default {
         .select("g.node-group")
         .selectChildren("svg")
         .each(function (d) {
-          if (d.id !== state) {
+          if (d.id !== state && d.nodeNum !== 0) {
             d3.select(this)
               .attr("opacity", mode ? 1 : 0)
               .transition()
@@ -984,6 +984,7 @@ export default {
       }
     },
     updateSvgSize(svg, svgRScale, nodeNum) {
+      const that = this;
       const newBoundaryR = svgRScale(nodeNum);
       const newViewBoxScale = this.svgViewBoxScale(nodeNum);
       const newWidth = newBoundaryR * 2;
@@ -995,13 +996,45 @@ export default {
       if (zoom) {
         svg.call(zoom.transform, d3.zoomIdentity);
       }
-      // change both size & viewBox
-      svg
-        .transition()
-        .duration(this.durationTime * 2)
-        .attr("width", newWidth)
-        .attr("height", newHeight)
-        .attr("viewBox", [0, 0, viewBoxSize, viewBoxSize]);
+      if (nodeNum === 0) {
+        svg
+          .attr("opacity", 1)
+          .transition()
+          .duration(this.durationTime)
+          .attr("opacity", 0)
+          .on("end", function () {
+            svg
+              .classed("not-show", true)
+              .attr("width", newWidth)
+              .attr("height", newHeight)
+              .attr("viewBox", [0, 0, viewBoxSize, viewBoxSize]);
+          });
+      } else {
+        if (svg.classed("not-show")) {
+          svg
+            .classed("not-show", false)
+            .attr("opacity", 0)
+            .transition()
+            .duration(this.durationTime)
+            .attr("opacity", 1)
+            .on("end", function () {
+              svg
+
+                .transition()
+                .duration(that.durationTime * 2)
+                .attr("width", newWidth)
+                .attr("height", newHeight)
+                .attr("viewBox", [0, 0, viewBoxSize, viewBoxSize]);
+            });
+        } else {
+          svg
+            .transition()
+            .duration(this.durationTime * 2)
+            .attr("width", newWidth)
+            .attr("height", newHeight)
+            .attr("viewBox", [0, 0, viewBoxSize, viewBoxSize]);
+        }
+      }
 
       // width 和 height 是为了 globalTick
       svg.datum().width = newWidth;
@@ -1019,13 +1052,6 @@ export default {
       if (!boundaryRectTmp) {
         svg.datum().boundaryRectTmp = [0, 0, viewBoxSize, viewBoxSize];
       } else {
-        // const transform = d3.zoomTransform(svg.node());
-        // [boundaryRectTmp[0], boundaryRectTmp[1]] = transform.invert([0, 0]);
-        // [boundaryRectTmp[2], boundaryRectTmp[3]] = transform.invert([
-        //   viewBoxSize,
-        //   viewBoxSize,
-        // ]);
-
         boundaryRectTmp[0] = 0;
         boundaryRectTmp[1] = 0;
         boundaryRectTmp[2] = viewBoxSize;
@@ -3615,7 +3641,7 @@ export default {
           const transformedWidth = rectPoint2.x - rectPoint1.x;
           const transformedHeight = rectPoint2.y - rectPoint1.y;
           const dx = p2.x - p1.x;
-          const dy = p2.y - p1.x;
+          const dy = p2.y - p1.y;
 
           if (dx * transformedHeight > dy * transformedWidth) {
             if (dx * transformedHeight > -dy * transformedWidth) {
