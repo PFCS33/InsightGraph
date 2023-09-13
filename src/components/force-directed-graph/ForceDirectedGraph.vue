@@ -278,6 +278,7 @@
 
 <script>
 import VegaLiteFilter from "@/components/force-directed-graph/VegaLiteFilter.vue";
+import { binRequiresRange } from "vega-lite/build/src/channeldef";
 
 export default {
   components: {
@@ -1706,6 +1707,41 @@ export default {
         .attr("class", "network-line")
         .attr("stroke-width", 1);
 
+      const showIndexList = Array.from(this.showIndexs.get(state).keys());
+
+      linkGroup.each(function (d) {
+        const sourceId = d.source;
+        const targetId = d.target;
+        if (typeof sourceId === "string") {
+          if (
+            showIndexList.includes(sourceId) ||
+            showIndexList.includes(targetId)
+          ) {
+            const linkType = d.type;
+            console.log(linkType);
+
+            switch (linkType) {
+              case "siblings":
+                // 普通实线
+
+                break;
+              case "parent-child":
+                // 锥形线
+                d3.select(this).classed("not-show", true);
+                d3.select(this.parentNode)
+                  .append("path")
+                  .attr("class", "network-angle")
+                  .attr("fill", "#ccc");
+                break;
+              case "same-name":
+                // s-a: 虚线
+                d3.select(this).style("stroke-dasharray", "10,5");
+                break;
+            }
+          }
+        }
+      });
+
       const linkContainerGroup = linkG;
 
       //画nodes
@@ -1900,11 +1936,70 @@ export default {
           .attr("transform", "scale(1)");
       }
 
+      function changeLinkStyle(nodeId, showMode) {
+        // change style of links
+        const linkG = d3
+          .select("#svg-container")
+          .select("svg")
+          .select("g.node-group")
+          .select(`svg.${state}-state`)
+          .select("g.link-group");
+
+        // 选择出作为邻居的link-g元素
+        const neighborLinkG = linkG.selectChildren("*").filter((d) => {
+          return d.source.id == nodeId || d.target.id == nodeId;
+        });
+        neighborLinkG.selectChildren("line.network-line").each(function (d, i) {
+          const linkType = d.type;
+
+          if (showMode) {
+            switch (linkType) {
+              case "siblings":
+                // 普通实线
+
+                break;
+              case "parent-child":
+                // 锥形线
+                d3.select(this).classed("not-show", true);
+                d3.select(this.parentNode)
+                  .append("path")
+                  .attr("class", "network-angle")
+                  .attr("fill", "#ccc");
+                break;
+              case "same-name":
+                // s-a: 虚线
+                d3.select(this).style("stroke-dasharray", "10,5");
+                break;
+            }
+          } else {
+            switch (linkType) {
+              case "siblings":
+                // 普通实线
+
+                break;
+              case "parent-child":
+                // 锥形线
+                d3.select(this).classed("not-show", false);
+                d3.select(this.parentNode)
+                  .select("path.network-angle")
+                  .remove();
+
+                break;
+              case "same-name":
+                // s-a: 虚线
+                d3.select(this).style("stroke-dasharray", "none");
+                break;
+            }
+          }
+        });
+      }
+
       function circleClick(self, that, simulation) {
         // ! 注意selectedNode,只能通过self访问，watch才能及时响应
         // 获取选择circle对应的container - g元素
         const g = d3.select(that.parentNode);
 
+        // selectedNode 记录
         if (state === self.focusState) {
           self.selectedNode = {
             id: g.datum().id,
@@ -1932,6 +2027,7 @@ export default {
           };
         }
 
+        // 显示vega-lite图
         if (!g.datum().showDetail) {
           g.datum().showDetail = true;
 
@@ -1946,6 +2042,7 @@ export default {
           rectText.classed("not-show", false);
           circle.classed("not-show", true);
           insightIcon.classed("not-show", true);
+
           g.append("use")
             .attr("href", "#defs-remove")
             .attr("class", "remove vega-lite-icon")
@@ -2010,7 +2107,9 @@ export default {
                     ]
                   );
                 });
+
               insightIcon.classed("not-show", false);
+              changeLinkStyle(g.datum().id, false);
               simulation.alphaDecay(self.restartAlphaDecay);
               simulation.alpha(self.defaultBaseConfig.alpha);
               simulation.restart();
@@ -2031,6 +2130,9 @@ export default {
             });
 
           self.drawVegaLite(g, "img", state);
+
+          const nodeId = g.datum().id;
+          changeLinkStyle(nodeId, true);
         }
       }
       function rectMouseover(self, that, neighborMap, hoverIndex) {
@@ -2202,7 +2304,7 @@ export default {
           .classed(className, enable);
         linkGroup
           .filter((d) => id === d.source.id || id === d.target.id)
-          .selectChildren("line")
+          .selectChildren("line,path")
           .classed(className, enable);
       }
       if (type === "selected") {
@@ -3120,13 +3222,13 @@ export default {
             .selectChildren("g")
             .style("transform", (d) => `translate(${d.x}px,${d.y}px)`);
         }
+        // 更新line位置
         svg
           .select(".link-group")
           .selectChildren("g")
           .selectChildren(".network-line")
           .attr("x1", function () {
             const d = d3.select(this.parentNode).datum();
-
             return d.source.x;
           })
           .attr("y1", function () {
@@ -3140,6 +3242,55 @@ export default {
           .attr("y2", function () {
             const d = d3.select(this.parentNode).datum();
             return d.target.y;
+          });
+        // 更新锥形位置(如果有)
+        svg
+          .select(".link-group")
+          .selectChildren("g")
+          .selectChildren("path.network-angle")
+          .attr("d", function () {
+            const d = d3.select(this.parentNode).datum();
+            let point1 = [];
+            let point2 = [];
+            const name1 = d.source.id;
+            const name2 = d.target.id;
+            if (name1.length < name2.length) {
+              point1 = [d.source.x, d.source.y];
+              point2 = [d.target.x, d.target.y];
+            } else {
+              point1 = [d.target.x, d.target.y];
+              point2 = [d.source.x, d.source.y];
+            }
+
+            const widthAtStart = 15;
+            const widthAtEnd = 1;
+
+            const angle = Math.atan2(
+              point2[1] - point1[1],
+              point2[0] - point1[0]
+            );
+
+            const p1 = [
+              point1[0] + widthAtStart * Math.sin(angle),
+              point1[1] - widthAtStart * Math.cos(angle),
+            ];
+
+            const p2 = [
+              point1[0] - widthAtStart * Math.sin(angle),
+              point1[1] + widthAtStart * Math.cos(angle),
+            ];
+
+            const p3 = [
+              point2[0] - widthAtEnd * Math.sin(angle),
+              point2[1] + widthAtEnd * Math.cos(angle),
+            ];
+
+            const p4 = [
+              point2[0] + widthAtEnd * Math.sin(angle),
+              point2[1] - widthAtEnd * Math.cos(angle),
+            ];
+
+            return `M${p1} L${p2} L${p3} L${p4} Z`;
           });
       };
     },
@@ -3816,7 +3967,15 @@ export default {
   &.hover-highlight,
   &.selected-highlight,
   &.center-highlight {
-    stroke-width: 4px;
+    stroke-width: 3.5px;
+  }
+}
+
+.network-angle {
+  &.hover-highlight,
+  &.selected-highlight,
+  &.center-highlight {
+    fill: #999;
   }
 }
 

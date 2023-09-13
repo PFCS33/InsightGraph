@@ -300,8 +300,8 @@ table.mini-table {
   }
   td {
     // border: 1px dashed #ccc;
-    border: 0.5px dotted #ccc;
-    transition: background-color 0.3s;
+    border: 0.5px solid #ccc;
+    transition: background-color 0.3s, transform 0.3s;
   }
   th.cell-border-tooltip-highlight {
     box-shadow: inset 0 0 0 1px #555;
@@ -336,7 +336,7 @@ table.mini-table {
   }
   td.cell-background-highlight {
     // background-color: #e8e8e8d5;
-
+    transform: scale(0.8);
     opacity: 0.3;
   }
 }
