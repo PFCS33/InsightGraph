@@ -199,40 +199,72 @@
             viewBox="0 0 1024 1024"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <image width="1024" height="1024" href="/pic/focus.png"></image>
+            <svg viewBox="0 0 1024 1024" width="100%" height="100%">
+              <rect
+                width="100%"
+                height="100%"
+                stroke="none"
+                rx="10%"
+                fill="currentcolor"
+              ></rect>
+              <path
+                d="M882.816 474.944h-33.92c-18.336-151.584-139.36-272.096-292.544-291.296V150.784c0-22.816-18.304-41.088-40.32-41.088-22.912 0-41.248 18.272-41.248 41.088v32.864c-152.224 19.2-273.248 139.712-292.512 291.296H149.28c-22.944 0-41.28 18.24-41.28 41.088 0 21.888 18.336 40.16 41.28 40.16h32.992c19.264 152.48 140.288 272.992 292.512 291.264v33.824c0 21.92 18.336 40.16 41.248 40.16 22.016 0 40.32-18.24 40.32-40.16v-33.824c153.152-18.24 274.176-138.784 292.544-291.264h33.92a40.64 40.64 0 0 0 40.352-40.16c0-22.848-18.336-41.088-40.352-41.088z m-116.448 0h-105.472a152.96 152.96 0 0 0-104.544-104.096V266.752c107.328 17.344 192.576 101.344 210.016 208.192z m-291.584-208.224v104.096a153.248 153.248 0 0 0-104.544 104.096H265.728a252.672 252.672 0 0 1 209.056-208.192z m-209.024 289.472h104.512a153.248 153.248 0 0 0 104.544 104.096v104.992a253.6 253.6 0 0 1-209.056-209.088z m290.624 209.088v-104.992a153.12 153.12 0 0 0 104.544-104.096h105.472c-17.472 106.816-102.72 191.712-210.016 209.088z"
+              ></path>
+            </svg>
           </symbol>
           <symbol
             id="defs-amplify"
             :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <image
-              :width="insightIconSize"
-              :height="insightIconSize"
-              href="/pic/amplify.png"
-            ></image>
+            <svg viewBox="0 0 1024 1024" width="100%" height="100%">
+              <rect
+                width="100%"
+                height="100%"
+                stroke="none"
+                rx="10%"
+                fill="currentcolor"
+              ></rect>
+              <path
+                d="M852.68743 966.232318 171.311547 966.232318c-62.714867 0-113.562988-50.846038-113.562988-113.558335L57.748558 171.324994c0-62.712297 50.848122-113.558335 113.562988-113.558335l681.376907 0c62.714867 0 113.562988 50.846038 113.562988 113.558335l0 681.348989C966.250418 915.38628 915.40332 966.232318 852.68743 966.232318zM909.469948 171.324994c0-31.356149-25.424061-56.779168-56.781494-56.779168L171.311547 114.545826c-31.357433 0-56.781494 25.423019-56.781494 56.779168l0 681.348989c0 31.357172 25.424061 56.779168 56.781494 56.779168l681.376907 0c31.358457 0 56.781494-25.423019 56.781494-56.779168L909.469948 171.324994zM824.297706 483.610416c-15.665413 0-28.390747-12.697183-28.390747-28.389584l0.887243-186.638771L604.102866 461.264479l-40.145947-40.144302 193.023924-193.016015L568.782006 228.104161c-15.693044 0-28.390747-12.697183-28.390747-28.389584s12.697704-28.389584 28.390747-28.389584l254.711349 0c7.929925 0 15.082105 3.27151 20.238756 8.53949 5.490263 4.657067 8.955319 11.449773 8.955319 19.850094l0 255.506255C852.68743 470.913233 839.989727 483.610416 824.297706 483.610416zM455.219017 852.673983 200.506645 852.673983c-7.929925 0-15.082105-3.270487-20.239779-8.538467-5.489239-4.65809-8.955319-11.423167-8.955319-19.850094L171.311547 568.779168c0-15.692401 12.726357-28.389584 28.390747-28.389584 15.69202 0 28.390747 12.697183 28.390747 28.389584l-0.887243 186.6664 192.690312-192.710047 40.173577 40.143279-193.050531 193.016015 188.198837 0c15.69202 0 28.390747 12.697183 28.390747 28.389584C483.608741 839.9768 470.911038 852.673983 455.219017 852.673983z"
+              ></path>
+            </svg>
           </symbol>
           <symbol
             id="defs-back"
             :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <image
-              :width="insightIconSize"
-              :height="insightIconSize"
-              href="/pic/back.png"
-            ></image>
+            <svg viewBox="0 0 1024 1024" width="100%" height="100%">
+              <rect
+                width="100%"
+                height="100%"
+                stroke="none"
+                rx="10%"
+                fill="currentcolor"
+              ></rect>
+              <path
+                d="M471.893333 149.333333a42.666667 42.666667 0 0 0-73.258666-29.781333l-343.893334 352.981333a42.666667 42.666667 0 0 0-0.768 58.709334l343.893334 372.352a42.666667 42.666667 0 0 0 73.984-28.928v-190.677334c56.917333-5.248 116.821333-1.365333 179.882666 11.989334 65.834667 13.994667 150.528 76.032 253.909334 202.24a42.666667 42.666667 0 0 0 75.477333-31.36c-15.445333-152.32-73.984-281.301333-176.170667-384.853334-92.757333-93.994667-204.373333-146.432-333.098666-156.586666V149.333333z"
+              ></path>
+            </svg>
           </symbol>
           <symbol
             id="defs-shrink"
             :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <image
-              :width="insightIconSize"
-              :height="insightIconSize"
-              href="/pic/shrink.png"
-            ></image>
+            <svg viewBox="0 0 1024 1024" width="100%" height="100%">
+              <rect
+                width="100%"
+                height="100%"
+                stroke="none"
+                rx="10%"
+                fill="currentcolor"
+              ></rect>
+              <path
+                d="M476.936925 546.649148c-4.836145-4.926196-11.531638-8.014534-18.98233-8.014534l-239.052514 0.010233c-14.71412 0-26.644847 11.92561-26.644847 26.643823 0 14.72026 11.930727 26.637684 26.644847 26.637684l176.615487 0L214.360647 773.084297l37.682227 37.686321 180.862207-180.863231-0.841158 175.191044c0 14.70798 11.929704 26.643823 26.644847 26.643823s26.64587-11.935843 26.64587-26.643823L485.354642 565.28867C485.354642 557.388746 482.088248 551.022759 476.936925 546.649148zM831.741743 85.676311l-639.48451 0c-58.862619 0-106.58041 47.712675-106.58041 106.58041l0 639.485533c0 58.867736 47.717791 106.581434 106.58041 106.581434l639.48451 0c58.863642 0 106.581434-47.713698 106.581434-106.581434L938.323177 192.256722C938.323177 133.388986 890.605386 85.676311 831.741743 85.676311zM885.031437 831.742255c0 29.430286-23.856337 53.289694-53.289694 53.289694l-639.48451 0c-29.429263 0-53.290717-23.859407-53.290717-53.289694L138.966517 192.256722c0-29.437449 23.861454-53.290717 53.290717-53.290717l639.48451 0c29.434379 0 53.289694 23.853267 53.289694 53.290717L885.031437 831.742255zM805.09792 432.063413l-176.62265 0.008186L809.638329 250.907517l-37.684274-37.678134-180.859138 180.861184 0.841158-175.188998c0-14.719236-11.93175-26.644847-26.647917-26.644847-14.712073 0-26.643823 11.92561-26.643823 26.644847l0 239.807714c0 7.892761 3.2623 14.259772 8.414647 18.639522 4.835122 4.927219 11.535731 8.015557 18.987447 8.015557l239.051491-0.00921c14.718213 0 26.643823-11.93482 26.643823-26.644847C831.741743 443.990047 819.816133 432.063413 805.09792 432.063413z"
+              ></path>
+            </svg>
           </symbol>
         </defs>
       </svg>
@@ -961,11 +993,22 @@ export default {
             .attr("y", "1%")
             .attr("width", "6%")
             .attr("height", "6%")
+            .style("color", "transparent")
             .attr("cursor", "pointer")
             .on("click", function () {
               that.amplifyMode = true;
               const state = d3.select(this.parentNode).datum().id;
               that.enterAmplifyMode(state, true);
+            })
+            .on("mouseover", function () {
+              d3.select(this)
+                .classed("hover-highlight", true)
+                .style("color", "#8d93a7");
+            })
+            .on("mouseleave", function () {
+              d3.select(this)
+                .classed("hover-highlight", false)
+                .style("color", "transparent");
             });
           break;
         case "focus":
@@ -977,7 +1020,18 @@ export default {
             .attr("y", "1%")
             .attr("width", "8%")
             .attr("height", "8%")
+            .style("color", "transparent")
             .attr("cursor", "pointer")
+            .on("mouseover", function () {
+              d3.select(this)
+                .classed("hover-highlight", true)
+                .style("color", "#8d93a7");
+            })
+            .on("mouseleave", function () {
+              d3.select(this)
+                .classed("hover-highlight", false)
+                .style("color", "transparent");
+            })
             .on("click", function () {
               that.backMode = false;
               // 更新 preservedBundleData
@@ -1262,6 +1316,16 @@ export default {
           const state = d3.select(this.parentNode).datum().id;
           that.amplifyMode = true;
           that.enterAmplifyMode(state, true);
+        })
+        .on("mouseover", function () {
+          d3.select(this)
+            .classed("hover-highlight", true)
+            .style("color", "#8d93a7");
+        })
+        .on("mouseleave", function () {
+          d3.select(this)
+            .classed("hover-highlight", false)
+            .style("color", "transparent");
         });
 
       // 更新nodeIdMap (如果需要的话)
@@ -1328,6 +1392,17 @@ export default {
           .attr("href", "#defs-focus")
           .attr("width", "8%")
           .attr("height", "8%")
+          .style("color", "transparent")
+          .on("mouseover", function () {
+            d3.select(this)
+              .classed("hover-highlight", true)
+              .style("color", "#8d93a7");
+          })
+          .on("mouseleave", function () {
+            d3.select(this)
+              .classed("hover-highlight", false)
+              .style("color", "transparent");
+          })
           .on("click", function () {
             that.backMode = false;
             // 更新 preservedBundleData
@@ -1373,6 +1448,7 @@ export default {
         oldFocusSvg
           .select("use.focus-icon")
           .attr("href", "#defs-back")
+          .style("color", "transparent")
           .on("click", function () {
             that.backMode = true;
             // load new data
@@ -3009,7 +3085,7 @@ export default {
         .attr("font-weight", "bold")
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "hanging")
-        .style("fill", "#aaa")
+        .style("fill", "#9CA0AD")
         .attr("x", "99%")
         .attr("y", "1%");
       /* -------------------------------------------------------------------------- */
@@ -3182,7 +3258,7 @@ export default {
         .attr("font-weight", "bold")
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "hanging")
-        .style("fill", "#aaa")
+        .style("fill", "#9CA0AD")
         .attr("x", "99%")
         .attr("y", "1%");
 
@@ -3398,6 +3474,7 @@ export default {
         .attr("y", 5)
         .attr("width", "6%")
         .attr("height", "6%")
+        .style("color", "transparent")
         .attr("cursor", "pointer")
         .classed("not-show", true)
         .on("click", function () {
@@ -3405,6 +3482,16 @@ export default {
           that.enterAmplifyMode(that.focusState, false);
           that.globalSimulation.restart();
           that.simulations.get(that.focusState).restart();
+        })
+        .on("mouseover", function () {
+          d3.select(this)
+            .classed("hover-highlight", true)
+            .style("color", "#8d93a7");
+        })
+        .on("mouseleave", function () {
+          d3.select(this)
+            .classed("hover-highlight", false)
+            .style("color", "transparent");
         });
 
       /* -------------------------------------------------------------------------- */
@@ -4047,6 +4134,14 @@ export default {
 
 <!-- global style -->
 <style lang="less">
+.shrink-icon,
+.focus-icon {
+  fill: #8d93a7;
+  transition: color 0.2s, fill 0.2s;
+  &.hover-highlight {
+    fill: #fff;
+  }
+}
 .normal-circle {
   stroke: none;
 }

@@ -276,6 +276,7 @@ export default {
   position: absolute;
   top: 15%;
   left: 10%;
+  color: #545b77;
 }
 
 .content-box {
