@@ -900,6 +900,9 @@ export default {
         .on("end", function () {
           d3.select(this).classed("not-show", !mode);
         });
+      if (mode) {
+        this.simulationRestart(this.simulations.get(this.focusState));
+      }
     },
     filterBundleBySelection(bundleData) {
       const focusSelectedIds = this.selectedDatas.get(this.focusState).nodes;
@@ -1026,7 +1029,7 @@ export default {
               .attr("viewBox", [0, 0, viewBoxSize, viewBoxSize]);
           });
       } else {
-        if (svg.classed("not-show")) {
+        if (svg.classed("not-show") && !this.amplifyMode) {
           svg
             .classed("not-show", false)
             .attr("opacity", 0)
@@ -1307,6 +1310,7 @@ export default {
       this.hoverIndex = this.hoverIndexs.get(state);
       this.selectedNode = this.selectedNodes.get(state);
       this.checkIndex = this.checkIndexs.get(state);
+      console.log(this.checkIndex);
     },
 
     updateOldFocusState(state, backMode) {
@@ -1375,6 +1379,7 @@ export default {
             const state = d3.select(this.parentNode).datum().id;
             that.oldFocusState = that.focusState;
             that.focusState = state;
+
             that.$store.dispatch("force/loadData", {
               state: state,
             });
@@ -1619,9 +1624,11 @@ export default {
       simulation.force("link").links(links);
 
       // reset alpha to reheat
+      this.simulationRestart(simulation);
+    },
+    simulationRestart(simulation) {
       simulation.alphaDecay(this.defaultBaseConfig.alphaDecay);
       simulation.alpha(this.defaultBaseConfig.alpha);
-
       simulation.restart();
     },
     setTopScale(maxNodeNum) {
@@ -2162,9 +2169,7 @@ export default {
 
               insightIcon.classed("not-show", false);
               changeLinkStyle(g.datum().id, false);
-              simulation.alphaDecay(self.restartAlphaDecay);
-              simulation.alpha(self.defaultBaseConfig.alpha);
-              simulation.restart();
+              self.simulationRestart(simulation);
             });
 
           g.append("use")
@@ -2206,7 +2211,7 @@ export default {
         // old focus 的hover高亮 new focus
         if (state === self.oldFocusState) {
           const oldFocusStateLinksMap = self.oldFoucsStateLinksMaps.get(state);
-          console.log(oldFocusStateLinksMap.get(id));
+
           self.crossStatesNeighborHighlight(
             oldFocusStateLinksMap.get(id),
             true,
@@ -2232,7 +2237,7 @@ export default {
 
         if (state === self.oldFocusState) {
           const oldFocusStateLinksMap = self.oldFoucsStateLinksMaps.get(state);
-          console.log(oldFocusStateLinksMap.get(id));
+
           self.crossStatesNeighborHighlight(
             oldFocusStateLinksMap.get(id),
             false,
@@ -2798,9 +2803,7 @@ export default {
           );
         });
       }
-      simulation.alphaDecay(that.restartAlphaDecay);
-      simulation.alpha(that.defaultBaseConfig.alpha);
-      simulation.restart();
+      that.simulationRestart(simulation);
     },
     deleteVegaLite(g, state) {
       const showIndex = this.showIndexs.get(state);
@@ -3260,8 +3263,7 @@ export default {
       simulation.force("x").x(centerCoord[0]);
       simulation.force("y").y(centerCoord[1]);
       simulation.force("center").x(centerCoord[0]).y(centerCoord[1]);
-      simulation.alpha(this.defaultBaseConfig.alpha);
-      simulation.restart();
+      this.simulationRestart(simulation);
     },
     createTickFunction(svg) {
       const that = this;

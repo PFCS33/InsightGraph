@@ -62,6 +62,18 @@ export default {
       histogramHeight: null,
 
       linkType: ["siblings", "parent-child", "same-name"],
+      typeColorMapping: {
+        kurtosis: "#F7A69F",
+        correlation: "#53C4B6",
+        skewness: "#F7A69F",
+        "correlation-temporal": "#53C4B6",
+        dominance: "#C69DE9",
+        top2: "#C69DE9",
+        trend: "#F7A69F",
+        outlier: "#C69DE9",
+        "outlier-temporal": "#C69DE9",
+      },
+
       stateList: [],
       barchartConfig: null,
       histogramConfig: null,
@@ -221,9 +233,9 @@ export default {
 
         container.select("svg").remove();
         const colorScale = d3.scaleOrdinal(this.linkType, [
-          "#F7A69F",
-          "#C69DE9",
-          "#53C4B6",
+          "#858eb5",
+          "#D5DAEC",
+          "#858eb5",
         ]);
 
         const tooltip = container.select("div.tooltip");
@@ -385,7 +397,11 @@ export default {
         //    .thresholds(d3.thresholdFreedmanDiaconis);
 
         // 创建左半轴的bar
-        const typeColor = d3.scaleOrdinal(types, d3.schemeTableau10);
+        const typeColor = d3
+          .scaleOrdinal()
+          .domain(Object.keys(this.typeColorMapping))
+          .range(Object.values(this.typeColorMapping));
+
         svg.append("g").attr("class", "type-bar");
         const yType = d3
           .scaleBand()

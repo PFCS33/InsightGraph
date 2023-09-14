@@ -242,8 +242,9 @@ export default {
   },
   watch: {
     tableData(newVal) {
-      console.log(newVal);
       this.createTable();
+      this.addHighlightBorder(this.checkedArea, true, false);
+      this.addHighlightBorder(this.clickedArea, true, true);
     },
     clickedArea: {
       handler(newVal, oldVal) {
@@ -291,16 +292,17 @@ table.mini-table {
   border-collapse: collapse;
   // border-spacing: 0;
   // border-collapse: separate;
-  border: 2px solid #545b77;
+  border: 0.5px solid #545b77;
 }
 
 table.mini-table {
   th {
-    border: 1.5px solid #545b77;
+    border: 0.5px solid #545b77;
   }
   td {
     // border: 1px dashed #ccc;
-    border: 0.5px solid #ccc;
+    // border: 0.5px solid #ccc;
+    border: none;
     transition: background-color 0.3s, transform 0.3s;
   }
   th.cell-border-tooltip-highlight {
