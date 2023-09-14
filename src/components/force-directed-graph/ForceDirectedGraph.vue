@@ -335,6 +335,8 @@ export default {
       insightSizeScales: new Map(),
       selectedIds: new Map(),
       zooms: new Map(),
+      //
+      oldFoucsStateLinksMaps: new Map(),
 
       selectedDatas: new Map(),
       svgNodeDatas: new Map(),
@@ -751,8 +753,6 @@ export default {
           this.restart(true, state, newData);
           // global force graph update
           this.updateSvgSize(svg, this.svgRScale, newData.nodes.length);
-
-          // TODO: change position force
         });
         // update link distance of svg
         this.globalSimulation.force("link").distance((d) => {
@@ -767,6 +767,13 @@ export default {
 
         // update bundle line attr, 对于新旧focus之间的bundle，需要判断新focus中的点有没有被filter掉， restart函数也要进行 oldBundle的筛选
         this.updateGlobalBundle(this.filterBundleBySelection(globalBundleData));
+
+        // change "old focus" state links
+        const oldFocusStateLinksMap = new Map();
+        Array.from(newVal.keys()).forEach((id) => {
+          oldFocusStateLinksMap.set(id, this.stateLinksMap.get(id));
+        });
+        this.oldFoucsStateLinksMaps.set(this.focusState, oldFocusStateLinksMap);
       },
       deep: true,
     },
@@ -976,6 +983,15 @@ export default {
               const state = d3.select(this.parentNode).datum().id;
               that.oldFocusState = that.focusState;
               that.focusState = state;
+
+              const oldFocusStateLinksMap = that.oldFoucsStateLinksMaps.get(
+                that.oldFocusState
+              );
+
+              for (const [id, stateMap] of oldFocusStateLinksMap.entries()) {
+                oldFocusStateLinksMap.set(id, stateMap.get(that.focusState));
+              }
+
               that.$store.dispatch("force/loadData", {
                 state: state,
               });
@@ -1317,6 +1333,15 @@ export default {
 
             that.oldFocusState = that.focusState;
             that.focusState = state;
+
+            const oldFocusStateLinksMap = that.oldFoucsStateLinksMaps.get(
+              that.oldFocusState
+            );
+
+            for (const [id, stateMap] of oldFocusStateLinksMap.entries()) {
+              oldFocusStateLinksMap.set(id, stateMap.get(that.focusState));
+            }
+
             that.$store.dispatch("force/loadData", {
               state: state,
             });
@@ -2177,6 +2202,17 @@ export default {
           col: parentNode.datum().col,
           row: parentNode.datum().row,
         });
+
+        // old focus 的hover高亮 new focus
+        if (state === self.oldFocusState) {
+          const oldFocusStateLinksMap = self.oldFoucsStateLinksMaps.get(state);
+          console.log(oldFocusStateLinksMap.get(id));
+          self.crossStatesNeighborHighlight(
+            oldFocusStateLinksMap.get(id),
+            true,
+            self.focusState
+          );
+        }
       }
       function rectMouseout(self, that, neighborMap, hoverIndex) {
         const rect = d3.select(that);
@@ -2192,6 +2228,16 @@ export default {
         if (id !== selectedNodes.get(state).id) {
           rect.classed("center-highlight", false);
           parentNode.select(".rect-title").classed("center-highlight", false);
+        }
+
+        if (state === self.oldFocusState) {
+          const oldFocusStateLinksMap = self.oldFoucsStateLinksMaps.get(state);
+          console.log(oldFocusStateLinksMap.get(id));
+          self.crossStatesNeighborHighlight(
+            oldFocusStateLinksMap.get(id),
+            false,
+            self.focusState
+          );
         }
       }
       function rectClick(self, that) {

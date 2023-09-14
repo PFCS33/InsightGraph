@@ -24,11 +24,13 @@
           <span> {{ link }}</span>
         </div>
       </div>
-      <div id="barchart-box"></div
+      <div id="barchart-box">
+        <div class="tooltip" style="opacity: 0"></div></div
     ></BaseCard>
     <BaseCard mode="flat" class="histogram-container">
       <div class="title">Insight Type & Score</div>
       <div id="histogram-box">
+        <div class="tooltip" style="opacity: 0"></div>
         <svg style="width: 100%; height: 100%">
           <defs>
             <symbol
@@ -54,6 +56,11 @@
 export default {
   data() {
     return {
+      barchartWidth: null,
+      barchartHeight: null,
+      histogramWidth: null,
+      histogramHeight: null,
+
       linkType: ["siblings", "parent-child", "same-name"],
       stateList: [],
       barchartConfig: null,
@@ -205,8 +212,12 @@ export default {
         const marginBottom = 20;
         const marginLeft = 10;
         const container = d3.select("#barchart-box");
-        const width = parseInt(container.style("width"), 10);
-        const height = parseInt(container.style("height"), 10);
+        if (!this.barchartWidth) {
+          this.barchartWidth = parseInt(container.style("width"), 10);
+          this.barchartHeight = parseInt(container.style("height"), 10);
+        }
+        const width = this.barchartWidth;
+        const height = this.barchartHeight;
 
         container.select("svg").remove();
         const colorScale = d3.scaleOrdinal(this.linkType, [
@@ -215,10 +226,8 @@ export default {
           "#53C4B6",
         ]);
 
-        const tooltip = container
-          .append("div")
-          .attr("class", "tooltip")
-          .style("opacity", 0);
+        const tooltip = container.select("div.tooltip");
+
         const svg = container
           .append("svg")
           .attr("viewBox", [0, 0, width, height])
@@ -342,8 +351,12 @@ export default {
         const marginLeftType = 3;
         const marginRightType = 13;
         // 获取总宽和高
-        const width = parseInt(container.style("width"), 10);
-        const height = parseInt(container.style("height"), 10);
+        if (!this.histogramWidth) {
+          this.histogramWidth = parseInt(container.style("width"), 10);
+          this.histogramHeight = parseInt(container.style("height"), 10);
+        }
+        const width = this.histogramWidth;
+        const height = this.histogramHeight;
 
         // 获取每个子图的高
         const subHeight = Math.floor(height / types.length);
@@ -359,10 +372,8 @@ export default {
         // slider的宽
         const sliderWidth = width - marginLeft - marginRight;
         //创建tooltip
-        const tooltip = container
-          .append("div")
-          .attr("class", "tooltip")
-          .style("opacity", 0);
+
+        const tooltip = container.select("div.tooltip");
         // 选择svg画布
         const svg = container
           .select("svg")
