@@ -4,6 +4,8 @@
 
 This project has been deployed to github pages, you can play it over there: [online demo](https://pfcs33.github.io/customed-force-directed-graph/)
 
+![demo](.\demo\demo.png)
+
 ## Run Project
 
 ### Step 1. Environment Requirement
@@ -40,4 +42,5 @@ npm run dev
 
 ## Todo
 
-- Visualization of different states and relationships between states
+- ~~Visualization of different states and relationships between states~~
+- "display state"
