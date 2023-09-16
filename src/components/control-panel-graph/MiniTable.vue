@@ -239,6 +239,9 @@ export default {
     heatValues() {
       return this.$store.getters["table/heatValues"];
     },
+    crossStateHoverArea() {
+      return this.$store.getters["table/crossStateHoverArea"];
+    },
   },
   watch: {
     tableData(newVal) {
@@ -266,6 +269,42 @@ export default {
         if (newVal) this.addHighlightBackground(newVal, true);
       },
       deep: true,
+    },
+
+    crossStateHoverArea(newVal, oldVal) {
+      const that = this;
+      if (oldVal) {
+        const rowSpans = oldVal.rowSpans;
+        const colSpans = oldVal.colSpans;
+
+        addCorssStateHighlight(rowSpans, colSpans, false);
+      }
+      if (newVal) {
+        const rowSpans = newVal.rowSpans;
+        const colSpans = newVal.colSpans;
+        addCorssStateHighlight(rowSpans, colSpans, true);
+      }
+
+      function addCorssStateHighlight(rowSpans, colSpans, mode) {
+        const checkedArea = new Map();
+        if (colSpans.length === 1) {
+          rowSpans.forEach((rowSpan, index) => {
+            checkedArea.set(index, {
+              rowSpan: rowSpan,
+              colSpan: colSpans[0],
+            });
+          });
+        } else {
+          colSpans.forEach((colSpan, index) => {
+            checkedArea.set(index, {
+              rowSpan: rowSpans[0],
+              colSpan: colSpan,
+            });
+          });
+        }
+
+        that.addHighlightBackground(checkedArea, mode);
+      }
     },
   },
   mounted() {

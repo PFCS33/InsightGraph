@@ -1374,7 +1374,6 @@ export default {
       this.hoverIndex = this.hoverIndexs.get(state);
       this.selectedNode = this.selectedNodes.get(state);
       this.checkIndex = this.checkIndexs.get(state);
-      console.log(this.checkIndex);
     },
 
     updateOldFocusState(state, backMode) {
@@ -1895,11 +1894,11 @@ export default {
           );
         })
         .style("transition", "transform 0.2s")
-        .on("mouseover", function (event) {
-          circleMouseover(event, this, hoverIndex);
+        .on("mouseover", function () {
+          circleMouseover(that, this, hoverIndex);
         })
-        .on("mouseout", function (event) {
-          circleMouseout(event, this, hoverIndex);
+        .on("mouseout", function () {
+          circleMouseout(that, this, hoverIndex);
         })
         .on("click", function () {
           circleClick(that, this, simulation);
@@ -2021,9 +2020,9 @@ export default {
         .selectChild(".rect")
         .call(dragDefine);
 
-      function circleMouseover(event, that, hoverIndex) {
+      function circleMouseover(self, that, hoverIndex) {
         const d = d3.select(that.parentNode).datum();
-
+        const id = d.id;
         Object.assign(hoverIndex, {
           id: d.id,
           col: d.col,
@@ -2042,9 +2041,28 @@ export default {
             .select(".insight-icon")
             .attr("transform", "scale(2)");
         }
+        if (state === self.oldFocusState) {
+          const oldFocusStateLinksMap = self.oldFoucsStateLinksMaps.get(state);
+
+          self.crossStatesNeighborHighlight(
+            oldFocusStateLinksMap.get(id),
+            true,
+            self.focusState
+          );
+        }
+        if (self.newStateList.includes(state) || state === self.oldFocusState) {
+          self.$store.dispatch("table/convertCrossStateHoverSelection", {
+            data: {
+              id: d.id,
+              col: d.col,
+              row: d.row,
+            },
+          });
+        }
       }
-      function circleMouseout(event, that, hoverIndex) {
+      function circleMouseout(self, that, hoverIndex) {
         const d = d3.select(that.parentNode).datum();
+        const id = d.id;
         // hoverIndex.id = null;
         // hoverIndex.col = null;
         // hoverIndex.row = null;
@@ -2067,6 +2085,20 @@ export default {
         d3.select(that.parentNode)
           .select(".insight-icon")
           .attr("transform", "scale(1)");
+        if (state === self.oldFocusState) {
+          const oldFocusStateLinksMap = self.oldFoucsStateLinksMaps.get(state);
+
+          self.crossStatesNeighborHighlight(
+            oldFocusStateLinksMap.get(id),
+            false,
+            self.focusState
+          );
+        }
+        if (self.newStateList.includes(state) || state === self.oldFocusState) {
+          self.$store.dispatch("table/convertCrossStateHoverSelection", {
+            data: null,
+          });
+        }
       }
 
       function changeLinkStyle(nodeId, showMode) {
@@ -2272,6 +2304,7 @@ export default {
         //颜色变，表示被选中
         const rect = d3.select(that);
         const parentNode = d3.select(that.parentNode);
+        const d = d3.select(that.parentNode).datum();
         const id = parentNode.datum().id;
         const neighbor = neighborMap.get(id);
         self.neighborHighligt(id, neighbor, "hover", true, state);
@@ -2293,6 +2326,15 @@ export default {
             true,
             self.focusState
           );
+        }
+        if (self.newStateList.includes(state) || state === self.oldFocusState) {
+          self.$store.dispatch("table/convertCrossStateHoverSelection", {
+            data: {
+              id: d.id,
+              col: d.col,
+              row: d.row,
+            },
+          });
         }
       }
       function rectMouseout(self, that, neighborMap, hoverIndex) {
@@ -2319,6 +2361,11 @@ export default {
             false,
             self.focusState
           );
+        }
+        if (self.newStateList.includes(state) || state === self.oldFocusState) {
+          self.$store.dispatch("table/convertCrossStateHoverSelection", {
+            data: null,
+          });
         }
       }
       function rectClick(self, that) {
