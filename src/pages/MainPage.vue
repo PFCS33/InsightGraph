@@ -34,6 +34,8 @@
           class="nav-icon"
           viewBox="-50 0 1124 1024"
           xmlns="http://www.w3.org/2000/svg"
+          @click="togglePhotoMode"
+          :class="{ 'active-btn': photoMode }"
         >
           <path
             d="M878.933333 938.666667 145.066667 938.666667C64 938.666667 0 874.666667 0 793.6L0 401.066667C0 320 64 256 145.066667 256 170.666667 256 192 243.2 204.8 221.866667l25.6-55.466667C256 115.2 307.2 85.333333 362.666667 85.333333l298.666667 0c55.466667 0 106.666667 29.866667 132.266667 81.066667l25.6 55.466667C832 243.2 853.333333 256 874.666667 256 960 256 1024 320 1024 401.066667l0 388.266667C1024 874.666667 960 938.666667 878.933333 938.666667zM362.666667 170.666667C341.333333 170.666667 320 183.466667 307.2 204.8L281.6 260.266667C256 311.466667 204.8 341.333333 149.333333 341.333333 110.933333 341.333333 85.333333 366.933333 85.333333 401.066667l0 388.266667C85.333333 827.733333 110.933333 853.333333 145.066667 853.333333l729.6 0c34.133333 0 59.733333-25.6 59.733333-59.733333L934.4 401.066667C938.666667 366.933333 913.066667 341.333333 878.933333 341.333333c-59.733333 0-106.666667-29.866667-132.266667-81.066667l-25.6-55.466667C704 183.466667 682.666667 170.666667 661.333333 170.666667L362.666667 170.666667z"
@@ -68,57 +70,69 @@
           <div>and start exploring <em>Insight Stories</em>!</div>
         </div>
       </div>
-      <div :class="['control-panel-box']" v-show="editMode">
-        <BaseCard mode="flat" class="control-panel" v-show="animationDone">
-          <div class="button-box-content">
-            <el-tabs
-              v-model="controlPanelMode"
-              :stretch="true"
-              class="config-panel-tab"
-            >
-              <el-tab-pane label="Base" name="base"></el-tab-pane>
-              <el-tab-pane label="Table" name="table"></el-tab-pane>
-            </el-tabs>
-          </div>
-          <div class="control-panel-content" v-show="animationDone">
-            <div class="base-mode" v-show="controlPanelMode === 'base'">
-              <div class="button-box">
-                <div>
-                  <svg
-                    viewBox="0 0 1024 1024"
-                    xmlns="http://www.w3.org/2000/svg"
-                    @click="restart"
-                    class="panel-icon"
-                  >
-                    <path
-                      d="M512 938.666667C276.352 938.666667 85.333333 747.648 85.333333 512S276.352 85.333333 512 85.333333s426.666667 191.018667 426.666667 426.666667-191.018667 426.666667-426.666667 426.666667z m205.653333-210.090667a298.666667 298.666667 0 1 0-79.018666 54.016l-41.6-74.88A213.333333 213.333333 0 1 1 725.333333 512h-128l120.32 216.576z"
-                    ></path>
-                  </svg>
+      <transition name="treeAnimation" mode="out-in">
+        <div :class="['control-panel-box']" v-show="editMode && !photoMode">
+          <BaseCard mode="flat" class="control-panel" v-show="animationDone">
+            <div class="button-box-content">
+              <el-tabs
+                v-model="controlPanelMode"
+                :stretch="true"
+                class="config-panel-tab"
+              >
+                <el-tab-pane label="Base" name="base"></el-tab-pane>
+                <el-tab-pane label="Table" name="table"></el-tab-pane>
+              </el-tabs>
+            </div>
+            <div class="control-panel-content" v-show="animationDone">
+              <div class="base-mode" v-show="controlPanelMode === 'base'">
+                <div class="button-box">
+                  <div>
+                    <svg
+                      viewBox="0 0 1024 1024"
+                      xmlns="http://www.w3.org/2000/svg"
+                      @click="restart"
+                      class="panel-icon"
+                    >
+                      <path
+                        d="M512 938.666667C276.352 938.666667 85.333333 747.648 85.333333 512S276.352 85.333333 512 85.333333s426.666667 191.018667 426.666667 426.666667-191.018667 426.666667-426.666667 426.666667z m205.653333-210.090667a298.666667 298.666667 0 1 0-79.018666 54.016l-41.6-74.88A213.333333 213.333333 0 1 1 725.333333 512h-128l120.32 216.576z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <svg
+                      viewBox="-38 -38 1062 1062"
+                      xmlns="http://www.w3.org/2000/svg"
+                      @click="stop"
+                      class="panel-icon"
+                    >
+                      <path
+                        d="M512 0C229.216 0 0 229.216 0 512s229.216 512 512 512 512-229.216 512-512S794.784 0 512 0z m0 928C282.24 928 96 741.76 96 512S282.24 96 512 96s416 186.24 416 416-186.24 416-416 416z m-192-608h384v384H320z"
+                      ></path>
+                    </svg>
+                  </div>
                 </div>
-                <div>
-                  <svg
-                    viewBox="-38 -38 1062 1062"
-                    xmlns="http://www.w3.org/2000/svg"
-                    @click="stop"
-                    class="panel-icon"
-                  >
-                    <path
-                      d="M512 0C229.216 0 0 229.216 0 512s229.216 512 512 512 512-229.216 512-512S794.784 0 512 0z m0 928C282.24 928 96 741.76 96 512S282.24 96 512 96s416 186.24 416 416-186.24 416-416 416z m-192-608h384v384H320z"
-                    ></path>
-                  </svg>
-                </div>
+                <StatisticsGraph ref="controlGraph"></StatisticsGraph>
               </div>
-              <StatisticsGraph ref="controlGraph"></StatisticsGraph>
+              <div class="table-mode" v-if="controlPanelMode === 'table'">
+                <MiniTable></MiniTable>
+              </div>
             </div>
-            <div class="table-mode" v-if="controlPanelMode === 'table'">
-              <MiniTable></MiniTable>
-            </div>
-          </div>
-        </BaseCard>
-      </div>
-
+          </BaseCard>
+        </div>
+      </transition>
       <div class="force-graph-box">
-        <ForceDirectedGraph ref="forceGraph"></ForceDirectedGraph>
+        <transition
+          name="forceAnimation"
+          mode="out-in"
+          @after-leave="handleForceTransitionEnd"
+        >
+          <ForceDirectedGraph
+            ref="forceGraph"
+            v-show="!photoMode"
+          ></ForceDirectedGraph>
+        </transition>
+
+        <TreeGraph v-if="photoMode && transitionEnd"></TreeGraph>
       </div>
     </div>
   </div>
@@ -127,12 +141,14 @@
 import ForceDirectedGraph from "@/components/force-directed-graph/ForceDirectedGraph.vue";
 import StatisticsGraph from "@/components/control-panel-graph/StatisticsGraph.vue";
 import MiniTable from "@/components/control-panel-graph/MiniTable.vue";
+import TreeGraph from "@/components/tree-graph/TreeGraph.vue";
 import { Tools } from "@element-plus/icons-vue";
 export default {
   components: {
     ForceDirectedGraph,
     StatisticsGraph,
     MiniTable,
+    TreeGraph,
     Tools,
   },
   data() {
@@ -142,6 +158,8 @@ export default {
       editMode: true,
       animationDone: true,
       controlPanelMode: "base",
+      photoMode: false,
+      transitionEnd: false,
     };
   },
   computed: {
@@ -166,6 +184,9 @@ export default {
   },
 
   methods: {
+    handleForceTransitionEnd() {
+      this.transitionEnd = true;
+    },
     handleFileChange() {
       const file = event.target.files[0];
       if (file) {
@@ -210,6 +231,19 @@ export default {
       if (!this.error.state) {
         this.animationDone = false;
         this.editMode = !this.editMode;
+      }
+    },
+    togglePhotoMode() {
+      if (!this.error.state) {
+        this.transitionEnd = false;
+        this.photoMode = !this.photoMode;
+        if (this.photoMode) {
+          this.$refs.forceGraph.getTreeInfo();
+        } else {
+          this.$refs.forceGraph.simulationRestart(
+            this.$refs.forceGraph.globalSimulation
+          );
+        }
       }
     },
 
@@ -299,6 +333,7 @@ export default {
   grid-template-columns: 2fr 8fr;
   transition: all 0.2s ease-in-out;
   position: relative;
+  overflow: hidden;
 }
 
 .content-box.notEditMode {
@@ -435,6 +470,50 @@ export default {
   background-color: #545b77;
   fill: #fff;
   border: none;
+}
+</style>
+
+<!-- animation -->
+<style scoped>
+.forceAnimation-enter-from {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.forceAnimation-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+.forceAnimation-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+.forceAnimation-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.treeAnimation-enter-from {
+  opacity: 0;
+}
+
+.treeAnimation-enter-to {
+  opacity: 1;
+}
+.treeAnimation-leave-from {
+  opacity: 1;
+}
+.treeAnimation-leave-to {
+  opacity: 0;
+}
+
+.forceAnimation-enter-active,
+.forceAnimation-leave-active {
+  transition: all 0.3s ease-out;
+}
+.treeAnimation-enter-active,
+.treeAnimation-leave-active {
+  transition: opacity 0.3s ease-out;
 }
 </style>
 

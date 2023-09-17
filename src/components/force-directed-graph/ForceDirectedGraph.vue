@@ -28,7 +28,8 @@
         @hideMoreBox="hideMoreBox"
       ></VegaLiteFilter>
     </transition>
-    <div id="svg-container">
+
+    <div id="force-svg-container">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         id="total-svg"
@@ -269,6 +270,7 @@
         </defs>
       </svg>
     </div>
+
     <defs style="display: none">
       <svg
         viewBox="0 0 1024 1024"
@@ -277,6 +279,12 @@
         :width="iconSize"
         :height="iconSize"
       >
+        <rect
+          width="100%"
+          height="100%"
+          stroke="none"
+          fill="transparent"
+        ></rect>
         <path
           d="M512 64q190.016 4.992 316.512 131.488T960 512q-4.992 190.016-131.488 316.512T512 960q-190.016-4.992-316.512-131.488T64 512q4.992-190.016 131.488-316.512T512 64zM288 512q0 16 11.008 27.008t27.008 11.008h372q16 0 27.008-11.008t11.008-27.008-11.008-27.008-27.008-11.008H326.016q-16 0-27.008 11.008T288 512z"
         ></path>
@@ -288,6 +296,12 @@
         :width="iconSize"
         :height="iconSize"
       >
+        <rect
+          width="100%"
+          height="100%"
+          stroke="none"
+          fill="transparent"
+        ></rect>
         <path
           d="M320 839.68l-238.592 174.08c-8.704 6.656-19.456 9.728-29.696 9.728-12.8 0-26.112-5.12-35.84-14.848-17.92-17.92-20.48-46.08-5.12-66.56l212.992-288.256L56.32 487.424C39.936 471.04 36.864 445.44 48.128 425.472c8.192-12.8 76.8-112.64 229.376-75.264 2.56 0.512 5.12 0.512 8.192 1.024 6.144 0.512 13.312 1.024 20.992 2.56 32.256 5.12 89.6-20.48 139.264-62.976 47.616-40.448 78.336-87.552 78.336-120.32 0-7.68 0-15.872-0.512-23.552-1.024-30.72-3.072-77.824 31.744-112.64 41.472-41.472 107.52-45.056 153.088-7.68 1.024 0.512 1.536 1.536 2.56 2.56 24.576 24.064 276.48 275.968 279.04 278.528 21.504 21.504 33.792 50.688 33.792 81.408s-11.776 59.392-33.792 80.896c-34.816 34.816-82.432 33.28-113.664 31.744-7.168 0-15.36-0.512-23.04-0.512-30.72 0-67.584 21.504-103.936 60.928-50.688 55.296-81.92 126.464-79.36 158.72 1.024 10.24 3.072 28.16 3.584 30.72 36.864 149.504-62.976 217.6-74.752 225.28-20.48 12.288-46.592 9.216-62.976-7.168l-165.376-165.376-50.688 35.328z"
         ></path>
@@ -299,6 +313,12 @@
         :width="iconSize"
         :height="iconSize"
       >
+        <rect
+          width="100%"
+          height="100%"
+          stroke="none"
+          fill="transparent"
+        ></rect>
         <path
           d="M1002.88 321.92L405.76 935.04a32 32 0 0 1-45.76 0L21.12 612.48a32 32 0 0 1 0-44.8L160 433.6a32 32 0 0 1 45.76 0L359.04 576 796.16 120.64a32 32 0 0 1 46.08 0l160 156.48a32 32 0 0 1 0.64 44.8z"
         ></path>
@@ -310,7 +330,6 @@
 
 <script>
 import VegaLiteFilter from "@/components/force-directed-graph/VegaLiteFilter.vue";
-import { binRequiresRange } from "vega-lite/build/src/channeldef";
 
 export default {
   components: {
@@ -334,6 +353,12 @@ export default {
 
   data() {
     return {
+      // // tree info
+      // exploredPath: {
+      //   name: "root",
+      // },
+
+      // svg 状态切换相关
       amplifyMode: false,
       backMode: false,
       firstUpdateFlag: true,
@@ -352,6 +377,7 @@ export default {
       chargeStrengthScale: null,
       containerWidth: null,
       containerHeight: null,
+
       // mutiple states
       focusState: "S0",
       oldFocusState: null,
@@ -721,7 +747,7 @@ export default {
         // global links
         const globalBundleData = [];
         const linkGTop = d3
-          .select("#svg-container")
+          .select("#force-svg-container")
           .select("#total-svg")
           .select("g.link-group");
 
@@ -756,7 +782,11 @@ export default {
             }
           }
         }
-
+        for (let [state, ids] of relatedNodeIdMap.entries()) {
+          // 去掉重复元素
+          const newIds = [...new Set(ids)];
+          relatedNodeIdMap.set(state, newIds);
+        }
         // 根据该state的本身设置的保存条件，再筛选一次
         for (let [state, ids] of relatedNodeIdMap.entries()) {
           const selectedData = this.selectedDatas.get(state);
@@ -774,7 +804,7 @@ export default {
 
         Array.from(filteredAllStateData.keys()).forEach((state) => {
           const svg = d3
-            .select("#svg-container")
+            .select("#force-svg-container")
             .select("#total-svg")
             .select("g.node-group")
             .select(`.${state}-state`);
@@ -874,10 +904,335 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    getTreeInfo() {
+      const that = this;
+
+      const nodeIdMaps = this.nodeIdMaps;
+      const checkIndexs = this.checkIndexs;
+      const checkedAllStateData = new Map();
+      let allNodes = [];
+      let allLinks = [];
+      // 获取node data + state 内部的link data
+      for (const [state, checkInfo] of checkIndexs) {
+        if (checkInfo.size > 0) {
+          // 检查每个state 的 checkIndex、
+          const nodeIdMap = nodeIdMaps.get(state);
+          const nodes = [];
+
+          for (const id of checkInfo.keys()) {
+            const nodeData = nodeIdMap.get(id);
+            nodes.push({ ...nodeData });
+          }
+          allNodes.push(...nodes);
+
+          const nodeIds = nodes.map((nodeData) => nodeData.id);
+          const linkMaps = this.linkStateMaps.get(state);
+          const links = linkMaps
+            .filter(
+              (d) => nodeIds.includes(d.source) && nodeIds.includes(d.target)
+            )
+            .map((d) => ({ ...d }));
+          allLinks.push(...links);
+
+          checkedAllStateData.set(state, {
+            nodes: nodes,
+            links: links,
+          });
+        }
+      }
+      // 获取跨state 的link data
+      const totalNodeIds = allNodes.map((nodeData) => nodeData.id);
+      const crossStateLinks = this.globalBundleData
+        .filter((d) => {
+          return (
+            totalNodeIds.includes(d.source.id) &&
+            totalNodeIds.includes(d.target.id)
+          );
+        })
+        .map((d) => ({
+          source: d.source.id,
+          target: d.target.id,
+          type: "state",
+        }));
+      crossStateLinks.push(
+        ...this.preservedBundleData
+          .filter((d) => {
+            return (
+              totalNodeIds.includes(d.source.id) &&
+              totalNodeIds.includes(d.target.id)
+            );
+          })
+          .map((d) => ({
+            source: d.source.id,
+            target: d.target.id,
+            type: "state",
+          }))
+      );
+
+      const nodeIdMap = new Map();
+      allNodes.forEach((node) => {
+        nodeIdMap.set(node.id, node);
+      });
+      const tree = { name: "root" };
+      const children = [];
+
+      const stateStack = [
+        ...this.pathStack.filter((d) => d.state).map((d) => d.state),
+      ];
+      if (this.oldFocusState) {
+        stateStack.push(this.oldFocusState);
+      }
+      if (this.focusState) {
+        stateStack.push(this.focusState);
+      }
+      const addedNodes = new Set();
+
+      if (checkedAllStateData.has("S0")) {
+        checkedAllStateData.get("S0").nodes.forEach((node) => {
+          const id = node.id;
+
+          const newChild = {
+            name: id,
+            forceData: node,
+          };
+          addChildren(newChild);
+          children.push(newChild);
+        });
+      }
+
+      // 把没有连接上的其他树一起挂在第一层上
+      stateStack.forEach((state) => {
+        if (checkedAllStateData.has(state)) {
+          const nodes = checkedAllStateData.get(state).nodes;
+          nodes.forEach((node) => {
+            if (!addedNodes.has(node.id)) {
+              const newChild = {
+                name: node.id,
+                forceData: node,
+              };
+              addChildren(newChild);
+              children.push(newChild);
+            }
+          });
+        }
+      });
+      if (children.length > 0) {
+        tree.children = children;
+      }
+
+      allLinks.push(...crossStateLinks);
+
+      this.$store.commit("tree/setTotalData", {
+        tree: tree,
+      });
+
+      function addChildren(treeNode) {
+        const nodeId = treeNode.name;
+        addedNodes.add(nodeId);
+
+        const relatedLinks = crossStateLinks.filter((d) => d.source === nodeId);
+        if (relatedLinks.length > 0) {
+          const children = [];
+          relatedLinks.forEach((link) => {
+            const newChild = {
+              name: link.target,
+              forceData: nodeIdMap.get(link.target),
+            };
+            children.push(newChild);
+            addChildren(newChild);
+          });
+          treeNode.children = children;
+        }
+      }
+    },
+    // drawPhotoGraph(allStatesData, svgContainer) {
+    //   const that = this;
+    //   const [nodes, links] = photoDataReset(allStatesData);
+
+    //   // 获得当前传来的nodes的 scales 函数
+    //   const [circleRScale, insightSizeScale] =
+    //     this.getSvgInnterSizeScale(nodes);
+
+    //   const containerWidth = this.containerWidth;
+    //   const containerHeight = this.containerHeight;
+
+    //   const svg = svgContainer
+    //     .append("svg")
+    //     .attr("id", "photo-svg")
+    //     .attr("fill", "#fff")
+    //     .attr("overflow", "visible")
+    //     .datum({
+    //       id: "__photo",
+    //     });
+
+    //   this.updateSvgSize(svg, this.svgRScale, nodes.length);
+
+    //   svg.attr(
+    //     "transform",
+    //     (d) =>
+    //       `translate(${containerWidth / 2 - d.width / 2},${
+    //         containerHeight / 2 - d.height / 2
+    //       })`
+    //   );
+    //   const linkG = svg
+    //     .append("g")
+    //     .attr("class", "link-group")
+    //     .selectAll("g")
+    //     .data(links, (d) => {
+    //       if (typeof d.source === "object") {
+    //         return `${d.source.id}_${d.target.id}`;
+    //       } else {
+    //         return `${d.source}_${d.target}`;
+    //       }
+    //     })
+    //     .join("g");
+    //   const circleG = svg
+    //     .append("g")
+    //     .attr("class", "node-group")
+    //     .selectAll("g")
+    //     .data(nodes, (d) => d.id)
+    //     .join("g");
+
+    //   const center = svg.datum().viewBoxR / 2;
+    //   const simulation = this.createForceSimulation(
+    //     nodes,
+    //     links,
+    //     ticked,
+    //     this.neighborMap_ph,
+    //     this.showIndex_ph,
+    //     center
+    //   );
+    //   this.simulation_ph = simulation;
+    //   const domFunctions = {
+    //     circleClick: circleClick,
+    //     rectClick: rectClick,
+    //     rectMouseout: rectMouseout,
+    //   };
+    //   // this.setDomAttributes(linkG, circleG, "__photo", domFunctions);
+
+    //   // add zoom
+    //   const group = svg.selectChildren("g");
+    //   const zoom = d3
+    //     .zoom()
+    //     .scaleExtent([0.3, 8]) // 设置缩放的范围
+    //     .on("zoom", zoomed);
+    //   svg.call(zoom);
+    //   function zoomed(event, d) {
+    //     const transform = event.transform;
+
+    //     // 更新地理路径组的变换属性
+    //     group.attr("transform", transform);
+    //   }
+
+    //   function ticked() {
+    //     svg
+    //       .select(".node-group")
+    //       .selectChildren("g")
+    //       .style("transform", (d) => `translate(${d.x}px,${d.y}px)`);
+    //     svg
+    //       .select(".link-group")
+    //       .selectChildren("g")
+    //       .selectChildren(".network-line")
+    //       .attr("x1", function () {
+    //         const d = d3.select(this.parentNode).datum();
+    //         return d.source.x;
+    //       })
+    //       .attr("y1", function () {
+    //         const d = d3.select(this.parentNode).datum();
+    //         return d.source.y;
+    //       })
+    //       .attr("x2", function () {
+    //         const d = d3.select(this.parentNode).datum();
+    //         return d.target.x;
+    //       })
+    //       .attr("y2", function () {
+    //         const d = d3.select(this.parentNode).datum();
+    //         return d.target.y;
+    //       });
+    //     // 更新锥形位置(如果有)
+    //     svg
+    //       .select(".link-group")
+    //       .selectChildren("g")
+    //       .selectChildren("path.network-angle")
+    //       .attr("d", function () {
+    //         const d = d3.select(this.parentNode).datum();
+    //         let point1 = [];
+    //         let point2 = [];
+    //         const name1 = d.source.id;
+    //         const name2 = d.target.id;
+    //         if (name1.length < name2.length) {
+    //           point1 = [d.source.x, d.source.y];
+    //           point2 = [d.target.x, d.target.y];
+    //         } else {
+    //           point1 = [d.target.x, d.target.y];
+    //           point2 = [d.source.x, d.source.y];
+    //         }
+
+    //         const widthAtStart = 15;
+    //         const widthAtEnd = 1;
+
+    //         const angle = Math.atan2(
+    //           point2[1] - point1[1],
+    //           point2[0] - point1[0]
+    //         );
+
+    //         const p1 = [
+    //           point1[0] + widthAtStart * Math.sin(angle),
+    //           point1[1] - widthAtStart * Math.cos(angle),
+    //         ];
+
+    //         const p2 = [
+    //           point1[0] - widthAtStart * Math.sin(angle),
+    //           point1[1] + widthAtStart * Math.cos(angle),
+    //         ];
+
+    //         const p3 = [
+    //           point2[0] - widthAtEnd * Math.sin(angle),
+    //           point2[1] + widthAtEnd * Math.cos(angle),
+    //         ];
+
+    //         const p4 = [
+    //           point2[0] + widthAtEnd * Math.sin(angle),
+    //           point2[1] - widthAtEnd * Math.cos(angle),
+    //         ];
+
+    //         return `M${p1} L${p2} L${p3} L${p4} Z`;
+    //       });
+    //   }
+
+    //   function photoDataReset(allStatesData) {
+    //     const nodes = allStatesData.nodes.map((d) => ({ ...d }));
+    //     const links = allStatesData.links.map((d) => ({ ...d }));
+    //     that.showIndex_ph = new Map();
+    //     that.hoverIndex_ph = {
+    //       id: null,
+    //       col: null,
+    //       row: null,
+    //     };
+    //     that.pinnedIndex_ph = new Map();
+    //     that.selectedNode_ph = {
+    //       id: null,
+    //       state: null,
+    //       insightIndex: null,
+    //       "insight-list": null,
+    //       col: null,
+    //       row: null,
+    //     };
+    //     that.nodeIdMap_ph = new Map();
+    //     nodes.forEach((node) => {
+    //       that.nodeIdMap_ph.set(node.id, node);
+    //       if (node.showDetail) {
+    //         that.showIndex_ph.set(node.id, node.view);
+    //       }
+    //     });
+    //     that.neighborMap_ph = that.getNeighbourInfo(allStatesData);
+    //     return [nodes, links];
+    //   }
+    // },
     enterAmplifyMode(state, mode) {
       const that = this;
 
-      const svgTop = d3.select("#svg-container").select("#total-svg");
+      const svgTop = d3.select("#force-svg-container").select("#total-svg");
       svgTop
         .transition()
         .duration(this.durationTime)
@@ -909,7 +1264,7 @@ export default {
         });
 
       const svg = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .select("g.node-group")
         .select(`.${state}-state`);
@@ -934,6 +1289,7 @@ export default {
         });
       if (mode) {
         this.simulationRestart(this.simulations.get(this.focusState));
+        this.simulationRestart(this.globalSimulation);
       }
     },
     filterBundleBySelection(bundleData) {
@@ -1153,11 +1509,11 @@ export default {
       oldNewFocusState
     ) {
       const nodeGTop = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .select("g.node-group");
       const linkGTop = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .select("g.link-group");
       const svgNodeDatas = this.svgNodeDatas;
@@ -1295,7 +1651,7 @@ export default {
       const nodeData = this.nodeStateMaps.get(state);
       const linkData = this.linkStateMaps.get(state);
       const svg = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .select("g.node-group")
         .select(`.${state}-state`)
@@ -1379,7 +1735,7 @@ export default {
     updateOldFocusState(state, backMode) {
       const that = this;
       const oldFocusSvg = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .select("g.node-group")
         .select(".focus-svg")
@@ -1468,7 +1824,7 @@ export default {
     },
     filterOldState() {
       const that = this;
-      const svgTop = d3.select("#svg-container").select("#total-svg");
+      const svgTop = d3.select("#force-svg-container").select("#total-svg");
       // 获取需要删除的子svg和id列表
       const filteredSvgs = svgTop
         .select("g.node-group")
@@ -1486,7 +1842,7 @@ export default {
     },
     updateGlobalBundle(globalBundleData) {
       const bundleG = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .select("g.bundle-group");
       bundleG
@@ -1567,7 +1923,7 @@ export default {
       return allStatesData;
     },
 
-    domUpate(nodes, links, nodeSingleG, linkSingleG, state) {
+    domUpdate(nodes, links, nodeSingleG, linkSingleG, state) {
       const that = this;
       const showIndex = this.showIndexs.get(state);
       const pinnedIndex = this.showIndexs.get(state);
@@ -1707,7 +2063,7 @@ export default {
       simulation.restart();
     },
     setTopScale(maxNodeNum) {
-      const svgContainer = d3.select("#svg-container");
+      const svgContainer = d3.select("#force-svg-container");
       this.containerWidth = parseInt(svgContainer.style("width"), 10);
       this.containerHeight = parseInt(svgContainer.style("height"), 10);
       const maxR =
@@ -1781,7 +2137,7 @@ export default {
 
       const newType = nodeData["insight-list"][selectedIndex]["insight-type"];
       const g = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
         .select(`.${state}-state`)
@@ -1806,12 +2162,13 @@ export default {
       const that = this;
 
       const selectedNodes = this.selectedNodes;
-      //  state === this.focusState ? null : this.selectedNodes;
+
       const simulation = this.simulations.get(state);
       const hoverIndex = this.hoverIndexs.get(state);
       const checkIndex = this.checkIndexs.get(state);
       const pinnedIndex = this.pinnedIndexs.get(state);
       const neighborMap = this.neighborMaps.get(state);
+      const showIndex = this.showIndexs.get(state);
 
       circleG
         .attr("opacity", 0)
@@ -1840,7 +2197,7 @@ export default {
         .attr("class", "network-line")
         .attr("stroke-width", 1);
 
-      const showIndexList = Array.from(this.showIndexs.get(state).keys());
+      const showIndexList = Array.from(showIndex.keys());
 
       linkGroup.each(function (d) {
         const sourceId = d.source;
@@ -1856,6 +2213,8 @@ export default {
               case "siblings":
                 // 普通实线
 
+                break;
+              case "statte":
                 break;
               case "parent-child":
                 // 锥形线
@@ -1873,8 +2232,6 @@ export default {
           }
         }
       });
-
-      const linkContainerGroup = linkG;
 
       //画nodes
       const circleGroup = circleG
@@ -1901,7 +2258,14 @@ export default {
           circleMouseout(that, this, hoverIndex);
         })
         .on("click", function () {
-          circleClick(that, this, simulation);
+          circleClick(
+            that,
+            this,
+            simulation,
+            changeLinkStyle,
+            togglePin,
+            nodeTypeColor
+          );
         });
 
       const containerGroup = circleG;
@@ -1991,10 +2355,11 @@ export default {
         .attr("class", "vega-lite-container");
 
       const svg = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
         .select(`.${state}-state`);
+
       const dragDefine = d3
         .drag()
         .container(function () {
@@ -2024,7 +2389,7 @@ export default {
         const d = d3.select(that.parentNode).datum();
         const id = d.id;
         Object.assign(hoverIndex, {
-          id: d.id,
+          id: id,
           col: d.col,
           row: d.row,
         });
@@ -2041,8 +2406,10 @@ export default {
             .select(".insight-icon")
             .attr("transform", "scale(2)");
         }
+
         if (state === self.oldFocusState) {
           const oldFocusStateLinksMap = self.oldFoucsStateLinksMaps.get(state);
+          console.log(oldFocusStateLinksMap);
 
           self.crossStatesNeighborHighlight(
             oldFocusStateLinksMap.get(id),
@@ -2085,6 +2452,7 @@ export default {
         d3.select(that.parentNode)
           .select(".insight-icon")
           .attr("transform", "scale(1)");
+
         if (state === self.oldFocusState) {
           const oldFocusStateLinksMap = self.oldFoucsStateLinksMaps.get(state);
 
@@ -2100,11 +2468,31 @@ export default {
           });
         }
       }
+      function togglePin() {
+        const g = d3.select(this.parentNode);
+        const pinned = !g.datum().pinned;
+        g.datum().pinned = pinned;
+        g.classed("pinned", true);
+        if (pinned) {
+          g.datum().fx = g.datum().x;
+          g.datum().fy = g.datum().y;
+          g.select(".pin").classed("icon-pinned", true);
 
+          that.drawVegaLite(g, "svg", state);
+          pinnedIndex.set(g.datum().id, g);
+        } else {
+          g.classed("pinned", false);
+          g.select(".pin").classed("icon-pinned", false);
+          g.datum().fx = null;
+          g.datum().fy = null;
+          that.drawVegaLite(g, "img", state);
+          pinnedIndex.delete(g.datum().id);
+        }
+      }
       function changeLinkStyle(nodeId, showMode) {
         // change style of links
         const linkG = d3
-          .select("#svg-container")
+          .select("#force-svg-container")
           .select("svg")
           .select("g.node-group")
           .select(`svg.${state}-state`)
@@ -2122,6 +2510,8 @@ export default {
               case "siblings":
                 // 普通实线
 
+                break;
+              case "state":
                 break;
               case "parent-child":
                 // 锥形线
@@ -2142,6 +2532,8 @@ export default {
                 // 普通实线
 
                 break;
+              case "state":
+                break;
               case "parent-child":
                 // 锥形线
                 d3.select(this).classed("not-show", false);
@@ -2159,7 +2551,14 @@ export default {
         });
       }
 
-      function circleClick(self, that, simulation) {
+      function circleClick(
+        self,
+        that,
+        simulation,
+        changeLinkStyle,
+        togglePin,
+        nodeTypeColor
+      ) {
         // ! 注意selectedNode,只能通过self访问，watch才能及时响应
         // 获取选择circle对应的container - g元素
         const g = d3.select(that.parentNode);
@@ -2252,9 +2651,9 @@ export default {
               const bodyForce = simulation.force("charge");
               const linkForce = simulation.force("link");
               if (collideForce)
-                collideForce.initialize(simulation.nodes(), Math.random);
+                collideForce.initialize(simulation.nodes(), d3.randomLcg);
               if (linkForce)
-                linkForce.initialize(simulation.nodes(), Math.random);
+                linkForce.initialize(simulation.nodes(), d3.randomLcg);
               if (bodyForce) {
                 simulation.force("charge", null);
                 simulation.force("charge", bodyForce);
@@ -2300,6 +2699,7 @@ export default {
           changeLinkStyle(nodeId, true);
         }
       }
+
       function rectMouseover(self, that, neighborMap, hoverIndex) {
         //颜色变，表示被选中
         const rect = d3.select(that);
@@ -2436,27 +2836,6 @@ export default {
           event.subject.fy = null;
         }
       }
-      function togglePin() {
-        const g = d3.select(this.parentNode);
-        const pinned = !g.datum().pinned;
-        g.datum().pinned = pinned;
-        g.classed("pinned", true);
-        if (pinned) {
-          g.datum().fx = g.datum().x;
-          g.datum().fy = g.datum().y;
-          g.select(".pin").classed("icon-pinned", true);
-
-          that.drawVegaLite(g, "svg", state);
-          pinnedIndex.set(g.datum().id, g);
-        } else {
-          g.classed("pinned", false);
-          g.select(".pin").classed("icon-pinned", false);
-          g.datum().fx = null;
-          g.datum().fy = null;
-          that.drawVegaLite(g, "img", state);
-          pinnedIndex.delete(g.datum().id);
-        }
-      }
 
       function toggleCheck(self, that, checkIndex) {
         //  只能focus状态togglecheck
@@ -2484,7 +2863,7 @@ export default {
     neighborHighligt(id, neighbor, type, enable, state) {
       const className = type + "-highlight";
       const nodeGroup = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
         .select(`.${state}-state`)
@@ -2492,7 +2871,7 @@ export default {
         .selectChildren("g");
 
       const linkGroup = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
         .select(`.${state}-state`)
@@ -2518,7 +2897,7 @@ export default {
     crossStatesNeighborHighlight(neighbor, enable, state) {
       const className = "hover-highlight";
       const nodeGroup = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
         .select(`.${state}-state`)
@@ -2575,6 +2954,7 @@ export default {
 
       const links = data.links.map((d) => ({ ...d }));
       let nodes = null;
+
       if (!hasNewVal) {
         // 获取之前的数据
         const preNodes = simulation.nodes();
@@ -2681,19 +3061,19 @@ export default {
       });
 
       const nodeSingleG = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
         .select(`.${state}-state`)
         .select("g.node-group");
       const linkSingleG = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .selectChild("g.node-group")
         .select(`.${state}-state`)
         .select("g.link-group");
 
-      this.domUpate(nodes, links, nodeSingleG, linkSingleG, state);
+      this.domUpdate(nodes, links, nodeSingleG, linkSingleG, state);
     },
 
     /* -------------------------------------------------------------------------- */
@@ -2701,6 +3081,7 @@ export default {
     /* -------------------------------------------------------------------------- */
     drawVegaLite(g, mode, state) {
       const that = this;
+
       const simulation = this.simulations.get(state);
       const showIndex = this.showIndexs.get(state);
       const pinnedIndex = this.pinnedIndexs.get(state);
@@ -2761,7 +3142,7 @@ export default {
           showIndex.set(gData.id, view);
 
           const linkForce = simulation.force("link");
-          if (linkForce) linkForce.initialize(simulation.nodes(), Math.random);
+          if (linkForce) linkForce.initialize(simulation.nodes(), d3.randomLcg);
           const bodyForce = simulation.force("charge");
           if (bodyForce) {
             simulation.force("charge", null);
@@ -2802,7 +3183,7 @@ export default {
           };
           const collideForce = simulation.force("collide");
           if (collideForce)
-            collideForce.initialize(simulation.nodes(), Math.random);
+            collideForce.initialize(simulation.nodes(), d3.randomLcg);
 
           // add ainmation
           rect
@@ -3045,7 +3426,7 @@ export default {
 
       this.nodeIdMaps.set(this.focusState, nodeIdMap);
       // 选择svg container
-      const svgContainer = d3.select("#svg-container");
+      const svgContainer = d3.select("#force-svg-container");
 
       // // 清除之前的
       // svgContainer.selectAll("*").remove();
@@ -3226,7 +3607,7 @@ export default {
 
       // 选择顶层svg下的g.node-group和对应的子svg
       const gTop = d3
-        .select("#svg-container")
+        .select("#force-svg-container")
         .select("#total-svg")
         .selectChild("g.node-group");
       const svg = gTop.select(`svg.${state}-state`);
@@ -3498,7 +3879,7 @@ export default {
 
       /* -------------------------------------------------------------------------- */
       // 设置top svg 宽高属性
-      const svgContainer = d3.select("#svg-container");
+      const svgContainer = d3.select("#force-svg-container");
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
       const svgTop = svgContainer
@@ -4074,7 +4455,8 @@ export default {
   position: relative;
   overflow: hidden;
 }
-#svg-container {
+
+#force-svg-container {
   height: 100%;
   width: 100%;
 }
