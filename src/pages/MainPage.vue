@@ -70,56 +70,56 @@
           <div>and start exploring <em>Insight Stories</em>!</div>
         </div>
       </div>
-      <transition name="treeAnimation" mode="out-in">
-        <div :class="['control-panel-box']" v-show="editMode && !photoMode">
-          <BaseCard mode="flat" class="control-panel" v-show="animationDone">
-            <div class="button-box-content">
-              <el-tabs
-                v-model="controlPanelMode"
-                :stretch="true"
-                class="config-panel-tab"
-              >
-                <el-tab-pane label="Base" name="base"></el-tab-pane>
-                <el-tab-pane label="Table" name="table"></el-tab-pane>
-              </el-tabs>
-            </div>
-            <div class="control-panel-content" v-show="animationDone">
-              <div class="base-mode" v-show="controlPanelMode === 'base'">
-                <div class="button-box">
-                  <div>
-                    <svg
-                      viewBox="0 0 1024 1024"
-                      xmlns="http://www.w3.org/2000/svg"
-                      @click="restart"
-                      class="panel-icon"
-                    >
-                      <path
-                        d="M512 938.666667C276.352 938.666667 85.333333 747.648 85.333333 512S276.352 85.333333 512 85.333333s426.666667 191.018667 426.666667 426.666667-191.018667 426.666667-426.666667 426.666667z m205.653333-210.090667a298.666667 298.666667 0 1 0-79.018666 54.016l-41.6-74.88A213.333333 213.333333 0 1 1 725.333333 512h-128l120.32 216.576z"
-                      ></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <svg
-                      viewBox="-38 -38 1062 1062"
-                      xmlns="http://www.w3.org/2000/svg"
-                      @click="stop"
-                      class="panel-icon"
-                    >
-                      <path
-                        d="M512 0C229.216 0 0 229.216 0 512s229.216 512 512 512 512-229.216 512-512S794.784 0 512 0z m0 928C282.24 928 96 741.76 96 512S282.24 96 512 96s416 186.24 416 416-186.24 416-416 416z m-192-608h384v384H320z"
-                      ></path>
-                    </svg>
-                  </div>
+
+      <div :class="['control-panel-box']" v-show="editMode">
+        <BaseCard mode="flat" class="control-panel" v-show="animationDone">
+          <div class="button-box-content">
+            <el-tabs
+              v-model="controlPanelMode"
+              :stretch="true"
+              class="config-panel-tab"
+            >
+              <el-tab-pane label="Base" name="base"></el-tab-pane>
+              <el-tab-pane label="Table" name="table"></el-tab-pane>
+            </el-tabs>
+          </div>
+          <div class="control-panel-content" v-show="animationDone">
+            <div class="base-mode" v-show="controlPanelMode === 'base'">
+              <div class="button-box">
+                <div>
+                  <svg
+                    viewBox="0 0 1024 1024"
+                    xmlns="http://www.w3.org/2000/svg"
+                    @click="restart"
+                    class="panel-icon"
+                  >
+                    <path
+                      d="M512 938.666667C276.352 938.666667 85.333333 747.648 85.333333 512S276.352 85.333333 512 85.333333s426.666667 191.018667 426.666667 426.666667-191.018667 426.666667-426.666667 426.666667z m205.653333-210.090667a298.666667 298.666667 0 1 0-79.018666 54.016l-41.6-74.88A213.333333 213.333333 0 1 1 725.333333 512h-128l120.32 216.576z"
+                    ></path>
+                  </svg>
                 </div>
-                <StatisticsGraph ref="controlGraph"></StatisticsGraph>
+                <div>
+                  <svg
+                    viewBox="-38 -38 1062 1062"
+                    xmlns="http://www.w3.org/2000/svg"
+                    @click="stop"
+                    class="panel-icon"
+                  >
+                    <path
+                      d="M512 0C229.216 0 0 229.216 0 512s229.216 512 512 512 512-229.216 512-512S794.784 0 512 0z m0 928C282.24 928 96 741.76 96 512S282.24 96 512 96s416 186.24 416 416-186.24 416-416 416z m-192-608h384v384H320z"
+                    ></path>
+                  </svg>
+                </div>
               </div>
-              <div class="table-mode" v-if="controlPanelMode === 'table'">
-                <MiniTable></MiniTable>
-              </div>
+              <StatisticsGraph ref="controlGraph"></StatisticsGraph>
             </div>
-          </BaseCard>
-        </div>
-      </transition>
+            <div class="table-mode" v-if="controlPanelMode === 'table'">
+              <MiniTable></MiniTable>
+            </div>
+          </div>
+        </BaseCard>
+      </div>
+
       <div class="force-graph-box">
         <transition
           name="forceAnimation"
@@ -353,6 +353,7 @@ export default {
   padding-top: 0;
   padding-left: 0;
   max-height: 95vh;
+  z-index: 1;
 }
 .control-panel {
   width: 100%;

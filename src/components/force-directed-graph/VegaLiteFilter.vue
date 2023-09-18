@@ -163,6 +163,7 @@ export default {
   width: 18vw;
   height: 100%;
   padding-bottom: 0.3vw;
+  z-index: 1;
 }
 .narrow-icon {
   position: absolute;

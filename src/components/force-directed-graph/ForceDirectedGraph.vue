@@ -1024,6 +1024,7 @@ export default {
 
       this.$store.commit("tree/setTotalData", {
         tree: tree,
+        nodeIdMap: nodeIdMap,
       });
 
       function addChildren(treeNode) {
@@ -2409,7 +2410,6 @@ export default {
 
         if (state === self.oldFocusState) {
           const oldFocusStateLinksMap = self.oldFoucsStateLinksMaps.get(state);
-
 
           self.crossStatesNeighborHighlight(
             oldFocusStateLinksMap.get(id),
