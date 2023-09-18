@@ -301,7 +301,6 @@ export default {
   },
   watch: {
     // totalData(newVal) {
-    //   console.log(newVal);
     //   this.drawTree(newVal);
     // },
   },

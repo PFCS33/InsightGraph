@@ -2409,7 +2409,7 @@ export default {
 
         if (state === self.oldFocusState) {
           const oldFocusStateLinksMap = self.oldFoucsStateLinksMaps.get(state);
-          console.log(oldFocusStateLinksMap);
+
 
           self.crossStatesNeighborHighlight(
             oldFocusStateLinksMap.get(id),

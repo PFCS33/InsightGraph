@@ -432,7 +432,7 @@ export default {
           // 创建当前种类子图的g
           const g = svg
             .append("g")
-            .attr("class", `${type}-box`)
+            .attr("class", `${type}-box, sub-graph`)
             .attr("transform", `translate(0,${index * subHeight})`);
 
           const x = d3
@@ -651,6 +651,13 @@ export default {
       } else {
         const types = this.histogramConfig.types;
         const xTicks = this.histogramConfig.xTicks;
+        // 重新根据types的顺序设置class
+        this.histogramConfig.container
+          .select("svg")
+          .selectChildren("g.sub-graph")
+          .each(function (d, index) {
+            d3.select(this).attr("class", `${types[index]}-box, sub-graph`);
+          });
         types.forEach((type, index) => {
           const value = newVal.get(type);
           // get old x
@@ -767,7 +774,9 @@ export default {
           subGraph
             .select(".rect-group")
             .selectAll("rect")
-            .data(bins, (d, index) => index)
+            .data(bins, (d, index) => {
+              return index;
+            })
             .join(
               (enter) => {
                 enter
