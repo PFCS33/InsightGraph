@@ -353,10 +353,8 @@ export default {
 
   data() {
     return {
-      // // tree info
-      // exploredPath: {
-      //   name: "root",
-      // },
+      // tree info
+      exploredPaths: new Map(),
 
       // svg 状态切换相关
       amplifyMode: false,
@@ -387,7 +385,10 @@ export default {
       showIndexs: new Map(),
       pinnedIndexs: new Map(),
       simulations: new Map(),
+      // 都是“当前状态下” 传来数据的索引，重复值只在focus state中出现
       neighborMaps: new Map(), // (id, gdata)
+      // nodeIdMaps 在每次 drawGraph 和 drawSubGraph 中都会更新，保持总是记录的是被力导图控制的点
+      // 受nodeStateMaps的更新规律影响，也是总是记录的"最大"的nodes数
       nodeIdMaps: new Map(),
       circleRScales: new Map(),
       insightSizeScales: new Map(),
@@ -405,10 +406,11 @@ export default {
       focusedStates: new Set(),
 
       // 原始数据
-      // 当前要用的 link 和 node
+      // 回退不更新，focus过的不更新 （记录的是较大值，但是较小值的情况下会重复更新）
       linkStateMaps: new Map(),
       nodeStateMaps: new Map(),
       // 累计的 nodeIdMaps
+      // 记录的是每个state“最大”的原始数据
       originNodeIdMaps: new Map(),
       showStateList: [],
       newStateList: [],
@@ -738,7 +740,7 @@ export default {
     //   },
     // },
     checkIndex: {
-      handler(newVal) {
+      handler(newVal, oldVal) {
         this.$store.dispatch("table/convertCheckSelection", {
           mode: "checked",
           data: newVal,
@@ -904,6 +906,21 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    handleExploredPath(state, nodeId, mode) {
+      const exploredPaths = this.exploredPaths;
+      if (!exploredPaths.has(state)) {
+        exploredPaths.set(state, []);
+      }
+      const exploredPath = exploredPaths.get(state);
+      if (mode) {
+        exploredPath.push(nodeId);
+      } else {
+        exploredPaths.set(
+          state,
+          exploredPath.filter((id) => id !== nodeId)
+        );
+      }
+    },
     resetTableHighlight() {
       const selectedNode = this.selectedNode;
       const tableData =
@@ -1006,6 +1023,7 @@ export default {
           }))
       );
 
+      // 生成路径
       const nodeIdMap = new Map();
       allNodes.forEach((node) => {
         nodeIdMap.set(node.id, node);
@@ -1013,49 +1031,120 @@ export default {
       const tree = { name: "root" };
       const children = [];
 
-      const stateStack = [
-        ...this.pathStack.filter((d) => d.state).map((d) => d.state),
-      ];
-      if (this.oldFocusState) {
-        stateStack.push(this.oldFocusState);
-      }
-      if (this.focusState) {
-        stateStack.push(this.focusState);
-      }
-      const addedNodes = new Set();
+      const exploredPaths = this.exploredPaths;
+      let allSingleStateRootId = [];
+      const treeNodeMap = new Map();
+      for (const [state, idStack] of exploredPaths) {
+        if (idStack.length > 0) {
+          const neighborMap = this.neighborMaps.get(state);
 
-      if (checkedAllStateData.has("S0")) {
-        checkedAllStateData.get("S0").nodes.forEach((node) => {
-          const id = node.id;
+          idStack.forEach((id) => {
+            treeNodeMap.set(id, {
+              name: id,
+              forceData: nodeIdMap.get(id),
+            });
+          });
+          const rootList = [];
 
-          const newChild = {
-            name: id,
-            forceData: node,
-          };
-          addChildren(newChild);
-          children.push(newChild);
-        });
-      }
-
-      // 把没有连接上的其他树一起挂在第一层上
-      stateStack.forEach((state) => {
-        if (checkedAllStateData.has(state)) {
-          const nodes = checkedAllStateData.get(state).nodes;
-          nodes.forEach((node) => {
-            if (!addedNodes.has(node.id)) {
-              const newChild = {
-                name: node.id,
-                forceData: node,
-              };
-              addChildren(newChild);
-              children.push(newChild);
+          idStack.forEach((id, index) => {
+            const treeNode = treeNodeMap.get(id);
+            let isRoot = true;
+            for (let i = index - 1; i >= 0; i--) {
+              const parentId = idStack[i];
+              if (neighborMap.get(parentId).includes(id)) {
+                const parentTreeNode = treeNodeMap.get(parentId);
+                if ("children" in parentTreeNode) {
+                  parentTreeNode.children.push(id);
+                } else {
+                  parentTreeNode.children = [id];
+                }
+                isRoot = false;
+                break;
+              }
+            }
+            if (isRoot) {
+              rootList.push(id);
             }
           });
+          const singleStateTrees = [];
+          // 将单个节点组成树
+          rootList.forEach((id) => {
+            const treeNode = treeNodeMap.get(id);
+            addChild(treeNode, treeNodeMap);
+            singleStateTrees.push(treeNode);
+          });
+
+          allSingleStateRootId.push(
+            ...singleStateTrees.map((treeNode) => treeNode.name)
+          );
+        }
+      }
+      crossStateLinks.forEach((link) => {
+        const sourceId = link.source;
+        const targetId = link.target;
+        const sourceNode = treeNodeMap.get(sourceId);
+        const targetNode = treeNodeMap.get(targetId);
+        if ("children" in sourceNode) {
+          sourceNode.children.push(targetNode);
+        } else {
+          sourceNode.children = [targetNode];
+        }
+        if (allSingleStateRootId.includes(targetId)) {
+          allSingleStateRootId = allSingleStateRootId.filter(
+            (id) => id !== targetId
+          );
         }
       });
+
+      // const stateStack = [
+      //   ...this.pathStack.filter((d) => d.state).map((d) => d.state),
+      // ];
+      // if (this.oldFocusState) {
+      //   stateStack.push(this.oldFocusState);
+      // }
+      // if (this.focusState) {
+      //   stateStack.push(this.focusState);
+      // }
+
+      allSingleStateRootId.forEach((rootId) => {
+        children.push(treeNodeMap.get(rootId));
+      });
+
+      // const addedNodes = new Set();
+
+      // if (checkedAllStateData.has("S0")) {
+      //   checkedAllStateData.get("S0").nodes.forEach((node) => {
+      //     const id = node.id;
+
+      //     const newChild = {
+      //       name: id,
+      //       forceData: node,
+      //     };
+      //     addChildren(newChild);
+      //     children.push(newChild);
+      //   });
+      // }
+
+      // // 把没有连接上的其他树一起挂在第一层上
+      // stateStack.forEach((state) => {
+      //   if (checkedAllStateData.has(state)) {
+      //     const nodes = checkedAllStateData.get(state).nodes;
+      //     nodes.forEach((node) => {
+      //       if (!addedNodes.has(node.id)) {
+      //         const newChild = {
+      //           name: node.id,
+      //           forceData: node,
+      //         };
+      //         addChildren(newChild);
+      //         children.push(newChild);
+      //       }
+      //     });
+      //   }
+      // });
       if (children.length > 0) {
         tree.children = children;
       }
+      console.log(tree);
 
       allLinks.push(...crossStateLinks);
 
@@ -1064,6 +1153,18 @@ export default {
         nodeIdMap: nodeIdMap,
       });
 
+      function addChild(treeNode, treeNodeMap) {
+        if ("children" in treeNode) {
+          const children = treeNode.children;
+          const newChildren = [];
+          children.forEach((childId) => {
+            const childTreeNode = treeNodeMap.get(childId);
+            newChildren.push(childTreeNode);
+            addChild(childTreeNode, treeNodeMap);
+          });
+          treeNode.children = newChildren;
+        }
+      }
       function addChildren(treeNode) {
         const nodeId = treeNode.name;
         addedNodes.add(nodeId);
@@ -1083,190 +1184,7 @@ export default {
         }
       }
     },
-    // drawPhotoGraph(allStatesData, svgContainer) {
-    //   const that = this;
-    //   const [nodes, links] = photoDataReset(allStatesData);
 
-    //   // 获得当前传来的nodes的 scales 函数
-    //   const [circleRScale, insightSizeScale] =
-    //     this.getSvgInnterSizeScale(nodes);
-
-    //   const containerWidth = this.containerWidth;
-    //   const containerHeight = this.containerHeight;
-
-    //   const svg = svgContainer
-    //     .append("svg")
-    //     .attr("id", "photo-svg")
-    //     .attr("fill", "#fff")
-    //     .attr("overflow", "visible")
-    //     .datum({
-    //       id: "__photo",
-    //     });
-
-    //   this.updateSvgSize(svg, this.svgRScale, nodes.length);
-
-    //   svg.attr(
-    //     "transform",
-    //     (d) =>
-    //       `translate(${containerWidth / 2 - d.width / 2},${
-    //         containerHeight / 2 - d.height / 2
-    //       })`
-    //   );
-    //   const linkG = svg
-    //     .append("g")
-    //     .attr("class", "link-group")
-    //     .selectAll("g")
-    //     .data(links, (d) => {
-    //       if (typeof d.source === "object") {
-    //         return `${d.source.id}_${d.target.id}`;
-    //       } else {
-    //         return `${d.source}_${d.target}`;
-    //       }
-    //     })
-    //     .join("g");
-    //   const circleG = svg
-    //     .append("g")
-    //     .attr("class", "node-group")
-    //     .selectAll("g")
-    //     .data(nodes, (d) => d.id)
-    //     .join("g");
-
-    //   const center = svg.datum().viewBoxR / 2;
-    //   const simulation = this.createForceSimulation(
-    //     nodes,
-    //     links,
-    //     ticked,
-    //     this.neighborMap_ph,
-    //     this.showIndex_ph,
-    //     center
-    //   );
-    //   this.simulation_ph = simulation;
-    //   const domFunctions = {
-    //     circleClick: circleClick,
-    //     rectClick: rectClick,
-    //     rectMouseout: rectMouseout,
-    //   };
-    //   // this.setDomAttributes(linkG, circleG, "__photo", domFunctions);
-
-    //   // add zoom
-    //   const group = svg.selectChildren("g");
-    //   const zoom = d3
-    //     .zoom()
-    //     .scaleExtent([0.3, 8]) // 设置缩放的范围
-    //     .on("zoom", zoomed);
-    //   svg.call(zoom);
-    //   function zoomed(event, d) {
-    //     const transform = event.transform;
-
-    //     // 更新地理路径组的变换属性
-    //     group.attr("transform", transform);
-    //   }
-
-    //   function ticked() {
-    //     svg
-    //       .select(".node-group")
-    //       .selectChildren("g")
-    //       .style("transform", (d) => `translate(${d.x}px,${d.y}px)`);
-    //     svg
-    //       .select(".link-group")
-    //       .selectChildren("g")
-    //       .selectChildren(".network-line")
-    //       .attr("x1", function () {
-    //         const d = d3.select(this.parentNode).datum();
-    //         return d.source.x;
-    //       })
-    //       .attr("y1", function () {
-    //         const d = d3.select(this.parentNode).datum();
-    //         return d.source.y;
-    //       })
-    //       .attr("x2", function () {
-    //         const d = d3.select(this.parentNode).datum();
-    //         return d.target.x;
-    //       })
-    //       .attr("y2", function () {
-    //         const d = d3.select(this.parentNode).datum();
-    //         return d.target.y;
-    //       });
-    //     // 更新锥形位置(如果有)
-    //     svg
-    //       .select(".link-group")
-    //       .selectChildren("g")
-    //       .selectChildren("path.network-angle")
-    //       .attr("d", function () {
-    //         const d = d3.select(this.parentNode).datum();
-    //         let point1 = [];
-    //         let point2 = [];
-    //         const name1 = d.source.id;
-    //         const name2 = d.target.id;
-    //         if (name1.length < name2.length) {
-    //           point1 = [d.source.x, d.source.y];
-    //           point2 = [d.target.x, d.target.y];
-    //         } else {
-    //           point1 = [d.target.x, d.target.y];
-    //           point2 = [d.source.x, d.source.y];
-    //         }
-
-    //         const widthAtStart = 15;
-    //         const widthAtEnd = 1;
-
-    //         const angle = Math.atan2(
-    //           point2[1] - point1[1],
-    //           point2[0] - point1[0]
-    //         );
-
-    //         const p1 = [
-    //           point1[0] + widthAtStart * Math.sin(angle),
-    //           point1[1] - widthAtStart * Math.cos(angle),
-    //         ];
-
-    //         const p2 = [
-    //           point1[0] - widthAtStart * Math.sin(angle),
-    //           point1[1] + widthAtStart * Math.cos(angle),
-    //         ];
-
-    //         const p3 = [
-    //           point2[0] - widthAtEnd * Math.sin(angle),
-    //           point2[1] + widthAtEnd * Math.cos(angle),
-    //         ];
-
-    //         const p4 = [
-    //           point2[0] + widthAtEnd * Math.sin(angle),
-    //           point2[1] - widthAtEnd * Math.cos(angle),
-    //         ];
-
-    //         return `M${p1} L${p2} L${p3} L${p4} Z`;
-    //       });
-    //   }
-
-    //   function photoDataReset(allStatesData) {
-    //     const nodes = allStatesData.nodes.map((d) => ({ ...d }));
-    //     const links = allStatesData.links.map((d) => ({ ...d }));
-    //     that.showIndex_ph = new Map();
-    //     that.hoverIndex_ph = {
-    //       id: null,
-    //       col: null,
-    //       row: null,
-    //     };
-    //     that.pinnedIndex_ph = new Map();
-    //     that.selectedNode_ph = {
-    //       id: null,
-    //       state: null,
-    //       insightIndex: null,
-    //       "insight-list": null,
-    //       col: null,
-    //       row: null,
-    //     };
-    //     that.nodeIdMap_ph = new Map();
-    //     nodes.forEach((node) => {
-    //       that.nodeIdMap_ph.set(node.id, node);
-    //       if (node.showDetail) {
-    //         that.showIndex_ph.set(node.id, node.view);
-    //       }
-    //     });
-    //     that.neighborMap_ph = that.getNeighbourInfo(allStatesData);
-    //     return [nodes, links];
-    //   }
-    // },
     enterAmplifyMode(state, mode) {
       const that = this;
 
@@ -2069,6 +1987,7 @@ export default {
                 }
                 if (checkIndex.has(id)) {
                   checkIndex.delete(id);
+                  this.handleExploredPath(state, id, false);
                 }
 
                 data.showDetail = false;
@@ -2886,10 +2805,12 @@ export default {
 
             g.select(".check").classed("icon-pinned", true);
             g.selectChildren("rect, circle").classed("svg-inset", true);
+            self.handleExploredPath(state, g.datum().id, true);
           } else {
             checkIndex.delete(g.datum().id);
             g.select(".check").classed("icon-pinned", false);
             g.selectChildren("rect,circle").classed("svg-inset", false);
+            self.handleExploredPath(state, g.datum().id, false);
           }
         }
       }

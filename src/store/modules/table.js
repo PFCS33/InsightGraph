@@ -183,7 +183,9 @@ export default {
           const newPath = path.filter((name) => name !== currentName);
 
           if (newPath.length > 0) {
-            span.push(...findCrossStateSpan(newPath, childDict, mode));
+            if (childDict) {
+              span.push(...findCrossStateSpan(newPath, childDict, mode));
+            }
           } else {
             const target = mode === "row" ? "rowSpan" : "colSpan";
 
