@@ -684,6 +684,9 @@ export default {
                 selected: selected,
                 type: type,
               })
+              .classed("histogram-type-selected", (d) => {
+                return d.selected;
+              })
               .classed("histogram-type-unselected", (d) => {
                 return !d.selected;
               });
