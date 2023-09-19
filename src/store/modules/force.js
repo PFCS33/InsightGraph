@@ -2,7 +2,7 @@ export default {
   namespaced: true,
   state() {
     return {
-      baseUrl: "http://127.0.0.1:4523/m1/3208600-0-default/",
+      baseUrl: "http://127.0.0.1:4523/m1/3208600-0-default",
 
       // load state
       loading: null,
@@ -89,7 +89,7 @@ export default {
     uploadData(context, payload) {
       const formData = new FormData();
       formData.append("file", payload);
-      const url = context.getters.baseUrl + "table";
+      const url = context.getters.baseUrl + "/table";
       context.commit("setLoading", true);
       fetch(url, {
         method: "POST",
@@ -119,13 +119,13 @@ export default {
         });
     },
 
-    // load test data
+    // load force and table data
     loadData(context, payload) {
       // const file = "test_data/result_0826_S1.json";
       // const url = `data/${file}`;
       const targetState = payload.state;
       context.commit("setLoading", true);
-      const url = context.getters.baseUrl + "state/" + targetState;
+      const url = context.getters.baseUrl + "/state/" + targetState;
       fetch(url)
         .then((response) => {
           if (!response.ok) {

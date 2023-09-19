@@ -904,6 +904,27 @@ export default {
     /* -------------------------------------------------------------------------- */
   },
   methods: {
+    resetTableHighlight() {
+      const selectedNode = this.selectedNode;
+      const tableData =
+        this.$store.getters["tree/allTableInfo"][this.focusState];
+      this.$store.dispatch("table/loadHeadData", tableData);
+
+      this.$store.dispatch("table/convertCheckSelection", {
+        mode: "clicked",
+        data: selectedNode.id
+          ? new Map().set(selectedNode.id, {
+              col: selectedNode.col,
+              row: selectedNode.row,
+            })
+          : null,
+      });
+
+      this.$store.dispatch("table/convertCheckSelection", {
+        mode: "checked",
+        data: this.checkIndex,
+      });
+    },
     getTreeInfo() {
       const that = this;
 
@@ -940,6 +961,22 @@ export default {
           });
         }
       }
+      // table 更新信息
+      const stateList = Array.from(checkedAllStateData.keys());
+      this.$store.dispatch("tree/loadTableInfo", {
+        stateList: stateList,
+      });
+      this.$store.dispatch("table/convertCheckSelection", {
+        mode: "checked",
+        data: null,
+      });
+
+      this.$store.dispatch("table/convertCheckSelection", {
+        mode: "clicked",
+        data: null,
+      });
+      this.$store.dispatch("table/loadHeadData", null);
+
       // 获取跨state 的link data
       const totalNodeIds = allNodes.map((nodeData) => nodeData.id);
       const crossStateLinks = this.globalBundleData
@@ -1022,7 +1059,7 @@ export default {
 
       allLinks.push(...crossStateLinks);
 
-      this.$store.commit("tree/setTotalData", {
+      this.$store.commit("tree/setForceData", {
         tree: tree,
         nodeIdMap: nodeIdMap,
       });
@@ -2311,8 +2348,6 @@ export default {
         })
         .on("click", function () {
           rectClick(that, this);
-
-          // d3.select(this).classed("center-highlight", true);
         })
         .on("dblclick", togglePin);
 

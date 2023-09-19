@@ -49,17 +49,28 @@ export default {
       hidePanelMode: false,
       selectedNode: {
         id: null,
-
+        state: null,
         insightIndex: null,
         "insight-list": null,
       },
       nodeIdMap: null,
       durationTime: 150,
+      // table interaction
+      focusState: null,
+      hoverIndex: {
+        id: null,
+        state: null,
+        row: null,
+        col: null,
+      },
     };
   },
   computed: {
-    totalData() {
-      return this.$store.getters["tree/totalData"];
+    forceData() {
+      return this.$store.getters["tree/forceData"];
+    },
+    allTableInfo() {
+      return this.$store.getters["tree/allTableInfo"];
     },
   },
   methods: {
@@ -90,15 +101,8 @@ export default {
     drawVegaLite(g) {
       const that = this;
 
-      // const simulation = this.simulations.get(state);
-      // const showIndex = this.showIndexs.get(state);
-      // const pinnedIndex = this.pinnedIndexs.get(state);
-
       const container = g.select(".vega-lite-container");
       const rect = g.selectChild(".rect");
-      // const removeIcon = g.selectChild(".remove");
-      // const pinIcon = g.selectChild(".pin");
-      // const checkIcon = g.selectChild(".check");
 
       const rectTitle = g.select(".rect-title");
       const rectState = g.select(".title-state");
@@ -288,20 +292,37 @@ export default {
         .attr("cursor", "pointer")
         .on("mouseover", function () {
           const g = d3.select(this.parentNode);
+          const gData = g.datum().data.forceData;
+
           d3.select(this).classed("center-highlight", true);
           g.select(".rect-title").classed("center-highlight", true);
+          that.hoverIndex = {
+            id: gData.id,
+            state: gData.state,
+            col: gData.col,
+            row: gData.row,
+          };
         })
         .on("mouseout", function () {
           const g = d3.select(this.parentNode);
+          const gData = g.datum().data.forceData;
           if (that.selectedNode.id !== g.datum().data.name) {
             d3.select(this).classed("center-highlight", false);
             g.select(".rect-title").classed("center-highlight", false);
           }
+
+          that.hoverIndex = {
+            id: null,
+            state: gData.state,
+            col: null,
+            row: null,
+          };
         })
         .on("click", function () {
           const gData = d3.select(this.parentNode).datum().data.forceData;
           that.selectedNode = {
             id: gData.id,
+            state: gData.state,
             insightIndex: gData.insightIndex,
             "insight-list": gData["insight-list"],
             col: gData.col,
@@ -375,6 +396,31 @@ export default {
     },
   },
   watch: {
+    hoverIndex(newVal) {
+      if (this.focusState) {
+        if (newVal.state === this.focusState) {
+          this.$store.dispatch("table/convertCheckSelection", {
+            mode: "hovered",
+            data: newVal.id
+              ? new Map().set(newVal.id, {
+                  col: newVal.col,
+                  row: newVal.row,
+                })
+              : null,
+          });
+        } else {
+          this.$store.dispatch("table/convertCrossStateHoverSelection", {
+            data: newVal.id
+              ? {
+                  id: newVal.id,
+                  col: newVal.col,
+                  row: newVal.row,
+                }
+              : null,
+          });
+        }
+      }
+    },
     selectedNode(newVal, oldVal) {
       const nodeGroup = d3
         .select("#tree-svg-container")
@@ -390,6 +436,7 @@ export default {
           .classed("center-highlight", false);
       }
       if (newVal) {
+        this.focusState = newVal.state;
         const id = newVal.id;
         nodeGroup
           .filter((d) => d.data.name === id)
@@ -398,7 +445,19 @@ export default {
       }
 
       if (newVal.id !== oldVal.id) {
-        console.log(newVal);
+        if (newVal.state !== oldVal.state) {
+          this.$store.dispatch(
+            "table/loadHeadData",
+            this.allTableInfo[newVal.state]
+          );
+        }
+        this.$store.dispatch("table/convertCheckSelection", {
+          mode: "clicked",
+          data: new Map().set(newVal.id, {
+            col: newVal.col,
+            row: newVal.row,
+          }),
+        });
         if (newVal["insight-list"].length > 1) {
           if (this.hidePanelMode) {
             if (this.showMoreIcon) {
@@ -433,8 +492,9 @@ export default {
     },
   },
   mounted() {
-    this.nodeIdMap = this.totalData.nodeIdMap;
-    this.drawTree(this.totalData.tree);
+    this.nodeIdMap = this.forceData.nodeIdMap;
+
+    this.drawTree(this.forceData.tree);
   },
 };
 </script>

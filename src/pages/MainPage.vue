@@ -79,7 +79,11 @@
               :stretch="true"
               class="config-panel-tab"
             >
-              <el-tab-pane label="Base" name="base"></el-tab-pane>
+              <el-tab-pane
+                label="Base"
+                name="base"
+                :disabled="photoMode"
+              ></el-tab-pane>
               <el-tab-pane label="Table" name="table"></el-tab-pane>
             </el-tabs>
           </div>
@@ -239,7 +243,10 @@ export default {
         this.photoMode = !this.photoMode;
         if (this.photoMode) {
           this.$refs.forceGraph.getTreeInfo();
+          this.$store.dispatch("table/loadHeadData", null);
+          this.controlPanelMode = "table";
         } else {
+          this.$refs.forceGraph.resetTableHighlight();
           this.$refs.forceGraph.simulationRestart(
             this.$refs.forceGraph.globalSimulation
           );

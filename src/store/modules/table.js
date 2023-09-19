@@ -249,15 +249,18 @@ export default {
     },
 
     loadHeadData(context, payload) {
-      const data = payload.structure;
+      if (payload) {
+        const data = payload.structure;
 
-      context.commit("setTableData", data);
-      context.commit("setRowDict", listToDict(data.rows));
-      context.commit("setColDict", listToDict(data.cols));
-      context.commit("setRowNameList", getNameList(data.rows));
-      context.commit("setColNameList", getNameList(data.cols));
-      context.commit("setHeatValues", payload.heat);
-
+        context.commit("setTableData", data);
+        context.commit("setRowDict", listToDict(data.rows));
+        context.commit("setColDict", listToDict(data.cols));
+        context.commit("setRowNameList", getNameList(data.rows));
+        context.commit("setColNameList", getNameList(data.cols));
+        context.commit("setHeatValues", payload.heat);
+      } else {
+        context.commit("setTableData", null);
+      }
       function listToDict(list) {
         let obj = {};
         for (let item of list) {

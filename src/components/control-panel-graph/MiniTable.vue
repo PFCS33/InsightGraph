@@ -13,23 +13,75 @@ export default {
       colNum: null,
       rowDict: null,
       colDict: null,
+
+      durationTime: 150,
     };
   },
   methods: {
+    resetData(data) {
+      const that = this;
+      const container = d3.select("#table-container");
+
+      const preTable = container.selectChild("table.mini-table");
+
+      if (!preTable.empty()) {
+        preTable
+          .style("opacity", 1)
+          .transition()
+          .duration(this.durationTime * 1.5)
+          .style("opacity", 0)
+          .on("end", function () {
+            d3.select(this).remove();
+
+            if (data) {
+              that.rowNum = data.rowNum;
+              that.colNum = data.colNum;
+              that.rowDepth = data.rowDepth;
+              that.colDepth = data.colDepth;
+
+              that.createTable();
+              that.addHighlightBorder(that.checkedArea, true, false);
+              that.addHighlightBorder(that.clickedArea, true, true);
+            }
+          });
+      } else {
+        if (data) {
+          that.rowNum = data.rowNum;
+          that.colNum = data.colNum;
+          that.rowDepth = data.rowDepth;
+          that.colDepth = data.colDepth;
+
+          that.createTable();
+          that.addHighlightBorder(that.checkedArea, true, false);
+          that.addHighlightBorder(that.clickedArea, true, true);
+        }
+      }
+    },
     createTable() {
       const that = this;
       const container = d3.select("#table-container");
-      container.selectAll("*").remove();
 
-      const tooltip = container
-        .append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
+      let tooltip = container.selectChild("div.tooltip");
+      if (tooltip.empty()) {
+        tooltip = container
+          .append("div")
+          .attr("class", "tooltip")
+          .style("opacity", 0);
+      } else {
+        tooltip.style("opacity", 0);
+      }
 
       const table = container
         .append("table")
         .attr("class", "mini-table")
+
         .style("user-select", "none");
+
+      table
+        .style("opacity", 0)
+        .transition()
+        .duration(this.durationTime * 1.5)
+        .style("opacity", 1);
 
       const width = parseInt(container.style("width"), 10);
       const height = parseInt(container.style("height"), 10);
@@ -245,9 +297,7 @@ export default {
   },
   watch: {
     tableData(newVal) {
-      this.createTable();
-      this.addHighlightBorder(this.checkedArea, true, false);
-      this.addHighlightBorder(this.clickedArea, true, true);
+      this.resetData(newVal);
     },
     clickedArea: {
       handler(newVal, oldVal) {
@@ -308,15 +358,7 @@ export default {
     },
   },
   mounted() {
-    const data = this.tableData;
-    this.rowNum = data.rowNum;
-    this.colNum = data.colNum;
-    this.rowDepth = data.rowDepth;
-    this.colDepth = data.colDepth;
-
-    this.createTable();
-    this.addHighlightBorder(this.checkedArea, true, false);
-    this.addHighlightBorder(this.clickedArea, true, true);
+    this.resetData(this.tableData);
   },
 };
 </script>
