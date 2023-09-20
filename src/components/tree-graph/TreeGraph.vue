@@ -91,12 +91,15 @@ export default {
         .selectChild("g.node-group")
         .selectChildren("g")
         .filter((d) => d.data.name === id);
-      g.datum().data.forceData.view.finalize();
+      g.each(function () {
+        const g = d3.select(this);
+        g.datum().data.forceData.view.finalize();
 
-      g.select("vega-lite-container").select(".vega-lite-graph").remove();
-      g.datum().view = null;
-      g.datum().img = null;
-      this.drawVegaLite(g);
+        g.select("vega-lite-container").select(".vega-lite-graph").remove();
+        g.datum().view = null;
+        g.datum().img = null;
+        that.drawVegaLite(g);
+      });
     },
     drawVegaLite(g) {
       const that = this;
