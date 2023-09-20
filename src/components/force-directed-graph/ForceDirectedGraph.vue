@@ -1070,7 +1070,9 @@ export default {
             // 找 parent node，如果找到，加入children，并且判定不是treeNode
             for (let i = index - 1; i >= 0; i--) {
               const parentId = idStack[i];
-              if (neighborMap.get(parentId).includes(id)) {
+
+              const neighbors = neighborMap.get(parentId);
+              if (neighbors && neighbors.includes(id)) {
                 const parentTreeNode = treeNodeMap.get(parentId);
                 if ("children" in parentTreeNode) {
                   parentTreeNode.children.push(id);
@@ -1085,6 +1087,7 @@ export default {
               rootList.push(id);
             }
           });
+          console.log(2);
 
           // 遍历每个root tree node，组成树结构
           rootList.forEach((id) => {
