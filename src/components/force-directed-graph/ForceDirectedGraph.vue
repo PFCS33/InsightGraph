@@ -196,6 +196,16 @@
             ></image>
           </symbol>
           <symbol
+            id="defs-outlier-temporal"
+            :viewBox="`0 0 ${insightIconSize} ${insightIconSize}`"
+          >
+            <image
+              href="/pic/outlier-temporal.png"
+              :width="insightIconSize"
+              :height="insightIconSize"
+            ></image>
+          </symbol>
+          <symbol
             id="defs-focus"
             viewBox="0 0 1024 1024"
             xmlns="http://www.w3.org/2000/svg"
@@ -1346,19 +1356,22 @@ export default {
             })
             .on("click", function () {
               that.backMode = false;
+
               // 更新 preservedBundleData
               that.preservedBundleData = that.updatePreservedBundle();
               // load new data
               const state = d3.select(this.parentNode).datum().id;
               that.oldFocusState = that.focusState;
               that.focusState = state;
-
               const oldFocusStateLinksMap = that.oldFoucsStateLinksMaps.get(
                 that.oldFocusState
               );
 
               for (const [id, stateMap] of oldFocusStateLinksMap.entries()) {
-                oldFocusStateLinksMap.set(id, stateMap.get(that.focusState));
+                // 如果有stateMap，才记录
+                if (stateMap) {
+                  oldFocusStateLinksMap.set(id, stateMap.get(that.focusState));
+                }
               }
 
               that.$store.dispatch("force/loadData", {
@@ -1729,7 +1742,10 @@ export default {
             );
 
             for (const [id, stateMap] of oldFocusStateLinksMap.entries()) {
-              oldFocusStateLinksMap.set(id, stateMap.get(that.focusState));
+              // 如果有stateMap，才记录
+              if (stateMap) {
+                oldFocusStateLinksMap.set(id, stateMap.get(that.focusState));
+              }
             }
 
             that.$store.dispatch("force/loadData", {
@@ -2055,6 +2071,9 @@ export default {
           break;
         case "outlier":
           insightType = "outlier";
+          break;
+        case "outlier-temporal":
+          insightType = "outlier-temporal";
           break;
         case "top2":
           insightType = "top2";

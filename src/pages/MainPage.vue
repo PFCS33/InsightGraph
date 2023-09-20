@@ -243,7 +243,7 @@ export default {
         this.photoMode = !this.photoMode;
         if (this.photoMode) {
           this.$refs.forceGraph.getTreeInfo();
-          this.$store.dispatch("table/loadHeadData", null);
+
           this.controlPanelMode = "table";
         } else {
           this.$refs.forceGraph.resetTableHighlight();

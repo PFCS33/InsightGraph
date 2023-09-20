@@ -384,8 +384,9 @@ table.mini-table {
     // border: 1px dashed #ccc;
     // border: 0.5px solid #ccc;
     border: none;
-    transition: background-color 0.3s, transform 0.3s;
+    transition: background-color 0.3s;
   }
+
   th.cell-border-tooltip-highlight {
     box-shadow: inset 0 0 0 1px #555;
     background-color: #ddd;
@@ -415,12 +416,12 @@ table.mini-table {
     border-top: 2px solid #636c8d;
   }
   td.cell-border-bottom-highlight {
-    border-bottom: 2px solid #636c8d;
+    border-bottom: 2px solid rgb(99, 108, 141);
   }
   td.cell-background-highlight {
-    // background-color: #e8e8e8d5;
-    transform: scale(0.8);
-    opacity: 0.3;
+    // mix-blend-mode: difference;
+    // filter: sepia(1) hue-rotate(180deg) saturate(2);
+    background-color: rgba(99, 108, 141, 0.2) !important;
   }
 }
 .tooltip {
