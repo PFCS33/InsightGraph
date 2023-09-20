@@ -34,6 +34,8 @@
 export default {
   data() {
     return {
+      // link style
+      linkData: null,
       // vega-lite style
       vegaLiteHeight: 100,
       vegaLiteWidth: 150,
@@ -254,6 +256,24 @@ export default {
         .nodeSize([this.vegaLiteHeight * 4, this.vegaLiteWidth * 2.2]);
 
       tree(root);
+      const linkData = this.linkData;
+
+      const realLinkData = [];
+      root.links().forEach((d) => {
+        const sourceId = d.source.data.name;
+        const targetId = d.target.data.name;
+
+        const data = linkData.find(
+          (d) => d.source === sourceId && d.target === targetId
+        );
+        if (data) {
+          const type = data.type;
+          realLinkData.push({ ...d, type: type });
+        } else {
+          realLinkData.push({ ...d, type: "root" });
+        }
+      });
+
       const link = svg
         .append("g")
         .attr("class", "link-group")
@@ -262,16 +282,105 @@ export default {
         .attr("stroke-opacity", 0.4)
         .attr("stroke-width", 1.5)
         .selectAll()
-        .data(root.links())
-        .join("path")
-        .attr(
-          "d",
-          // 水平路径，颠倒
-          d3
-            .linkHorizontal()
-            .x((d) => d.y)
-            .y((d) => d.x)
-        );
+        .data(realLinkData)
+        .join("path");
+      link.each(function (d) {
+        const type = d.type;
+        const path = d3.select(this);
+        switch (type) {
+          case "root":
+            path.attr(
+              "d",
+              // 水平路径，颠倒
+              d3
+                .linkHorizontal()
+                .x((d) => d.y)
+                .y((d) => d.x)
+            );
+            break;
+          case "siblings":
+            // 普通实线
+            path.attr(
+              "d",
+              // 水平路径，颠倒
+              d3
+                .linkHorizontal()
+                .x((d) => d.y)
+                .y((d) => d.x)
+            );
+            break;
+          case "state":
+            path.attr(
+              "d",
+              // 水平路径，颠倒
+              d3
+                .linkHorizontal()
+                .x((d) => d.y)
+                .y((d) => d.x)
+            );
+            break;
+          case "parent-child":
+            // 锥形线
+            path.attr("fill", "#ccc").attr("d", function (d) {
+              let point1 = [];
+              let point2 = [];
+              const name1 = d.source.data.name;
+              const name2 = d.target.data.name;
+              if (name1.length < name2.length) {
+                point1 = [d.source.y, d.source.x];
+                point2 = [d.target.y, d.target.x];
+              } else {
+                point1 = [d.target.y, d.target.x];
+                point2 = [d.source.y, d.source.x];
+              }
+
+              const widthAtStart = 15;
+              const widthAtEnd = 1;
+
+              const angle = Math.atan2(
+                point2[1] - point1[1],
+                point2[0] - point1[0]
+              );
+
+              const p1 = [
+                point1[0] + widthAtStart * Math.sin(angle),
+                point1[1] - widthAtStart * Math.cos(angle),
+              ];
+
+              const p2 = [
+                point1[0] - widthAtStart * Math.sin(angle),
+                point1[1] + widthAtStart * Math.cos(angle),
+              ];
+
+              const p3 = [
+                point2[0] - widthAtEnd * Math.sin(angle),
+                point2[1] + widthAtEnd * Math.cos(angle),
+              ];
+
+              const p4 = [
+                point2[0] + widthAtEnd * Math.sin(angle),
+                point2[1] - widthAtEnd * Math.cos(angle),
+              ];
+
+              return `M${p1} L${p2} L${p3} L${p4} Z`;
+            });
+            break;
+          case "same-name":
+            // s-a: 虚线
+            path
+              .attr(
+                "d",
+                // 水平路径，颠倒
+                d3
+                  .linkHorizontal()
+                  .x((d) => d.y)
+                  .y((d) => d.x)
+              )
+              .style("stroke-dasharray", "10,5");
+            break;
+        }
+      });
+
       const nodeG = svg.append("g").attr("class", "node-group");
 
       const containerGroup = nodeG
@@ -496,7 +605,7 @@ export default {
   },
   mounted() {
     this.nodeIdMap = this.forceData.nodeIdMap;
-
+    this.linkData = this.forceData.linkData;
     this.drawTree(this.forceData.tree);
   },
 };

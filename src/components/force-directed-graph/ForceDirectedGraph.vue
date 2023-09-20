@@ -1043,22 +1043,27 @@ export default {
 
       const exploredPaths = this.exploredPaths;
       let allSingleStateRootId = [];
+      // 所用点的tree node map
       const treeNodeMap = new Map();
       for (const [state, idStack] of exploredPaths) {
         if (idStack.length > 0) {
           const neighborMap = this.neighborMaps.get(state);
 
+          // 生成tree node，并计入到tree node map中
           idStack.forEach((id) => {
             treeNodeMap.set(id, {
               name: id,
               forceData: nodeIdMap.get(id),
             });
           });
+          // 本 state的 rootlist
           const rootList = [];
 
+          // 按照最终 idStack 的入栈顺序，添加 children 信息
           idStack.forEach((id, index) => {
             const treeNode = treeNodeMap.get(id);
             let isRoot = true;
+            // 找 parent node，如果找到，加入children，并且判定不是treeNode
             for (let i = index - 1; i >= 0; i--) {
               const parentId = idStack[i];
               if (neighborMap.get(parentId).includes(id)) {
@@ -1076,19 +1081,18 @@ export default {
               rootList.push(id);
             }
           });
-          const singleStateTrees = [];
-          // 将单个节点组成树
+
+          // 遍历每个root tree node，组成树结构
           rootList.forEach((id) => {
             const treeNode = treeNodeMap.get(id);
             addChild(treeNode, treeNodeMap);
-            singleStateTrees.push(treeNode);
+            //singleStateTrees.push(treeNode);
           });
 
-          allSingleStateRootId.push(
-            ...singleStateTrees.map((treeNode) => treeNode.name)
-          );
+          allSingleStateRootId.push(...rootList);
         }
       }
+      // 跨 state 连接每个子树
       crossStateLinks.forEach((link) => {
         const sourceId = link.source;
         const targetId = link.target;
@@ -1099,6 +1103,7 @@ export default {
         } else {
           sourceNode.children = [targetNode];
         }
+        // 维持最终的 root id list
         if (allSingleStateRootId.includes(targetId)) {
           allSingleStateRootId = allSingleStateRootId.filter(
             (id) => id !== targetId
@@ -1115,7 +1120,7 @@ export default {
       // if (this.focusState) {
       //   stateStack.push(this.focusState);
       // }
-
+      // 将最终的 root tree node 加入到 root节点的 children 中
       allSingleStateRootId.forEach((rootId) => {
         children.push(treeNodeMap.get(rootId));
       });
@@ -1154,13 +1159,13 @@ export default {
       if (children.length > 0) {
         tree.children = children;
       }
-      console.log(tree);
 
       allLinks.push(...crossStateLinks);
 
       this.$store.commit("tree/setForceData", {
         tree: tree,
         nodeIdMap: nodeIdMap,
+        linkData: allLinks,
       });
 
       function addChild(treeNode, treeNodeMap) {
@@ -1175,6 +1180,7 @@ export default {
           treeNode.children = newChildren;
         }
       }
+      // 废弃的
       function addChildren(treeNode) {
         const nodeId = treeNode.name;
         addedNodes.add(nodeId);
@@ -2190,8 +2196,7 @@ export default {
                 // 普通实线
 
                 break;
-              case "statte":
-                break;
+
               case "parent-child":
                 // 锥形线
                 d3.select(this).classed("not-show", true);
@@ -2484,8 +2489,7 @@ export default {
                 // 普通实线
 
                 break;
-              case "state":
-                break;
+
               case "parent-child":
                 // 锥形线
                 d3.select(this).classed("not-show", true);
