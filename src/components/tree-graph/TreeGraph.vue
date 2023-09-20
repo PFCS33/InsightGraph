@@ -253,7 +253,7 @@ export default {
       const root = d3.hierarchy(treeInfo);
       const tree = d3
         .tree()
-        .nodeSize([this.vegaLiteHeight * 4, this.vegaLiteWidth * 2.2]);
+        .nodeSize([this.vegaLiteHeight * 2.8, this.vegaLiteWidth * 3]);
 
       tree(root);
       const linkData = this.linkData;
@@ -264,7 +264,9 @@ export default {
         const targetId = d.target.data.name;
 
         const data = linkData.find(
-          (d) => d.source === sourceId && d.target === targetId
+          (d) =>
+            (d.source === sourceId && d.target === targetId) ||
+            (d.source === targetId && d.target === sourceId)
         );
         if (data) {
           const type = data.type;
@@ -273,13 +275,16 @@ export default {
           realLinkData.push({ ...d, type: "root" });
         }
       });
+      console.log("linkData", linkData);
+      console.log("root", root.links());
+      console.log("real", realLinkData);
 
       const link = svg
         .append("g")
         .attr("class", "link-group")
         .attr("fill", "none")
         .attr("stroke", "#555")
-        .attr("stroke-opacity", 0.4)
+        .attr("stroke-opacity", 0.6)
         .attr("stroke-width", 1.5)
         .selectAll()
         .data(realLinkData)
@@ -300,14 +305,16 @@ export default {
             break;
           case "siblings":
             // 普通实线
-            path.attr(
-              "d",
-              // 水平路径，颠倒
-              d3
-                .linkHorizontal()
-                .x((d) => d.y)
-                .y((d) => d.x)
-            );
+            path
+              .attr(
+                "d",
+                // 水平路径，颠倒
+                d3
+                  .linkHorizontal()
+                  .x((d) => d.y)
+                  .y((d) => d.x)
+              )
+              .attr("stroke-width", 3);
             break;
           case "state":
             path.attr(
@@ -321,49 +328,52 @@ export default {
             break;
           case "parent-child":
             // 锥形线
-            path.attr("fill", "#ccc").attr("d", function (d) {
-              let point1 = [];
-              let point2 = [];
-              const name1 = d.source.data.name;
-              const name2 = d.target.data.name;
-              if (name1.length < name2.length) {
-                point1 = [d.source.y, d.source.x];
-                point2 = [d.target.y, d.target.x];
-              } else {
-                point1 = [d.target.y, d.target.x];
-                point2 = [d.source.y, d.source.x];
-              }
+            path
+              .attr("fill", "#aaa")
+              .attr("stroke", "none")
+              .attr("d", function (d) {
+                let point1 = [];
+                let point2 = [];
+                const name1 = d.source.data.name;
+                const name2 = d.target.data.name;
+                if (name1.length < name2.length) {
+                  point1 = [d.source.y, d.source.x];
+                  point2 = [d.target.y, d.target.x];
+                } else {
+                  point1 = [d.target.y, d.target.x];
+                  point2 = [d.source.y, d.source.x];
+                }
 
-              const widthAtStart = 15;
-              const widthAtEnd = 1;
+                const widthAtStart = 30;
+                const widthAtEnd = 1;
 
-              const angle = Math.atan2(
-                point2[1] - point1[1],
-                point2[0] - point1[0]
-              );
+                const angle = Math.atan2(
+                  point2[1] - point1[1],
+                  point2[0] - point1[0]
+                );
 
-              const p1 = [
-                point1[0] + widthAtStart * Math.sin(angle),
-                point1[1] - widthAtStart * Math.cos(angle),
-              ];
+                const p1 = [
+                  point1[0] + widthAtStart * Math.sin(angle),
+                  point1[1] - widthAtStart * Math.cos(angle),
+                ];
 
-              const p2 = [
-                point1[0] - widthAtStart * Math.sin(angle),
-                point1[1] + widthAtStart * Math.cos(angle),
-              ];
+                const p2 = [
+                  point1[0] - widthAtStart * Math.sin(angle),
+                  point1[1] + widthAtStart * Math.cos(angle),
+                ];
 
-              const p3 = [
-                point2[0] - widthAtEnd * Math.sin(angle),
-                point2[1] + widthAtEnd * Math.cos(angle),
-              ];
+                const p3 = [
+                  point2[0] - widthAtEnd * Math.sin(angle),
+                  point2[1] + widthAtEnd * Math.cos(angle),
+                ];
 
-              const p4 = [
-                point2[0] + widthAtEnd * Math.sin(angle),
-                point2[1] - widthAtEnd * Math.cos(angle),
-              ];
+                const p4 = [
+                  point2[0] + widthAtEnd * Math.sin(angle),
+                  point2[1] - widthAtEnd * Math.cos(angle),
+                ];
 
-              return `M${p1} L${p2} L${p3} L${p4} Z`;
-            });
+                return `M${p1} L${p2} L${p3} L${p4} Z`;
+              });
             break;
           case "same-name":
             // s-a: 虚线
