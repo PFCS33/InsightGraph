@@ -5,7 +5,7 @@ export default {
       baseUrl: "http://127.0.0.1:4523/m1/3208600-0-default",
 
       // load state
-      loading: null,
+      loading: false,
       error: {
         state: true,
         message: "",

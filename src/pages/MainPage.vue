@@ -1,7 +1,7 @@
 <template>
   <div
     class="container"
-    v-loading="loading"
+    v-loading="loading || loading_ph"
     element-loading-text="Computing..."
   >
     <nav class="navBar">
@@ -63,7 +63,7 @@
       @transitionend="handleTransitionEnd"
       :key="refreshFlag"
     >
-      <div class="loading-mask" v-if="error.state">
+      <div class="loading-mask" v-if="error.state || error_ph.state">
         <div class="introduction">
           <div>Upload <strong>.xls/.xlsx</strong> files now</div>
 
@@ -167,6 +167,12 @@ export default {
     };
   },
   computed: {
+    loading_ph() {
+      return this.$store.getters["tree/loading"];
+    },
+    error_ph() {
+      return this.$store.getters["tree/error"];
+    },
     loading() {
       return this.$store.getters["force/loading"];
     },
@@ -177,6 +183,15 @@ export default {
   },
   watch: {
     error(newVal) {
+      if (newVal.state) {
+        ElMessage.error(`Error: ${newVal.message}`);
+        setTimeout(() => ElMessage.error("Please reload again"), 500);
+      }
+      if (!newVal.state) {
+        ElMessage.success(`Calculation complete`);
+      }
+    },
+    error_ph(newVal) {
       if (newVal.state) {
         ElMessage.error(`Error: ${newVal.message}`);
         setTimeout(() => ElMessage.error("Please reload again"), 500);
@@ -522,7 +537,7 @@ export default {
 
 .forceAnimation-enter-active,
 .forceAnimation-leave-active {
-  transition: all 0.3s ease-out;
+  transition: all 0.1s ease-out;
 }
 .treeAnimation-enter-active,
 .treeAnimation-leave-active {

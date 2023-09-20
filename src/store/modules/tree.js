@@ -6,9 +6,9 @@ export default {
       allTableInfo: null,
 
       // load state
-      loading: null,
+      loading: false,
       error: {
-        state: true,
+        state: false,
         message: "",
       },
     };
@@ -51,6 +51,7 @@ export default {
       const stateList = payload.stateList;
       const baseUrl = context.rootGetters["force/baseUrl"];
       const url = baseUrl + "/photo";
+      context.commit("setLoading", true);
 
       fetch(url, {
         method: "POST",
