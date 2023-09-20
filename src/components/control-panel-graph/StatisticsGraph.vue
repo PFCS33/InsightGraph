@@ -233,9 +233,9 @@ export default {
 
         container.select("svg").remove();
         const colorScale = d3.scaleOrdinal(this.linkType, [
-          "#858eb5",
-          "#D5DAEC",
-          "#858eb5",
+          "#9AA3CC",
+          "#9AA3CC",
+          "#9AA3CC",
         ]);
 
         const tooltip = container.select("div.tooltip");

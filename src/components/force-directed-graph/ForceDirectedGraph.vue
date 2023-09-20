@@ -1904,7 +1904,7 @@ export default {
     domUpdate(nodes, links, nodeSingleG, linkSingleG, state) {
       const that = this;
       const showIndex = this.showIndexs.get(state);
-      const pinnedIndex = this.showIndexs.get(state);
+      const pinnedIndex = this.pinnedIndexs.get(state);
       const checkIndex = this.checkIndexs.get(state);
       const simulation = this.simulations.get(state);
 
