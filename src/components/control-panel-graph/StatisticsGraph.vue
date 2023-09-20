@@ -985,30 +985,32 @@ export default {
   },
   watch: {
     focusState(newVal) {
-      if (this.stateList.includes(newVal)) {
-        this.barchartConfig = this.barchartConfigs.get(newVal);
-        this.histogramConfig = this.histogramConfigs.get(newVal);
-        this.selectedLinkType = this.selectedLinkTypes.get(newVal);
-        this.refreshHistogram = true;
+      if (newVal) {
+        if (this.stateList.includes(newVal)) {
+          this.barchartConfig = this.barchartConfigs.get(newVal);
+          this.histogramConfig = this.histogramConfigs.get(newVal);
+          this.selectedLinkType = this.selectedLinkTypes.get(newVal);
+          this.refreshHistogram = true;
 
-        // swich state
-      } else {
-        this.barchartConfig = null;
-        this.histogramConfig = null;
-        this.selectedLinkType = {
-          siblings: true,
-          "parent-child": true,
-          "same-name": true,
-        };
+          // swich state
+        } else {
+          this.barchartConfig = null;
+          this.histogramConfig = null;
+          this.selectedLinkType = {
+            siblings: true,
+            "parent-child": true,
+            "same-name": true,
+          };
 
-        // initialize
-        this.stateList.push(newVal);
-        this.selectedLinkTypes.set(newVal, this.selectedLinkType);
+          // initialize
+          this.stateList.push(newVal);
+          this.selectedLinkTypes.set(newVal, this.selectedLinkType);
 
-        this.groupByLinkType(this.totalData.links);
-        this.groupByNodeType({
-          data: this.totalData.nodes,
-        });
+          this.groupByLinkType(this.totalData.links);
+          this.groupByNodeType({
+            data: this.totalData.nodes,
+          });
+        }
       }
     },
     linkGroup(newVal) {

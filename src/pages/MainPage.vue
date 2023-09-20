@@ -208,8 +208,13 @@ export default {
         this.refreshFlag = true;
 
         this.$nextTick(() => {
-          this.refreshFlag = false;
           this.editMode = true;
+          this.refreshFlag = false;
+          this.photoMode = false;
+          this.controlPanelMode = "base";
+          // 刷新2个vuex模块的数据，以便2个组件重新加载
+          this.$store.commit("force/setFocusState", null);
+          this.$store.commit("force/setAllStatesData", null);
           this.$nextTick(() => {
             this.$store.dispatch("force/uploadData", file);
           });

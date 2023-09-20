@@ -363,6 +363,8 @@ export default {
 
   data() {
     return {
+      // data reload
+      refreshFlag: true,
       // tree info
       exploredPaths: new Map(),
 
@@ -570,98 +572,100 @@ export default {
         this.firstUpdateFlag = true;
 
         if (oldVal) {
-          if (this.backMode) {
-            const newOldFocusInfo = this.pathStack.pop();
+          if (newVal) {
+            if (this.backMode) {
+              const newOldFocusInfo = this.pathStack.pop();
 
-            this.preservedBundleData = newOldFocusInfo.bundleData;
+              this.preservedBundleData = newOldFocusInfo.bundleData;
 
-            const oldNewStates = this.newStateList;
-            const oldShowStates = this.showStateList;
+              const oldNewStates = this.newStateList;
+              const oldShowStates = this.showStateList;
 
-            const preservedStates = oldShowStates.filter(
-              (state) => !oldNewStates.includes(state)
-            );
+              const preservedStates = oldShowStates.filter(
+                (state) => !oldNewStates.includes(state)
+              );
 
-            const newAddedStates = Array.from(newVal.keys()).filter(
-              (state) => !preservedStates.includes(state)
-            );
-            const showStateList = [
-              ...new Set(preservedStates.concat(Array.from(newVal.keys()))),
-            ];
-            // 本状态下，需要刷新bundle的state，这里的newStates会有 old focus state，且不包含回退后的“new old focus state”
-            const newStates = Array.from(newVal.keys()).filter(
-              (state) => state !== this.focusState
-            );
+              const newAddedStates = Array.from(newVal.keys()).filter(
+                (state) => !preservedStates.includes(state)
+              );
+              const showStateList = [
+                ...new Set(preservedStates.concat(Array.from(newVal.keys()))),
+              ];
+              // 本状态下，需要刷新bundle的state，这里的newStates会有 old focus state，且不包含回退后的“new old focus state”
+              const newStates = Array.from(newVal.keys()).filter(
+                (state) => state !== this.focusState
+              );
 
-            // 更新全局state 信息
-            this.showStateList = showStateList;
-            this.newStateList = newStates;
-            // 更新全局svg dom元素
-            const [newSvgData, newLinkData] = this.updateGlobalDom(
-              showStateList,
-              newAddedStates,
-              oldNewStates,
-              true,
-              newOldFocusInfo.state
-            );
+              // 更新全局state 信息
+              this.showStateList = showStateList;
+              this.newStateList = newStates;
+              // 更新全局svg dom元素
+              const [newSvgData, newLinkData] = this.updateGlobalDom(
+                showStateList,
+                newAddedStates,
+                oldNewStates,
+                true,
+                newOldFocusInfo.state
+              );
 
-            this.svgLinkDatas = newLinkData;
-            this.updateOldFocusState(this.oldFocusState, true);
-            this.addNewState(newAddedStates);
+              this.svgLinkDatas = newLinkData;
+              this.updateOldFocusState(this.oldFocusState, true);
+              this.addNewState(newAddedStates);
 
-            this.oldFocusState = newOldFocusInfo.state;
+              this.oldFocusState = newOldFocusInfo.state;
 
-            this.updateNewFocusState(this.focusState, true);
+              this.updateNewFocusState(this.focusState, true);
 
-            this.updateGlobalForce(newSvgData, newLinkData);
-          } else {
-            // update
+              this.updateGlobalForce(newSvgData, newLinkData);
+            } else {
+              // update
 
-            // 获取需要被完全删除的states (不包含 oldFocusState 和 new focus state)
-            const filteredStates = this.filterOldState();
-            //  获取当前需要展示的state列表
-            // 新加入的 直接邻居 state ( new & old focus 都不包含)
-            const newStates = Array.from(newVal.keys()).filter(
-              (state) => state !== this.focusState
-            );
+              // 获取需要被完全删除的states (不包含 oldFocusState 和 new focus state)
+              const filteredStates = this.filterOldState();
+              //  获取当前需要展示的state列表
+              // 新加入的 直接邻居 state ( new & old focus 都不包含)
+              const newStates = Array.from(newVal.keys()).filter(
+                (state) => state !== this.focusState
+              );
 
-            const originStates = this.showStateList;
-            const showStateList = [
-              ...new Set(
-                originStates
-                  .filter((item) => !filteredStates.includes(item))
-                  .concat(newStates)
-              ),
-            ];
+              const originStates = this.showStateList;
+              const showStateList = [
+                ...new Set(
+                  originStates
+                    .filter((item) => !filteredStates.includes(item))
+                    .concat(newStates)
+                ),
+              ];
 
-            // 更新全局state 信息
-            this.showStateList = showStateList;
-            this.newStateList = newStates;
-            // 更新重绑定数据，顶层DOM元素（svg 和 svgLinks）
-            const [newSvgData, newLinkData] = this.updateGlobalDom(
-              showStateList,
-              newStates,
-              filteredStates,
-              false
-            );
-            this.svgLinkDatas = newLinkData;
+              // 更新全局state 信息
+              this.showStateList = showStateList;
+              this.newStateList = newStates;
+              // 更新重绑定数据，顶层DOM元素（svg 和 svgLinks）
+              const [newSvgData, newLinkData] = this.updateGlobalDom(
+                showStateList,
+                newStates,
+                filteredStates,
+                false
+              );
+              this.svgLinkDatas = newLinkData;
 
-            // 更新旧的focus state内的点
-            this.updateOldFocusState(this.oldFocusState, false);
-            // 画新加入的svg图
-            this.addNewState(
-              newStates.filter(
-                (state) =>
-                  state !== this.focusState && state !== this.oldFocusState
-              )
-            );
+              // 更新旧的focus state内的点
+              this.updateOldFocusState(this.oldFocusState, false);
+              // 画新加入的svg图
+              this.addNewState(
+                newStates.filter(
+                  (state) =>
+                    state !== this.focusState && state !== this.oldFocusState
+                )
+              );
 
-            // 更新新focus图内的点 (checkIndex的更新（空白），会导致新加入的，当前focus的直接邻居重画大小)
-            this.updateNewFocusState(this.focusState, false);
+              // 更新新focus图内的点 (checkIndex的更新（空白），会导致新加入的，当前focus的直接邻居重画大小)
+              this.updateNewFocusState(this.focusState, false);
 
-            // 更新全局力导图
-            this.updateGlobalForce(newSvgData, newLinkData);
-            this.focusedStates.add(this.focusState);
+              // 更新全局力导图
+              this.updateGlobalForce(newSvgData, newLinkData);
+              this.focusedStates.add(this.focusState);
+            }
           }
         } else {
           this.focusedStates.add(this.focusState);
@@ -3861,6 +3865,7 @@ export default {
       const svgContainer = d3.select("#force-svg-container");
       const width = parseInt(svgContainer.style("width"), 10);
       const height = parseInt(svgContainer.style("height"), 10);
+
       const svgTop = svgContainer
         .select("#total-svg")
         .attr("viewBox", [0, 0, width, height]);
@@ -3955,6 +3960,11 @@ export default {
             originNodeIdMap.set(d.id, d);
           });
           this.originNodeIdMaps.set(state, originNodeIdMap);
+          this.updateSvgSize(
+            nodeGTop.select(`svg.${this.focusState}-state`),
+            this.svgRScale,
+            this.maxNodeNum
+          );
 
           this.$store.dispatch("force/setStatisticGraph", {
             state: state,
