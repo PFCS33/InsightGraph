@@ -1,241 +1,3679 @@
 {
   "table": {
-    "colDepth": 2,
-    "rowDepth": 3,
-    "rowNum": 40,
-    "colNum": 32,
+    "colDepth": 4,
+    "rowDepth": 5,
+    "rowNum": 640,
+    "colNum": 64,
     "rows": [
       {
-        "name": "Nintendo",
+        "name": "a",
         "children": [
           {
-            "name": "Nintendo 3DS (3DS)",
+            "name": "Nintendo",
             "children": [
-              { "name": "Europe", "children": null, "rowSpan": [0, 0] },
-              { "name": "Japan", "children": null, "rowSpan": [1, 1] },
-              { "name": "North America", "children": null, "rowSpan": [2, 2] },
-              { "name": "Other", "children": null, "rowSpan": [3, 3] }
-            ],
-            "rowSpan": [0, 3]
-          },
-          {
-            "name": "Nintendo DS (DS)",
-            "children": [
-              { "name": "Europe", "children": null, "rowSpan": [4, 4] },
-              { "name": "Japan", "children": null, "rowSpan": [5, 5] },
-              { "name": "North America", "children": null, "rowSpan": [6, 6] },
-              { "name": "Other", "children": null, "rowSpan": [7, 7] }
-            ],
-            "rowSpan": [4, 7]
-          },
-          {
-            "name": "Nintendo Switch (NS)",
-            "children": [
-              { "name": "Europe", "children": null, "rowSpan": [8, 8] },
-              { "name": "Japan", "children": null, "rowSpan": [9, 9] },
               {
-                "name": "North America",
-                "children": null,
-                "rowSpan": [10, 10]
+                "name": "Nintendo 3DS (3DS)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [0, 0] },
+                      { "name": "2014", "children": null, "rowSpan": [1, 1] },
+                      { "name": "2015", "children": null, "rowSpan": [2, 2] },
+                      { "name": "2016", "children": null, "rowSpan": [3, 3] },
+                      { "name": "2017", "children": null, "rowSpan": [4, 4] },
+                      { "name": "2018", "children": null, "rowSpan": [5, 5] },
+                      { "name": "2019", "children": null, "rowSpan": [6, 6] },
+                      { "name": "2020", "children": null, "rowSpan": [7, 7] }
+                    ],
+                    "rowSpan": [0, 7]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [8, 8] },
+                      { "name": "2014", "children": null, "rowSpan": [9, 9] },
+                      { "name": "2015", "children": null, "rowSpan": [10, 10] },
+                      { "name": "2016", "children": null, "rowSpan": [11, 11] },
+                      { "name": "2017", "children": null, "rowSpan": [12, 12] },
+                      { "name": "2018", "children": null, "rowSpan": [13, 13] },
+                      { "name": "2019", "children": null, "rowSpan": [14, 14] },
+                      { "name": "2020", "children": null, "rowSpan": [15, 15] }
+                    ],
+                    "rowSpan": [8, 15]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [16, 16] },
+                      { "name": "2014", "children": null, "rowSpan": [17, 17] },
+                      { "name": "2015", "children": null, "rowSpan": [18, 18] },
+                      { "name": "2016", "children": null, "rowSpan": [19, 19] },
+                      { "name": "2017", "children": null, "rowSpan": [20, 20] },
+                      { "name": "2018", "children": null, "rowSpan": [21, 21] },
+                      { "name": "2019", "children": null, "rowSpan": [22, 22] },
+                      { "name": "2020", "children": null, "rowSpan": [23, 23] }
+                    ],
+                    "rowSpan": [16, 23]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [24, 24] },
+                      { "name": "2014", "children": null, "rowSpan": [25, 25] },
+                      { "name": "2015", "children": null, "rowSpan": [26, 26] },
+                      { "name": "2016", "children": null, "rowSpan": [27, 27] },
+                      { "name": "2017", "children": null, "rowSpan": [28, 28] },
+                      { "name": "2018", "children": null, "rowSpan": [29, 29] },
+                      { "name": "2019", "children": null, "rowSpan": [30, 30] },
+                      { "name": "2020", "children": null, "rowSpan": [31, 31] }
+                    ],
+                    "rowSpan": [24, 31]
+                  }
+                ],
+                "rowSpan": [0, 31]
               },
-              { "name": "Other", "children": null, "rowSpan": [11, 11] }
+              {
+                "name": "Nintendo DS (DS)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [32, 32] },
+                      { "name": "2014", "children": null, "rowSpan": [33, 33] },
+                      { "name": "2015", "children": null, "rowSpan": [34, 34] },
+                      { "name": "2016", "children": null, "rowSpan": [35, 35] },
+                      { "name": "2017", "children": null, "rowSpan": [36, 36] },
+                      { "name": "2018", "children": null, "rowSpan": [37, 37] },
+                      { "name": "2019", "children": null, "rowSpan": [38, 38] },
+                      { "name": "2020", "children": null, "rowSpan": [39, 39] }
+                    ],
+                    "rowSpan": [32, 39]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [40, 40] },
+                      { "name": "2014", "children": null, "rowSpan": [41, 41] },
+                      { "name": "2015", "children": null, "rowSpan": [42, 42] },
+                      { "name": "2016", "children": null, "rowSpan": [43, 43] },
+                      { "name": "2017", "children": null, "rowSpan": [44, 44] },
+                      { "name": "2018", "children": null, "rowSpan": [45, 45] },
+                      { "name": "2019", "children": null, "rowSpan": [46, 46] },
+                      { "name": "2020", "children": null, "rowSpan": [47, 47] }
+                    ],
+                    "rowSpan": [40, 47]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [48, 48] },
+                      { "name": "2014", "children": null, "rowSpan": [49, 49] },
+                      { "name": "2015", "children": null, "rowSpan": [50, 50] },
+                      { "name": "2016", "children": null, "rowSpan": [51, 51] },
+                      { "name": "2017", "children": null, "rowSpan": [52, 52] },
+                      { "name": "2018", "children": null, "rowSpan": [53, 53] },
+                      { "name": "2019", "children": null, "rowSpan": [54, 54] },
+                      { "name": "2020", "children": null, "rowSpan": [55, 55] }
+                    ],
+                    "rowSpan": [48, 55]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [56, 56] },
+                      { "name": "2014", "children": null, "rowSpan": [57, 57] },
+                      { "name": "2015", "children": null, "rowSpan": [58, 58] },
+                      { "name": "2016", "children": null, "rowSpan": [59, 59] },
+                      { "name": "2017", "children": null, "rowSpan": [60, 60] },
+                      { "name": "2018", "children": null, "rowSpan": [61, 61] },
+                      { "name": "2019", "children": null, "rowSpan": [62, 62] },
+                      { "name": "2020", "children": null, "rowSpan": [63, 63] }
+                    ],
+                    "rowSpan": [56, 63]
+                  }
+                ],
+                "rowSpan": [32, 63]
+              },
+              {
+                "name": "Nintendo Switch (NS)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [64, 64] },
+                      { "name": "2014", "children": null, "rowSpan": [65, 65] },
+                      { "name": "2015", "children": null, "rowSpan": [66, 66] },
+                      { "name": "2016", "children": null, "rowSpan": [67, 67] },
+                      { "name": "2017", "children": null, "rowSpan": [68, 68] },
+                      { "name": "2018", "children": null, "rowSpan": [69, 69] },
+                      { "name": "2019", "children": null, "rowSpan": [70, 70] },
+                      { "name": "2020", "children": null, "rowSpan": [71, 71] }
+                    ],
+                    "rowSpan": [64, 71]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [72, 72] },
+                      { "name": "2014", "children": null, "rowSpan": [73, 73] },
+                      { "name": "2015", "children": null, "rowSpan": [74, 74] },
+                      { "name": "2016", "children": null, "rowSpan": [75, 75] },
+                      { "name": "2017", "children": null, "rowSpan": [76, 76] },
+                      { "name": "2018", "children": null, "rowSpan": [77, 77] },
+                      { "name": "2019", "children": null, "rowSpan": [78, 78] },
+                      { "name": "2020", "children": null, "rowSpan": [79, 79] }
+                    ],
+                    "rowSpan": [72, 79]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [80, 80] },
+                      { "name": "2014", "children": null, "rowSpan": [81, 81] },
+                      { "name": "2015", "children": null, "rowSpan": [82, 82] },
+                      { "name": "2016", "children": null, "rowSpan": [83, 83] },
+                      { "name": "2017", "children": null, "rowSpan": [84, 84] },
+                      { "name": "2018", "children": null, "rowSpan": [85, 85] },
+                      { "name": "2019", "children": null, "rowSpan": [86, 86] },
+                      { "name": "2020", "children": null, "rowSpan": [87, 87] }
+                    ],
+                    "rowSpan": [80, 87]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [88, 88] },
+                      { "name": "2014", "children": null, "rowSpan": [89, 89] },
+                      { "name": "2015", "children": null, "rowSpan": [90, 90] },
+                      { "name": "2016", "children": null, "rowSpan": [91, 91] },
+                      { "name": "2017", "children": null, "rowSpan": [92, 92] },
+                      { "name": "2018", "children": null, "rowSpan": [93, 93] },
+                      { "name": "2019", "children": null, "rowSpan": [94, 94] },
+                      { "name": "2020", "children": null, "rowSpan": [95, 95] }
+                    ],
+                    "rowSpan": [88, 95]
+                  }
+                ],
+                "rowSpan": [64, 95]
+              },
+              {
+                "name": "Wii (Wii)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      { "name": "2013", "children": null, "rowSpan": [96, 96] },
+                      { "name": "2014", "children": null, "rowSpan": [97, 97] },
+                      { "name": "2015", "children": null, "rowSpan": [98, 98] },
+                      { "name": "2016", "children": null, "rowSpan": [99, 99] },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [100, 100]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [101, 101]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [102, 102]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [103, 103]
+                      }
+                    ],
+                    "rowSpan": [96, 103]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [104, 104]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [105, 105]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [106, 106]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [107, 107]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [108, 108]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [109, 109]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [110, 110]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [111, 111]
+                      }
+                    ],
+                    "rowSpan": [104, 111]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [112, 112]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [113, 113]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [114, 114]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [115, 115]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [116, 116]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [117, 117]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [118, 118]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [119, 119]
+                      }
+                    ],
+                    "rowSpan": [112, 119]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [120, 120]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [121, 121]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [122, 122]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [123, 123]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [124, 124]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [125, 125]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [126, 126]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [127, 127]
+                      }
+                    ],
+                    "rowSpan": [120, 127]
+                  }
+                ],
+                "rowSpan": [96, 127]
+              },
+              {
+                "name": "Wii U (WiiU)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [128, 128]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [129, 129]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [130, 130]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [131, 131]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [132, 132]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [133, 133]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [134, 134]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [135, 135]
+                      }
+                    ],
+                    "rowSpan": [128, 135]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [136, 136]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [137, 137]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [138, 138]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [139, 139]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [140, 140]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [141, 141]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [142, 142]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [143, 143]
+                      }
+                    ],
+                    "rowSpan": [136, 143]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [144, 144]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [145, 145]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [146, 146]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [147, 147]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [148, 148]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [149, 149]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [150, 150]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [151, 151]
+                      }
+                    ],
+                    "rowSpan": [144, 151]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [152, 152]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [153, 153]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [154, 154]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [155, 155]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [156, 156]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [157, 157]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [158, 158]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [159, 159]
+                      }
+                    ],
+                    "rowSpan": [152, 159]
+                  }
+                ],
+                "rowSpan": [128, 159]
+              }
             ],
-            "rowSpan": [8, 11]
+            "rowSpan": [0, 159]
           },
           {
-            "name": "Wii (Wii)",
+            "name": "Sony",
             "children": [
-              { "name": "Europe", "children": null, "rowSpan": [12, 12] },
-              { "name": "Japan", "children": null, "rowSpan": [13, 13] },
               {
-                "name": "North America",
-                "children": null,
-                "rowSpan": [14, 14]
+                "name": "PlayStation 3 (PS3)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [160, 160]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [161, 161]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [162, 162]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [163, 163]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [164, 164]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [165, 165]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [166, 166]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [167, 167]
+                      }
+                    ],
+                    "rowSpan": [160, 167]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [168, 168]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [169, 169]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [170, 170]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [171, 171]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [172, 172]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [173, 173]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [174, 174]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [175, 175]
+                      }
+                    ],
+                    "rowSpan": [168, 175]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [176, 176]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [177, 177]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [178, 178]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [179, 179]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [180, 180]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [181, 181]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [182, 182]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [183, 183]
+                      }
+                    ],
+                    "rowSpan": [176, 183]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [184, 184]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [185, 185]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [186, 186]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [187, 187]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [188, 188]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [189, 189]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [190, 190]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [191, 191]
+                      }
+                    ],
+                    "rowSpan": [184, 191]
+                  }
+                ],
+                "rowSpan": [160, 191]
               },
-              { "name": "Other", "children": null, "rowSpan": [15, 15] }
+              {
+                "name": "PlayStation 4 (PS4)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [192, 192]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [193, 193]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [194, 194]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [195, 195]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [196, 196]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [197, 197]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [198, 198]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [199, 199]
+                      }
+                    ],
+                    "rowSpan": [192, 199]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [200, 200]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [201, 201]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [202, 202]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [203, 203]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [204, 204]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [205, 205]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [206, 206]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [207, 207]
+                      }
+                    ],
+                    "rowSpan": [200, 207]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [208, 208]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [209, 209]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [210, 210]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [211, 211]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [212, 212]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [213, 213]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [214, 214]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [215, 215]
+                      }
+                    ],
+                    "rowSpan": [208, 215]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [216, 216]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [217, 217]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [218, 218]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [219, 219]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [220, 220]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [221, 221]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [222, 222]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [223, 223]
+                      }
+                    ],
+                    "rowSpan": [216, 223]
+                  }
+                ],
+                "rowSpan": [192, 223]
+              },
+              {
+                "name": "PlayStation Vita (PSV)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [224, 224]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [225, 225]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [226, 226]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [227, 227]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [228, 228]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [229, 229]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [230, 230]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [231, 231]
+                      }
+                    ],
+                    "rowSpan": [224, 231]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [232, 232]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [233, 233]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [234, 234]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [235, 235]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [236, 236]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [237, 237]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [238, 238]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [239, 239]
+                      }
+                    ],
+                    "rowSpan": [232, 239]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [240, 240]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [241, 241]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [242, 242]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [243, 243]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [244, 244]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [245, 245]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [246, 246]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [247, 247]
+                      }
+                    ],
+                    "rowSpan": [240, 247]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [248, 248]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [249, 249]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [250, 250]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [251, 251]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [252, 252]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [253, 253]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [254, 254]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [255, 255]
+                      }
+                    ],
+                    "rowSpan": [248, 255]
+                  }
+                ],
+                "rowSpan": [224, 255]
+              }
             ],
-            "rowSpan": [12, 15]
+            "rowSpan": [160, 255]
           },
           {
-            "name": "Wii U (WiiU)",
+            "name": "Microsoft",
             "children": [
-              { "name": "Europe", "children": null, "rowSpan": [16, 16] },
-              { "name": "Japan", "children": null, "rowSpan": [17, 17] },
               {
-                "name": "North America",
-                "children": null,
-                "rowSpan": [18, 18]
+                "name": "Xbox 360 (X360)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [256, 256]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [257, 257]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [258, 258]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [259, 259]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [260, 260]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [261, 261]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [262, 262]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [263, 263]
+                      }
+                    ],
+                    "rowSpan": [256, 263]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [264, 264]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [265, 265]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [266, 266]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [267, 267]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [268, 268]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [269, 269]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [270, 270]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [271, 271]
+                      }
+                    ],
+                    "rowSpan": [264, 271]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [272, 272]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [273, 273]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [274, 274]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [275, 275]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [276, 276]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [277, 277]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [278, 278]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [279, 279]
+                      }
+                    ],
+                    "rowSpan": [272, 279]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [280, 280]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [281, 281]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [282, 282]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [283, 283]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [284, 284]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [285, 285]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [286, 286]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [287, 287]
+                      }
+                    ],
+                    "rowSpan": [280, 287]
+                  }
+                ],
+                "rowSpan": [256, 287]
               },
-              { "name": "Other", "children": null, "rowSpan": [19, 19] }
+              {
+                "name": "Xbox One (XOne)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [288, 288]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [289, 289]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [290, 290]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [291, 291]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [292, 292]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [293, 293]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [294, 294]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [295, 295]
+                      }
+                    ],
+                    "rowSpan": [288, 295]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [296, 296]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [297, 297]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [298, 298]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [299, 299]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [300, 300]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [301, 301]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [302, 302]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [303, 303]
+                      }
+                    ],
+                    "rowSpan": [296, 303]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [304, 304]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [305, 305]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [306, 306]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [307, 307]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [308, 308]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [309, 309]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [310, 310]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [311, 311]
+                      }
+                    ],
+                    "rowSpan": [304, 311]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [312, 312]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [313, 313]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [314, 314]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [315, 315]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [316, 316]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [317, 317]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [318, 318]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [319, 319]
+                      }
+                    ],
+                    "rowSpan": [312, 319]
+                  }
+                ],
+                "rowSpan": [288, 319]
+              }
             ],
-            "rowSpan": [16, 19]
+            "rowSpan": [256, 319]
           }
         ],
-        "rowSpan": [0, 19]
+        "rowSpan": [0, 319]
       },
       {
-        "name": "Sony",
+        "name": "b",
         "children": [
           {
-            "name": "PlayStation 3 (PS3)",
+            "name": "Nintendo",
             "children": [
-              { "name": "Europe", "children": null, "rowSpan": [20, 20] },
-              { "name": "Japan", "children": null, "rowSpan": [21, 21] },
               {
-                "name": "North America",
-                "children": null,
-                "rowSpan": [22, 22]
+                "name": "Nintendo 3DS (3DS)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [320, 320]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [321, 321]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [322, 322]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [323, 323]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [324, 324]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [325, 325]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [326, 326]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [327, 327]
+                      }
+                    ],
+                    "rowSpan": [320, 327]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [328, 328]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [329, 329]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [330, 330]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [331, 331]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [332, 332]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [333, 333]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [334, 334]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [335, 335]
+                      }
+                    ],
+                    "rowSpan": [328, 335]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [336, 336]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [337, 337]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [338, 338]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [339, 339]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [340, 340]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [341, 341]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [342, 342]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [343, 343]
+                      }
+                    ],
+                    "rowSpan": [336, 343]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [344, 344]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [345, 345]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [346, 346]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [347, 347]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [348, 348]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [349, 349]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [350, 350]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [351, 351]
+                      }
+                    ],
+                    "rowSpan": [344, 351]
+                  }
+                ],
+                "rowSpan": [320, 351]
               },
-              { "name": "Other", "children": null, "rowSpan": [23, 23] }
+              {
+                "name": "Nintendo DS (DS)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [352, 352]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [353, 353]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [354, 354]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [355, 355]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [356, 356]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [357, 357]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [358, 358]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [359, 359]
+                      }
+                    ],
+                    "rowSpan": [352, 359]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [360, 360]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [361, 361]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [362, 362]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [363, 363]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [364, 364]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [365, 365]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [366, 366]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [367, 367]
+                      }
+                    ],
+                    "rowSpan": [360, 367]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [368, 368]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [369, 369]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [370, 370]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [371, 371]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [372, 372]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [373, 373]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [374, 374]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [375, 375]
+                      }
+                    ],
+                    "rowSpan": [368, 375]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [376, 376]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [377, 377]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [378, 378]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [379, 379]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [380, 380]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [381, 381]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [382, 382]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [383, 383]
+                      }
+                    ],
+                    "rowSpan": [376, 383]
+                  }
+                ],
+                "rowSpan": [352, 383]
+              },
+              {
+                "name": "Nintendo Switch (NS)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [384, 384]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [385, 385]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [386, 386]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [387, 387]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [388, 388]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [389, 389]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [390, 390]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [391, 391]
+                      }
+                    ],
+                    "rowSpan": [384, 391]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [392, 392]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [393, 393]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [394, 394]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [395, 395]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [396, 396]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [397, 397]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [398, 398]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [399, 399]
+                      }
+                    ],
+                    "rowSpan": [392, 399]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [400, 400]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [401, 401]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [402, 402]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [403, 403]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [404, 404]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [405, 405]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [406, 406]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [407, 407]
+                      }
+                    ],
+                    "rowSpan": [400, 407]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [408, 408]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [409, 409]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [410, 410]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [411, 411]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [412, 412]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [413, 413]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [414, 414]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [415, 415]
+                      }
+                    ],
+                    "rowSpan": [408, 415]
+                  }
+                ],
+                "rowSpan": [384, 415]
+              },
+              {
+                "name": "Wii (Wii)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [416, 416]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [417, 417]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [418, 418]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [419, 419]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [420, 420]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [421, 421]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [422, 422]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [423, 423]
+                      }
+                    ],
+                    "rowSpan": [416, 423]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [424, 424]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [425, 425]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [426, 426]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [427, 427]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [428, 428]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [429, 429]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [430, 430]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [431, 431]
+                      }
+                    ],
+                    "rowSpan": [424, 431]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [432, 432]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [433, 433]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [434, 434]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [435, 435]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [436, 436]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [437, 437]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [438, 438]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [439, 439]
+                      }
+                    ],
+                    "rowSpan": [432, 439]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [440, 440]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [441, 441]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [442, 442]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [443, 443]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [444, 444]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [445, 445]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [446, 446]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [447, 447]
+                      }
+                    ],
+                    "rowSpan": [440, 447]
+                  }
+                ],
+                "rowSpan": [416, 447]
+              },
+              {
+                "name": "Wii U (WiiU)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [448, 448]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [449, 449]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [450, 450]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [451, 451]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [452, 452]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [453, 453]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [454, 454]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [455, 455]
+                      }
+                    ],
+                    "rowSpan": [448, 455]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [456, 456]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [457, 457]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [458, 458]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [459, 459]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [460, 460]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [461, 461]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [462, 462]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [463, 463]
+                      }
+                    ],
+                    "rowSpan": [456, 463]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [464, 464]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [465, 465]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [466, 466]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [467, 467]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [468, 468]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [469, 469]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [470, 470]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [471, 471]
+                      }
+                    ],
+                    "rowSpan": [464, 471]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [472, 472]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [473, 473]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [474, 474]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [475, 475]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [476, 476]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [477, 477]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [478, 478]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [479, 479]
+                      }
+                    ],
+                    "rowSpan": [472, 479]
+                  }
+                ],
+                "rowSpan": [448, 479]
+              }
             ],
-            "rowSpan": [20, 23]
+            "rowSpan": [320, 479]
           },
           {
-            "name": "PlayStation 4 (PS4)",
+            "name": "Sony",
             "children": [
-              { "name": "Europe", "children": null, "rowSpan": [24, 24] },
-              { "name": "Japan", "children": null, "rowSpan": [25, 25] },
               {
-                "name": "North America",
-                "children": null,
-                "rowSpan": [26, 26]
+                "name": "PlayStation 3 (PS3)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [480, 480]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [481, 481]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [482, 482]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [483, 483]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [484, 484]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [485, 485]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [486, 486]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [487, 487]
+                      }
+                    ],
+                    "rowSpan": [480, 487]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [488, 488]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [489, 489]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [490, 490]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [491, 491]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [492, 492]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [493, 493]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [494, 494]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [495, 495]
+                      }
+                    ],
+                    "rowSpan": [488, 495]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [496, 496]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [497, 497]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [498, 498]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [499, 499]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [500, 500]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [501, 501]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [502, 502]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [503, 503]
+                      }
+                    ],
+                    "rowSpan": [496, 503]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [504, 504]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [505, 505]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [506, 506]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [507, 507]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [508, 508]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [509, 509]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [510, 510]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [511, 511]
+                      }
+                    ],
+                    "rowSpan": [504, 511]
+                  }
+                ],
+                "rowSpan": [480, 511]
               },
-              { "name": "Other", "children": null, "rowSpan": [27, 27] }
+              {
+                "name": "PlayStation 4 (PS4)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [512, 512]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [513, 513]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [514, 514]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [515, 515]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [516, 516]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [517, 517]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [518, 518]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [519, 519]
+                      }
+                    ],
+                    "rowSpan": [512, 519]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [520, 520]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [521, 521]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [522, 522]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [523, 523]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [524, 524]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [525, 525]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [526, 526]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [527, 527]
+                      }
+                    ],
+                    "rowSpan": [520, 527]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [528, 528]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [529, 529]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [530, 530]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [531, 531]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [532, 532]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [533, 533]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [534, 534]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [535, 535]
+                      }
+                    ],
+                    "rowSpan": [528, 535]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [536, 536]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [537, 537]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [538, 538]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [539, 539]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [540, 540]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [541, 541]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [542, 542]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [543, 543]
+                      }
+                    ],
+                    "rowSpan": [536, 543]
+                  }
+                ],
+                "rowSpan": [512, 543]
+              },
+              {
+                "name": "PlayStation Vita (PSV)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [544, 544]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [545, 545]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [546, 546]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [547, 547]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [548, 548]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [549, 549]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [550, 550]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [551, 551]
+                      }
+                    ],
+                    "rowSpan": [544, 551]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [552, 552]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [553, 553]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [554, 554]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [555, 555]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [556, 556]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [557, 557]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [558, 558]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [559, 559]
+                      }
+                    ],
+                    "rowSpan": [552, 559]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [560, 560]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [561, 561]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [562, 562]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [563, 563]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [564, 564]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [565, 565]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [566, 566]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [567, 567]
+                      }
+                    ],
+                    "rowSpan": [560, 567]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [568, 568]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [569, 569]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [570, 570]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [571, 571]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [572, 572]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [573, 573]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [574, 574]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [575, 575]
+                      }
+                    ],
+                    "rowSpan": [568, 575]
+                  }
+                ],
+                "rowSpan": [544, 575]
+              }
             ],
-            "rowSpan": [24, 27]
+            "rowSpan": [480, 575]
           },
           {
-            "name": "PlayStation Vita (PSV)",
+            "name": "Microsoft",
             "children": [
-              { "name": "Europe", "children": null, "rowSpan": [28, 28] },
-              { "name": "Japan", "children": null, "rowSpan": [29, 29] },
               {
-                "name": "North America",
-                "children": null,
-                "rowSpan": [30, 30]
+                "name": "Xbox 360 (X360)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [576, 576]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [577, 577]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [578, 578]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [579, 579]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [580, 580]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [581, 581]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [582, 582]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [583, 583]
+                      }
+                    ],
+                    "rowSpan": [576, 583]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [584, 584]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [585, 585]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [586, 586]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [587, 587]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [588, 588]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [589, 589]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [590, 590]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [591, 591]
+                      }
+                    ],
+                    "rowSpan": [584, 591]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [592, 592]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [593, 593]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [594, 594]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [595, 595]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [596, 596]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [597, 597]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [598, 598]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [599, 599]
+                      }
+                    ],
+                    "rowSpan": [592, 599]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [600, 600]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [601, 601]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [602, 602]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [603, 603]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [604, 604]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [605, 605]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [606, 606]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [607, 607]
+                      }
+                    ],
+                    "rowSpan": [600, 607]
+                  }
+                ],
+                "rowSpan": [576, 607]
               },
-              { "name": "Other", "children": null, "rowSpan": [31, 31] }
+              {
+                "name": "Xbox One (XOne)",
+                "children": [
+                  {
+                    "name": "Europe",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [608, 608]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [609, 609]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [610, 610]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [611, 611]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [612, 612]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [613, 613]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [614, 614]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [615, 615]
+                      }
+                    ],
+                    "rowSpan": [608, 615]
+                  },
+                  {
+                    "name": "Japan",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [616, 616]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [617, 617]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [618, 618]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [619, 619]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [620, 620]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [621, 621]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [622, 622]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [623, 623]
+                      }
+                    ],
+                    "rowSpan": [616, 623]
+                  },
+                  {
+                    "name": "North America",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [624, 624]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [625, 625]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [626, 626]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [627, 627]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [628, 628]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [629, 629]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [630, 630]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [631, 631]
+                      }
+                    ],
+                    "rowSpan": [624, 631]
+                  },
+                  {
+                    "name": "Other",
+                    "children": [
+                      {
+                        "name": "2013",
+                        "children": null,
+                        "rowSpan": [632, 632]
+                      },
+                      {
+                        "name": "2014",
+                        "children": null,
+                        "rowSpan": [633, 633]
+                      },
+                      {
+                        "name": "2015",
+                        "children": null,
+                        "rowSpan": [634, 634]
+                      },
+                      {
+                        "name": "2016",
+                        "children": null,
+                        "rowSpan": [635, 635]
+                      },
+                      {
+                        "name": "2017",
+                        "children": null,
+                        "rowSpan": [636, 636]
+                      },
+                      {
+                        "name": "2018",
+                        "children": null,
+                        "rowSpan": [637, 637]
+                      },
+                      {
+                        "name": "2019",
+                        "children": null,
+                        "rowSpan": [638, 638]
+                      },
+                      {
+                        "name": "2020",
+                        "children": null,
+                        "rowSpan": [639, 639]
+                      }
+                    ],
+                    "rowSpan": [632, 639]
+                  }
+                ],
+                "rowSpan": [608, 639]
+              }
             ],
-            "rowSpan": [28, 31]
+            "rowSpan": [576, 639]
           }
         ],
-        "rowSpan": [20, 31]
-      },
-      {
-        "name": "Microsoft",
-        "children": [
-          {
-            "name": "Xbox 360 (X360)",
-            "children": [
-              { "name": "Europe", "children": null, "rowSpan": [32, 32] },
-              { "name": "Japan", "children": null, "rowSpan": [33, 33] },
-              {
-                "name": "North America",
-                "children": null,
-                "rowSpan": [34, 34]
-              },
-              { "name": "Other", "children": null, "rowSpan": [35, 35] }
-            ],
-            "rowSpan": [32, 35]
-          },
-          {
-            "name": "Xbox One (XOne)",
-            "children": [
-              { "name": "Europe", "children": null, "rowSpan": [36, 36] },
-              { "name": "Japan", "children": null, "rowSpan": [37, 37] },
-              {
-                "name": "North America",
-                "children": null,
-                "rowSpan": [38, 38]
-              },
-              { "name": "Other", "children": null, "rowSpan": [39, 39] }
-            ],
-            "rowSpan": [36, 39]
-          }
-        ],
-        "rowSpan": [32, 39]
+        "rowSpan": [320, 639]
       }
     ],
     "cols": [
       {
-        "name": "2013",
+        "name": "aaaa",
         "children": [
-          { "name": "MAR", "children": null, "colSpan": [0, 0] },
-          { "name": "JUN", "children": null, "colSpan": [1, 1] },
-          { "name": "SEP", "children": null, "colSpan": [2, 2] },
-          { "name": "DEC", "children": null, "colSpan": [3, 3] }
+          {
+            "name": "a-a",
+            "children": [
+              {
+                "name": "a",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [0, 0] },
+                  { "name": "JUN", "children": null, "colSpan": [1, 1] },
+                  { "name": "MAR", "children": null, "colSpan": [2, 2] },
+                  { "name": "SEP", "children": null, "colSpan": [3, 3] }
+                ],
+                "colSpan": [0, 3]
+              },
+              {
+                "name": "b",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [4, 4] },
+                  { "name": "JUN", "children": null, "colSpan": [5, 5] },
+                  { "name": "MAR", "children": null, "colSpan": [6, 6] },
+                  { "name": "SEP", "children": null, "colSpan": [7, 7] }
+                ],
+                "colSpan": [4, 7]
+              }
+            ],
+            "colSpan": [0, 7]
+          },
+          {
+            "name": "a-b",
+            "children": [
+              {
+                "name": "a",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [8, 8] },
+                  { "name": "JUN", "children": null, "colSpan": [9, 9] },
+                  { "name": "MAR", "children": null, "colSpan": [10, 10] },
+                  { "name": "SEP", "children": null, "colSpan": [11, 11] }
+                ],
+                "colSpan": [8, 11]
+              },
+              {
+                "name": "b",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [12, 12] },
+                  { "name": "JUN", "children": null, "colSpan": [13, 13] },
+                  { "name": "MAR", "children": null, "colSpan": [14, 14] },
+                  { "name": "SEP", "children": null, "colSpan": [15, 15] }
+                ],
+                "colSpan": [12, 15]
+              }
+            ],
+            "colSpan": [8, 15]
+          },
+          {
+            "name": "a-a",
+            "children": [
+              {
+                "name": "a",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [16, 16] },
+                  { "name": "JUN", "children": null, "colSpan": [17, 17] },
+                  { "name": "MAR", "children": null, "colSpan": [18, 18] },
+                  { "name": "SEP", "children": null, "colSpan": [19, 19] }
+                ],
+                "colSpan": [16, 19]
+              },
+              {
+                "name": "b",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [20, 20] },
+                  { "name": "JUN", "children": null, "colSpan": [21, 21] },
+                  { "name": "MAR", "children": null, "colSpan": [22, 22] },
+                  { "name": "SEP", "children": null, "colSpan": [23, 23] }
+                ],
+                "colSpan": [20, 23]
+              }
+            ],
+            "colSpan": [16, 23]
+          },
+          {
+            "name": "a-b",
+            "children": [
+              {
+                "name": "a",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [24, 24] },
+                  { "name": "JUN", "children": null, "colSpan": [25, 25] },
+                  { "name": "MAR", "children": null, "colSpan": [26, 26] },
+                  { "name": "SEP", "children": null, "colSpan": [27, 27] }
+                ],
+                "colSpan": [24, 27]
+              },
+              {
+                "name": "b",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [28, 28] },
+                  { "name": "JUN", "children": null, "colSpan": [29, 29] },
+                  { "name": "MAR", "children": null, "colSpan": [30, 30] },
+                  { "name": "SEP", "children": null, "colSpan": [31, 31] }
+                ],
+                "colSpan": [28, 31]
+              }
+            ],
+            "colSpan": [24, 31]
+          }
         ],
-        "colSpan": [0, 3]
+        "colSpan": [0, 31]
       },
       {
-        "name": "2014",
+        "name": "bbbb",
         "children": [
-          { "name": "MAR", "children": null, "colSpan": [4, 4] },
-          { "name": "JUN", "children": null, "colSpan": [5, 5] },
-          { "name": "SEP", "children": null, "colSpan": [6, 6] },
-          { "name": "DEC", "children": null, "colSpan": [7, 7] }
+          {
+            "name": "a-a",
+            "children": [
+              {
+                "name": "a",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [32, 32] },
+                  { "name": "JUN", "children": null, "colSpan": [33, 33] },
+                  { "name": "MAR", "children": null, "colSpan": [34, 34] },
+                  { "name": "SEP", "children": null, "colSpan": [35, 35] }
+                ],
+                "colSpan": [32, 35]
+              },
+              {
+                "name": "b",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [36, 36] },
+                  { "name": "JUN", "children": null, "colSpan": [37, 37] },
+                  { "name": "MAR", "children": null, "colSpan": [38, 38] },
+                  { "name": "SEP", "children": null, "colSpan": [39, 39] }
+                ],
+                "colSpan": [36, 39]
+              }
+            ],
+            "colSpan": [32, 39]
+          },
+          {
+            "name": "a-b",
+            "children": [
+              {
+                "name": "a",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [40, 40] },
+                  { "name": "JUN", "children": null, "colSpan": [41, 41] },
+                  { "name": "MAR", "children": null, "colSpan": [42, 42] },
+                  { "name": "SEP", "children": null, "colSpan": [43, 43] }
+                ],
+                "colSpan": [40, 43]
+              },
+              {
+                "name": "b",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [44, 44] },
+                  { "name": "JUN", "children": null, "colSpan": [45, 45] },
+                  { "name": "MAR", "children": null, "colSpan": [46, 46] },
+                  { "name": "SEP", "children": null, "colSpan": [47, 47] }
+                ],
+                "colSpan": [44, 47]
+              }
+            ],
+            "colSpan": [40, 47]
+          },
+          {
+            "name": "a-a",
+            "children": [
+              {
+                "name": "a",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [48, 48] },
+                  { "name": "JUN", "children": null, "colSpan": [49, 49] },
+                  { "name": "MAR", "children": null, "colSpan": [50, 50] },
+                  { "name": "SEP", "children": null, "colSpan": [51, 51] }
+                ],
+                "colSpan": [48, 51]
+              },
+              {
+                "name": "b",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [52, 52] },
+                  { "name": "JUN", "children": null, "colSpan": [53, 53] },
+                  { "name": "MAR", "children": null, "colSpan": [54, 54] },
+                  { "name": "SEP", "children": null, "colSpan": [55, 55] }
+                ],
+                "colSpan": [52, 55]
+              }
+            ],
+            "colSpan": [48, 55]
+          },
+          {
+            "name": "a-b",
+            "children": [
+              {
+                "name": "a",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [56, 56] },
+                  { "name": "JUN", "children": null, "colSpan": [57, 57] },
+                  { "name": "MAR", "children": null, "colSpan": [58, 58] },
+                  { "name": "SEP", "children": null, "colSpan": [59, 59] }
+                ],
+                "colSpan": [56, 59]
+              },
+              {
+                "name": "b",
+                "children": [
+                  { "name": "DEC", "children": null, "colSpan": [60, 60] },
+                  { "name": "JUN", "children": null, "colSpan": [61, 61] },
+                  { "name": "MAR", "children": null, "colSpan": [62, 62] },
+                  { "name": "SEP", "children": null, "colSpan": [63, 63] }
+                ],
+                "colSpan": [60, 63]
+              }
+            ],
+            "colSpan": [56, 63]
+          }
         ],
-        "colSpan": [4, 7]
-      },
-      {
-        "name": "2015",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [8, 8] },
-          { "name": "JUN", "children": null, "colSpan": [9, 9] },
-          { "name": "SEP", "children": null, "colSpan": [10, 10] },
-          { "name": "DEC", "children": null, "colSpan": [11, 11] }
-        ],
-        "colSpan": [8, 11]
-      },
-      {
-        "name": "2016",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [12, 12] },
-          { "name": "JUN", "children": null, "colSpan": [13, 13] },
-          { "name": "SEP", "children": null, "colSpan": [14, 14] },
-          { "name": "DEC", "children": null, "colSpan": [15, 15] }
-        ],
-        "colSpan": [12, 15]
-      },
-      {
-        "name": "2017",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [16, 16] },
-          { "name": "JUN", "children": null, "colSpan": [17, 17] },
-          { "name": "SEP", "children": null, "colSpan": [18, 18] },
-          { "name": "DEC", "children": null, "colSpan": [19, 19] }
-        ],
-        "colSpan": [16, 19]
-      },
-      {
-        "name": "2018",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [20, 20] },
-          { "name": "JUN", "children": null, "colSpan": [21, 21] },
-          { "name": "SEP", "children": null, "colSpan": [22, 22] },
-          { "name": "DEC", "children": null, "colSpan": [23, 23] }
-        ],
-        "colSpan": [20, 23]
-      },
-      {
-        "name": "2019",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [24, 24] },
-          { "name": "JUN", "children": null, "colSpan": [25, 25] },
-          { "name": "SEP", "children": null, "colSpan": [26, 26] },
-          { "name": "DEC", "children": null, "colSpan": [27, 27] }
-        ],
-        "colSpan": [24, 27]
-      },
-      {
-        "name": "2020",
-        "children": [
-          { "name": "MAR", "children": null, "colSpan": [28, 28] },
-          { "name": "JUN", "children": null, "colSpan": [29, 29] },
-          { "name": "SEP", "children": null, "colSpan": [30, 30] },
-          { "name": "DEC", "children": null, "colSpan": [31, 31] }
-        ],
-        "colSpan": [28, 31]
+        "colSpan": [32, 63]
       }
     ]
   }

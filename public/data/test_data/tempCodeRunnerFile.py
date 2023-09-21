@@ -1,6 +1,7 @@
- # lastChildren = focus_cell['children'][-1]
-                        # lastChildren['rowSpan'] = [
-                        #     lastChildren['children'][0]['rowSpan'][0], lastChildren['children'][-1]['rowSpan'][0]]
-                        # lastSbiling = row_info[-1]
-                        # lastSbiling['rowSpan'] = [
-                        #     lastSbiling['children'][0]['rowSpan'][0], lastSbiling['children'][-1]['rowSpan'][0]]
+for i in range(len(split_index) - 2, 1, -1):
+    subset = split_index[i-2:i+1]
+    addChildren2Parent(col_info, [subset[0], subset[1]], [
+        subset[1], subset[2]])
+for i in range(split_index[0], split_index[1]):
+    col_info_tree.append(col_info[i])
+print(col_info_tree)
