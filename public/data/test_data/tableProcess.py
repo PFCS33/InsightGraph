@@ -47,11 +47,13 @@ def addChildren2Parent(colInfo, parentRange, childrenRange):
 
 def addChildren2LastSibling(lastSibling):
 
-    lastSiblingLastChild = lastSibling['children'][-1]
-    if (isinstance(lastSiblingLastChild['rowSpan'], int)):
-        addChildren2LastSibling(lastSiblingLastChild)
-    lastSibling['rowSpan'] = [
-        lastSibling['children'][0]['rowSpan'][0], lastSibling['children'][-1]['rowSpan'][1]]
+    # lastSiblingLastChild = lastSibling['children'][-1]
+    lastSiblingLastChildren = lastSibling['children']
+    if (lastSiblingLastChildren):
+        if isinstance(lastSiblingLastChildren[-1]['rowSpan'], int):
+            addChildren2LastSibling(lastSiblingLastChildren[-1])
+        lastSibling['rowSpan'] = [
+            lastSibling['children'][0]['rowSpan'][0], lastSibling['children'][-1]['rowSpan'][1]]
 
 
 for k in range(len(all_rows)):
@@ -131,8 +133,13 @@ for k in range(len(all_rows)):
                 if i == row_depth-1:
                     cell_info['children'] = None
                     cell_info['rowSpan'] = [row_index, row_index]
-                    focus_cell['children'].append(cell_info)
-                    focus_cell = cell_info
+                    if i != 0:
+                        focus_cell['children'].append(cell_info)
+                        focus_cell = cell_info
+                    else:
+                        is_new_row = True
+                        row_info.append(cell_info)
+                        focus_cell = cell_info
 
                 else:
                     if i == 0:
@@ -163,6 +170,7 @@ for k in range(len(all_rows)):
                 else:
                     focus_cell = focus_cell['children'][-1]
 
+print(row_info)
 addChildren2LastSibling(row_info[-1])
 
 
@@ -171,12 +179,12 @@ for i in range(split_index[-2], split_index[-1]):
 # 构造 col tree
 for i in range(len(split_index) - 1, 1, -1):
     subset = split_index[i-2:i+1]
-    print(subset)
+    # print(subset)
     addChildren2Parent(col_info, [subset[0], subset[1]], [
         subset[1], subset[2]])
 for i in range(split_index[0], split_index[1]):
     col_info_tree.append(col_info[i])
-print(col_info_tree)
+# print(col_info_tree)
 
 # print(col_info_tree)
 # print(row_info)
