@@ -26,7 +26,21 @@
         @hideMoreBox="hideMoreBox"
       ></VegaLiteFilter>
     </transition>
-    <div id="tree-svg-container"></div>
+    <div id="tree-svg-container">
+      <svg>
+        <defs>
+          <symbol id="defs-start" viewBox="0 0 1024 1024">
+            <rect width="100%" height="100%" fill="currentcolor" rx="5%"></rect>
+            <path
+              d="M512.016285 65.143519a34.981021 34.981021 0 0 1 30.844532 17.783648L900.553151 702.488594a35.632436 35.632436 0 0 1-30.844531 53.448654H154.323951a35.632436 35.632436 0 0 1-30.877102-53.448654L481.171754 82.927167A34.981021 34.981021 0 0 1 512.016285 65.143519m0-65.141565a99.796878 99.796878 0 0 0-87.257126 50.35443L67.034253 669.917811a100.774001 100.774001 0 0 0 87.289698 151.161002h715.384669a100.774001 100.774001 0 0 0 87.257127-151.161002L599.273412 50.356384A99.764307 99.764307 0 0 0 512.016285 0.001954z"
+            ></path>
+            <path
+              d="M869.70862 268.026924a35.632436 35.632436 0 0 1 30.844531 53.448655L542.860817 941.037005a35.599865 35.599865 0 0 1-61.689063 0L123.446849 321.475579a35.632436 35.632436 0 0 1 30.877102-53.448655h715.384669m0-65.141565H154.323951a100.774001 100.774001 0 0 0-87.289698 151.161002l357.724906 619.561427a100.741431 100.741431 0 0 0 174.514253 0L956.965747 354.046361a100.774001 100.774001 0 0 0-87.257127-151.161002z"
+            ></path>
+          </symbol>
+        </defs>
+      </svg>
+    </div>
   </div>
 </template>
 
@@ -34,6 +48,7 @@
 export default {
   data() {
     return {
+      outIconSize: 45,
       // link style
       linkData: null,
       // vega-lite style
@@ -226,6 +241,8 @@ export default {
       });
     },
     drawTree(newVal) {
+      //console.log(1);
+
       const that = this;
       const treeInfo = newVal;
 
@@ -239,7 +256,7 @@ export default {
       const offsetY = height * 0.05;
 
       const svg = svgContainer
-        .append("svg")
+        .select("svg")
         .attr("width", width)
         .attr("height", height)
         .attr("viewBox", [
@@ -250,10 +267,11 @@ export default {
         ])
         .attr("style", "width: 100%; height: 100%;")
         .attr("overflow", "visible");
+      svg.selectChildren("g").remove();
       const root = d3.hierarchy(treeInfo);
       const tree = d3
         .tree()
-        .nodeSize([this.vegaLiteHeight * 2.8, this.vegaLiteWidth * 3]);
+        .nodeSize([this.vegaLiteHeight * 2, this.vegaLiteWidth * 2.2]);
 
       tree(root);
       const linkData = this.linkData;
@@ -311,17 +329,20 @@ export default {
                   .x((d) => d.y)
                   .y((d) => d.x)
               )
-              .attr("stroke-width", 3);
+              .attr("stroke-width", 5);
             break;
           case "state":
-            path.attr(
-              "d",
-              // 水平路径，颠倒
-              d3
-                .linkHorizontal()
-                .x((d) => d.y)
-                .y((d) => d.x)
-            );
+            path
+              .attr(
+                "d",
+                // 水平路径，颠倒
+                d3
+                  .linkHorizontal()
+                  .x((d) => d.y)
+                  .y((d) => d.x)
+              )
+              .style("stroke-dasharray", "20,5");
+            // .attr("stroke-opacity", "0.8");
             break;
           case "parent-child":
             // 锥形线
@@ -383,6 +404,7 @@ export default {
                   .x((d) => d.y)
                   .y((d) => d.x)
               )
+              .attr("stroke-width", 5)
               .style("stroke-dasharray", "10,5");
             break;
         }
@@ -398,9 +420,17 @@ export default {
 
       containerGroup
         .filter((d) => d.data.name === "root")
-        .append("circle")
-        .attr("fill", (d) => (d.children ? "#555" : "#999"))
-        .attr("r", 2.5);
+        .append("use")
+        .attr("href", "#defs-start")
+        .attr("width", this.outIconSize)
+        .attr("height", this.outIconSize)
+        .attr(
+          "transform",
+          `translate(${-this.outIconSize / 2},${-this.outIconSize / 2})`
+        )
+        .attr("color", "#999")
+        .attr("fill", "#fff");
+
       containerGroup
         .filter((d) => d.data.name !== "root")
         .append("rect")
@@ -439,6 +469,7 @@ export default {
         })
         .on("click", function () {
           const gData = d3.select(this.parentNode).datum().data.forceData;
+
           that.selectedNode = {
             id: gData.id,
             state: gData.state,
@@ -506,7 +537,7 @@ export default {
       //   .attr("stroke", "white");
       const zoomFunction = d3
         .zoom()
-        .scaleExtent([0.5, 3])
+        .scaleExtent([0.1, 8])
         .on("zoom", function (event) {
           svg.attr("transform", event.transform);
         });
