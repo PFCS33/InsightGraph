@@ -275,9 +275,6 @@ export default {
           realLinkData.push({ ...d, type: "root" });
         }
       });
-      console.log("linkData", linkData);
-      console.log("root", root.links());
-      console.log("real", realLinkData);
 
       const link = svg
         .append("g")

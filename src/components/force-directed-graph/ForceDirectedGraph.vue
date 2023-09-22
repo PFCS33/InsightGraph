@@ -1087,7 +1087,6 @@ export default {
               rootList.push(id);
             }
           });
-          console.log(2);
 
           // 遍历每个root tree node，组成树结构
           rootList.forEach((id) => {

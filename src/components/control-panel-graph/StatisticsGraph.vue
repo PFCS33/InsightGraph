@@ -432,7 +432,7 @@ export default {
           // 创建当前种类子图的g
           const g = svg
             .append("g")
-            .attr("class", `${type}-box, sub-graph`)
+            .attr("class", `${type}-box sub-graph`)
             .attr("transform", `translate(0,${index * subHeight})`);
 
           const x = d3
@@ -656,7 +656,7 @@ export default {
           .select("svg")
           .selectChildren("g.sub-graph")
           .each(function (d, index) {
-            d3.select(this).attr("class", `${types[index]}-box, sub-graph`);
+            d3.select(this).attr("class", `${types[index]}-box sub-graph`);
           });
         types.forEach((type, index) => {
           const value = newVal.get(type);
@@ -676,6 +676,9 @@ export default {
               .call(d3.axisBottom(x).tickValues(all_ticks).tickSizeInner(3))
               .call((g) => g.attr("font-size", "0.8rem"));
 
+            console.log(type, selected);
+            console.log(this.histogramConfig.container.select("svg"));
+            console.log(subGraph.select("g.sub-title").select("use"));
             // type 的选择标签
             subGraph
               .select("g.sub-title")
