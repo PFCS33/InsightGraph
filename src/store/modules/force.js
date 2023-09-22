@@ -156,7 +156,7 @@ export default {
 
       // get table data
       const tableData = data.table;
-      console.log(tableData);
+
       context.dispatch("table/loadHeadData", tableData, { root: true });
 
       // 获取不同state的对应的links和nodes map
