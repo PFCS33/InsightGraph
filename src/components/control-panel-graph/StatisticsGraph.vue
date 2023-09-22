@@ -676,7 +676,7 @@ export default {
               .call(d3.axisBottom(x).tickValues(all_ticks).tickSizeInner(3))
               .call((g) => g.attr("font-size", "0.8rem"));
 
-            // type 的选择标签
+            subGraph.select("g.sub-title").select("text").text(type);
             subGraph
               .select("g.sub-title")
               .select("use")
@@ -684,7 +684,6 @@ export default {
                 selected: selected,
                 type: type,
               })
-
               .classed("histogram-type-unselected", (d) => {
                 return !d.selected;
               });
