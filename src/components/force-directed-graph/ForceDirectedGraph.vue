@@ -2155,7 +2155,7 @@ export default {
       const hoverIndex = this.hoverIndexs.get(state);
       const checkIndex = this.checkIndexs.get(state);
       const pinnedIndex = this.pinnedIndexs.get(state);
-      const neighborMap = this.neighborMaps.get(state);
+      const neighborMaps = this.neighborMaps;
       const showIndex = this.showIndexs.get(state);
 
       circleG
@@ -2290,10 +2290,10 @@ export default {
         .attr("stroke-width", 1.5)
         .attr("cursor", "pointer")
         .on("mouseover", function () {
-          rectMouseover(that, this, neighborMap, hoverIndex);
+          rectMouseover(that, this, neighborMaps, hoverIndex);
         })
         .on("mouseout", function () {
-          rectMouseout(that, this, neighborMap, hoverIndex);
+          rectMouseout(that, this, neighborMaps, hoverIndex);
         })
         .on("click", function () {
           rectClick(that, this);
@@ -2683,8 +2683,9 @@ export default {
         }
       }
 
-      function rectMouseover(self, that, neighborMap, hoverIndex) {
+      function rectMouseover(self, that, neighborMaps, hoverIndex) {
         //颜色变，表示被选中
+        const neighborMap = neighborMaps.get(state);
         const rect = d3.select(that);
         const parentNode = d3.select(that.parentNode);
         const d = d3.select(that.parentNode).datum();
@@ -2720,7 +2721,8 @@ export default {
           });
         }
       }
-      function rectMouseout(self, that, neighborMap, hoverIndex) {
+      function rectMouseout(self, that, neighborMaps, hoverIndex) {
+        const neighborMap = neighborMaps.get(state);
         const rect = d3.select(that);
         const parentNode = d3.select(that.parentNode);
         const id = parentNode.datum().id;
