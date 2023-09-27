@@ -5,7 +5,7 @@
     element-loading-text="Computing..."
   >
     <nav class="navBar">
-      <div class="nav-title">NavBar</div>
+      <div class="nav-title">InsightGraph</div>
       <div class="nav-button-box">
         <div class="uploader">
           <svg
@@ -14,6 +14,7 @@
             xmlns="http://www.w3.org/2000/svg"
             @click="triggerFileInput"
           >
+            <rect width="100%" height="100%" fill="currentcolor"></rect>
             <path
               d="M768 938.666667H256c-72.533333 0-128-55.466667-128-128v-85.333334c0-25.6 17.066667-42.666667 42.666667-42.666666s42.666667 17.066667 42.666666 42.666666v85.333334c0 25.6 17.066667 42.666667 42.666667 42.666666h512c25.6 0 42.666667-17.066667 42.666667-42.666666v-85.333334c0-25.6 17.066667-42.666667 42.666666-42.666666s42.666667 17.066667 42.666667 42.666666v85.333334c0 72.533333-55.466667 128-128 128zM725.333333 426.666667c-12.8 0-21.333333-4.266667-29.866666-12.8L512 230.4 328.533333 413.866667c-17.066667 17.066667-42.666667 17.066667-59.733333 0s-17.066667-42.666667 0-59.733334l213.333333-213.333333c17.066667-17.066667 42.666667-17.066667 59.733334 0l213.333333 213.333333c17.066667 17.066667 17.066667 42.666667 0 59.733334-8.533333 8.533333-17.066667 12.8-29.866667 12.8z"
             ></path>
@@ -32,11 +33,17 @@
 
         <svg
           class="nav-icon"
-          viewBox="-50 0 1124 1024"
+          viewBox="-100 0 1224 1024"
           xmlns="http://www.w3.org/2000/svg"
           @click="togglePhotoMode"
           :class="{ 'active-btn': photoMode }"
         >
+          <rect
+            style="transform: translateX(-100px)"
+            width="100%"
+            height="100%"
+            fill="currentcolor"
+          ></rect>
           <path
             d="M878.933333 938.666667 145.066667 938.666667C64 938.666667 0 874.666667 0 793.6L0 401.066667C0 320 64 256 145.066667 256 170.666667 256 192 243.2 204.8 221.866667l25.6-55.466667C256 115.2 307.2 85.333333 362.666667 85.333333l298.666667 0c55.466667 0 106.666667 29.866667 132.266667 81.066667l25.6 55.466667C832 243.2 853.333333 256 874.666667 256 960 256 1024 320 1024 401.066667l0 388.266667C1024 874.666667 960 938.666667 878.933333 938.666667zM362.666667 170.666667C341.333333 170.666667 320 183.466667 307.2 204.8L281.6 260.266667C256 311.466667 204.8 341.333333 149.333333 341.333333 110.933333 341.333333 85.333333 366.933333 85.333333 401.066667l0 388.266667C85.333333 827.733333 110.933333 853.333333 145.066667 853.333333l729.6 0c34.133333 0 59.733333-25.6 59.733333-59.733333L934.4 401.066667C938.666667 366.933333 913.066667 341.333333 878.933333 341.333333c-59.733333 0-106.666667-29.866667-132.266667-81.066667l-25.6-55.466667C704 183.466667 682.666667 170.666667 661.333333 170.666667L362.666667 170.666667z"
           ></path>
@@ -49,9 +56,37 @@
           class="nav-icon"
           :class="{ 'active-btn': editMode }"
           @click="toggleEditMode"
-          viewBox="0 0 1024 1024"
+          viewBox="-100 0 1224 1024"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <defs>
+            <filter
+              id="inset-shadow"
+              x="-50%"
+              y="-50%"
+              width="200%"
+              height="200%"
+            >
+              <feComponentTransfer in="SourceAlpha">
+                <feFuncA type="table" tableValues="1 0"></feFuncA>
+              </feComponentTransfer>
+              <feGaussianBlur stdDeviation="2"></feGaussianBlur>
+              <feOffset dx="2" dy="2" result="offsetblur"></feOffset>
+              <feFlood flood-color="#00000090" result="color"></feFlood>
+              <feComposite in2="offsetblur" operator="in"></feComposite>
+              <feComposite in2="SourceAlpha" operator="in"></feComposite>
+              <feMerge>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+                <feMergeNode></feMergeNode>
+              </feMerge>
+            </filter>
+          </defs>
+          <rect
+            style="transform: translateX(-100px)"
+            width="100%"
+            height="100%"
+            fill="currentcolor"
+          ></rect>
           <path
             d="M665.65 28.3c-76.085 0-139.942 52.676-158.38 123.19H49.71v82.13h457.56c18.438 70.514 82.295 123.18 158.38 123.18s139.942-52.666 158.38-123.18h129.06v-82.13H824.03C805.592 80.976 741.735 28.3 665.65 28.3z m0 82.13c45.169 0 82.13 36.951 82.13 82.12 0 45.169-36.961 82.13-82.13 82.13s-82.12-36.961-82.12-82.13 36.951-82.12 82.12-82.12zM337.03 346.26c-76.085 0-139.942 52.676-158.38 123.19H49.59v82.13h129.06c18.438 70.514 82.295 123.18 158.38 123.18 76.084 0 139.932-52.666 158.37-123.18h457.56v-82.13H495.4c-18.438-70.514-82.286-123.19-158.37-123.19z m0 82.13c45.169 0 82.12 36.951 82.12 82.12 0 45.169-36.951 82.13-82.12 82.13-45.169 0-82.13-36.961-82.13-82.13s36.961-82.12 82.13-82.12z m328.5 245.81c-76.088 0-139.945 52.67-158.38 123.19H49.59v82.12h457.56c18.438 70.514 82.295 123.19 158.38 123.19 76.084 0 139.932-52.676 158.37-123.19h129.06v-82.12H823.91c-18.434-70.52-82.291-123.19-158.38-123.19z m0 82.12c45.169 0 82.12 36.961 82.12 82.13s-36.951 82.12-82.12 82.12c-45.169 0-82.13-36.951-82.13-82.12 0-45.169 36.961-82.13 82.13-82.13z"
           ></path>
@@ -80,7 +115,7 @@
               class="config-panel-tab"
             >
               <el-tab-pane
-                label="Base"
+                label="Config"
                 name="base"
                 :disabled="photoMode"
               ></el-tab-pane>
@@ -461,12 +496,16 @@ export default {
   fill: #545b77;
   border-radius: 2px;
   transition: background-color 0.3s, fill 0.3s;
+  color: #fff;
+  filter: none;
 }
 
 .nav-icon:hover,
 .nav-icon:active {
   background-color: #858eb5;
   fill: #fff;
+  color: transparent;
+  filter: none;
 }
 .btn {
   border-radius: 12px;
@@ -478,8 +517,10 @@ export default {
   padding: 0.3rem 0.3rem;
 }
 .active-btn {
-  background-color: #545b77;
-  fill: #fff;
+  /* background-color: #545b77; */
+  /* fill: #fff; */
+  color: #fff;
+  filter: url(#inset-shadow);
 }
 
 .panel-icon {

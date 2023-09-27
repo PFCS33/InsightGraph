@@ -4655,10 +4655,11 @@ export default {
 }
 
 rect.svg-inset {
-  stroke: steelblue !important;
+  stroke: #545b77 !important;
 
-  stroke-opacity: 0.3;
-  filter: url(#inset-shadow);
+  // stroke-opacity: 0.7;
+  stroke-width: 5 !important;
+  // filter: url(#inset-shadow);
 }
 
 circle.svg-inset {
