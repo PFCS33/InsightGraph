@@ -335,7 +335,7 @@ export default {
   width: 100%;
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
   /* margin-bottom: 0.4vw; */
-  transition: box-shadow 0.3s;
+  /* transition: box-shadow 0.3s; */
   z-index: 5;
 
   background-color: #fff;
@@ -344,9 +344,9 @@ export default {
   justify-content: space-between;
   padding: 0 1vw;
 }
-.navBar:hover {
+/* .navBar:hover {
   box-shadow: 0px 2px 5px 0px #545b7785;
-}
+} */
 .nav-button-box {
   height: 100%;
   display: flex;
