@@ -8,7 +8,10 @@
 html {
   /* Set rem */
   /* percentage of user-browser setting */
-  font-size: 62.5%;
+/* 1920 * 1080*/
+  font-size: 62.5%; 
+  /* 3840 * 1260 */
+  /* font-size: 187.5%; */
 }
 
 body {

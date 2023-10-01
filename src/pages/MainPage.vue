@@ -5,7 +5,7 @@
     element-loading-text="Computing..."
   >
     <nav class="navBar">
-      <div class="nav-title">InsightGraph</div>
+      <div class="nav-title">CoInsight</div>
       <div class="nav-button-box">
         <div class="uploader">
           <svg
@@ -61,7 +61,7 @@
             </filter>
           </defs>
           <rect
-            style="transform: translateX(-100px)"
+            style="transform: translateX(-10rem)"
             width="100%"
             height="100%"
             fill="currentcolor"
@@ -74,24 +74,6 @@
           ></path>
         </svg>
 
-        <!-- <svg
-          class="nav-icon"
-          :class="{ 'active-btn': editMode }"
-          @click="toggleEditMode"
-          viewBox="-100 0 1224 1024"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-        
-          <rect
-            style="transform: translateX(-100px)"
-            width="100%"
-            height="100%"
-            fill="currentcolor"
-          ></rect>
-          <path
-            d="M665.65 28.3c-76.085 0-139.942 52.676-158.38 123.19H49.71v82.13h457.56c18.438 70.514 82.295 123.18 158.38 123.18s139.942-52.666 158.38-123.18h129.06v-82.13H824.03C805.592 80.976 741.735 28.3 665.65 28.3z m0 82.13c45.169 0 82.13 36.951 82.13 82.12 0 45.169-36.961 82.13-82.13 82.13s-82.12-36.961-82.12-82.13 36.951-82.12 82.12-82.12zM337.03 346.26c-76.085 0-139.942 52.676-158.38 123.19H49.59v82.13h129.06c18.438 70.514 82.295 123.18 158.38 123.18 76.084 0 139.932-52.666 158.37-123.18h457.56v-82.13H495.4c-18.438-70.514-82.286-123.19-158.37-123.19z m0 82.13c45.169 0 82.12 36.951 82.12 82.12 0 45.169-36.951 82.13-82.12 82.13-45.169 0-82.13-36.961-82.13-82.13s36.961-82.12 82.13-82.12z m328.5 245.81c-76.088 0-139.945 52.67-158.38 123.19H49.59v82.12h457.56c18.438 70.514 82.295 123.19 158.38 123.19 76.084 0 139.932-52.676 158.37-123.19h129.06v-82.12H823.91c-18.434-70.52-82.291-123.19-158.38-123.19z m0 82.12c45.169 0 82.12 36.961 82.12 82.13s-36.951 82.12-82.12 82.12c-45.169 0-82.13-36.951-82.13-82.12 0-45.169 36.961-82.13 82.13-82.13z"
-          ></path>
-        </svg> -->
       </div>
     </nav>
     <div
@@ -333,7 +315,7 @@ export default {
 .navBar {
   flex: 5%;
   width: 100%;
-  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: 0rem 0.1rem 0.2rem 0rem rgba(0, 0, 0, 0.2);
   /* margin-bottom: 0.4vw; */
   /* transition: box-shadow 0.3s; */
   z-index: 5;
@@ -344,9 +326,7 @@ export default {
   justify-content: space-between;
   padding: 0 1vw;
 }
-/* .navBar:hover {
-  box-shadow: 0px 2px 5px 0px #545b7785;
-} */
+
 .nav-button-box {
   height: 100%;
   display: flex;
@@ -355,7 +335,7 @@ export default {
 }
 
 .nav-title {
-  font-size: 20px;
+  font-size: 2rem;
   font-weight: bold;
   color: #545b77;
   /* font-style: italic; */
@@ -457,7 +437,7 @@ export default {
 .button-box {
   flex: fit-content;
   display: flex;
-  gap: 0px;
+  gap: 0rem;
   justify-content: left;
 }
 
@@ -476,10 +456,10 @@ export default {
 }
 .tab-btn:active,
 .tab-btn:hover {
-  box-shadow: 0 5px 0px -3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0.5rem 0rem -0.3rem rgba(0, 0, 0, 0.2);
 }
 .active-tab-btn {
-  box-shadow: 0 5px 0px -3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0.5rem 0rem -0.3rem rgba(0, 0, 0, 0.2);
 }
 
 .no-padding {
@@ -496,7 +476,7 @@ export default {
   cursor: pointer;
   border: none;
   fill: #545b77;
-  border-radius: 2px;
+  border-radius: 0.2rem;
   transition: background-color 0.3s, fill 0.3s;
   color: #fff;
   filter: none;
@@ -510,8 +490,8 @@ export default {
   filter: none;
 }
 .btn {
-  border-radius: 12px;
-  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.26);
+  border-radius: 1.2rem;
+  box-shadow: 0rem 0.1rem 0.4rem rgba(0, 0, 0, 0.26);
 }
 .edit-btn {
   display: flex;
@@ -530,9 +510,9 @@ export default {
   fill: #545b77;
   padding: 0.2rem;
 
-  border-radius: 4px;
-  width: 25px;
-  height: 25px;
+  border-radius: 0.4rem;
+  width: 2.5rem;
+  height: 2.5rem;
   transition: background-color 0.3s, fill 0.3s;
 }
 
@@ -548,7 +528,7 @@ export default {
 <style scoped>
 .forceAnimation-enter-from {
   opacity: 0;
-  transform: translateY(-30px);
+  transform: translateY(-3rem);
 }
 
 .forceAnimation-enter-to {
@@ -561,7 +541,7 @@ export default {
 }
 .forceAnimation-leave-to {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(3rem);
 }
 
 .treeAnimation-enter-from {
@@ -594,6 +574,7 @@ export default {
   --el-tabs-header-height: none;
   --el-color-primary: #545b77;
   padding: 0 1vw;
+  --el-font-size-base: 1.5rem;
 
   .el-tabs__header {
     margin: 0;

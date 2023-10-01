@@ -4463,7 +4463,7 @@ export default {
   overflow: auto;
 }
 .edit-panel:not(.el-menu--collapse) {
-  width: 200px;
+  width: 20rem;
 }
 
 /* scroll bar hide */
@@ -4484,8 +4484,8 @@ export default {
 .more-icon {
   fill: #545b77;
   cursor: pointer;
-  width: 25px;
-  height: 25px;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 .more-box {
@@ -4516,11 +4516,11 @@ export default {
 }
 
 .active-btn {
-  box-shadow: inset 2px 2px 16px #4444442a, inset -2px -2px 16px #4444442a;
+  box-shadow: inset 0.2rem 0.2rem 1.6rem #4444442a, inset -0.2rem -0.2rem 1.6rem #4444442a;
 }
 
 .btn {
-  border-radius: 12px;
+  border-radius: 1.2rem;
 }
 </style>
 
@@ -4529,7 +4529,7 @@ export default {
   width: 100%;
 }
 .bugfix {
-  margin-top: 10px;
+  margin-top: 1rem;
 }
 </style>
 
@@ -4545,7 +4545,7 @@ export default {
 
 .slide-enter-from,
 .slide-leave-to {
-  transform: translateX(200px); /* 初始状态和最终状态 */
+  transform: translateX(20rem); /* 初始状态和最终状态 */
 }
 
 .slide-enter-to,
@@ -4575,9 +4575,7 @@ export default {
     }
     .focus-svg {
       .background-shape {
-        // stroke: #545b77;
-        // stroke-opacity: 0.5;
-        // stroke-width: 3px;
+
         filter: url(#rect-shadow-focus);
       }
     }

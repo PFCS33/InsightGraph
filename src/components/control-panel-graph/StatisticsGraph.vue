@@ -100,6 +100,10 @@ export default {
   },
 
   computed: {
+    rootFontSize (){
+
+      return parseFloat(getComputedStyle(document.documentElement).fontSize);
+    } ,
     totalData() {
       return this.$store.getters["force/totalData"];
     },
@@ -219,10 +223,7 @@ export default {
       const that = this;
 
       if (!this.barchartConfig) {
-        const marginTop = 0;
-        const marginRight = 10;
-        const marginBottom = 20;
-        const marginLeft = 10;
+     
         const container = d3.select("#barchart-box");
         if (!this.barchartWidth) {
           this.barchartWidth = parseInt(container.style("width"), 10);
@@ -230,7 +231,10 @@ export default {
         }
         const width = this.barchartWidth;
         const height = this.barchartHeight;
-
+        const marginTop = 0;
+        const marginRight = height/16;
+        const marginBottom = height/9;
+        const marginLeft = height/16;
         container.select("svg").remove();
         const colorScale = d3.scaleOrdinal(this.linkType, [
           "#9AA3CC",
@@ -249,6 +253,7 @@ export default {
         const xAxis = svg
           .append("g")
           .attr("class", "x-axis")
+          .style('font-size','0.8rem')
           .attr("transform", `translate(0,${height - marginBottom})`);
 
         this.barchartConfig = {};
@@ -324,7 +329,7 @@ export default {
         .select(".x-axis")
         .transition()
         .duration(300)
-        .call(d3.axisBottom(x).ticks(8))
+        .call(d3.axisBottom(x).ticks(8).tickSize(config.marginBottom/4))
         .select(".domain")
         .attr("stroke-opacity", 0);
 
@@ -345,7 +350,7 @@ export default {
     },
     drawHistogram(newVal) {
       const that = this;
-      console.log(newVal);
+   
 
       if (!this.histogramConfig) {
         // initialization
@@ -373,14 +378,15 @@ export default {
 
         // 获取每个子图的高
         const subHeight = Math.floor(height / types.length);
-
+        
+       
         // slider的高
-        const sliderHeight = 20;
-        const sliderRectHeight = 15;
+        const sliderHeight =  subHeight / 5.5;
+        const sliderRectHeight = subHeight/7.4;
         // 设置每个子图的margin
-        const marginTop = 20;
-        const marginRight = 10;
-        const marginBottom = 15 + sliderHeight;
+        const marginTop = subHeight / 5.5;
+        const marginRight = subHeight / 11;
+        const marginBottom =subHeight/7.4 + sliderHeight;
         const marginLeft = width * 0.3;
         // slider的宽
         const sliderWidth = width - marginLeft - marginRight;
@@ -454,10 +460,10 @@ export default {
             .attr("class", "type-text")
             .text(type)
             .attr("x", marginLeft)
-            .attr("y", 0 + 12)
+            .attr("y", 0 + 1.2*that.rootFontSize)
             .attr("text-anchor", "start")
             .attr("fill", "#555")
-            .attr("font-size", "12px");
+            .attr("font-size", "1.2rem");
           subTitle
             .append("use")
             .datum({
@@ -466,8 +472,8 @@ export default {
             })
             .attr("href", "#defs-check-insight")
             .attr("transform", `translate(${width - marginRight - 15},0)`)
-            .attr("width", 15)
-            .attr("height", 15)
+            .attr("width", '1.5rem')
+            .attr("height", '1.5rem')
             .attr("cursor", "pointer")
             .classed("histogram-type-selected", true)
             .on("mouseover", function () {
@@ -619,10 +625,10 @@ export default {
             .data([maxBin])
             .join("text")
             .attr("x", (d) => x(d.x0) + (x(d.x1) - x(d.x0)) / 2)
-            .attr("y", (d) => y(d.length) + 10)
+            .attr("y", (d) => (y(d.length) + that.rootFontSize))
             .attr("text-anchor", "middle")
             .attr("fill", "#fff")
-            .attr("font-size", "10px")
+            .attr("font-size", "1rem")
             .text((d) => d.length);
           // x轴
           g.append("g")
@@ -756,16 +762,16 @@ export default {
                   .append("text")
                   .attr("class", "max-value")
                   .attr("x", (d) => x(d.x0) + (x(d.x1) - x(d.x0)) / 2)
-                  .attr("y", (d) => y(d.length) + 10)
+                  .attr("y", (d) => y(d.length) + that.rootFontSize)
                   .attr("text-anchor", "middle")
                   .attr("fill", "#fff")
-                  .attr("font-size", "10px")
+                  .attr("font-size", "1rem")
                   .text((d) => d.length);
               },
               (update) =>
                 update
                   .attr("x", (d) => x(d.x0) + (x(d.x1) - x(d.x0)) / 2)
-                  .attr("y", (d) => y(d.length) + 10)
+                  .attr("y", (d) => y(d.length) + that.rootFontSize)
                   .text((d) => d.length),
               (exit) => {
                 exit.remove();
@@ -1146,12 +1152,12 @@ export default {
 
 .histogram-container:hover,
 .barchart-container:hover {
-  box-shadow: 1px 4px 6px 1px rgba(0, 0, 0, 0.26);
+  box-shadow: 0.1rem 0.4rem 0.6rem 0.1rem rgba(0, 0, 0, 0.26);
 }
 
 .title {
   font-weight: bold;
-  font-size: 16px;
+  font-size: 1.6rem;
   text-align: center;
   color: #545b77;
   margin: 0.2vw 0;
@@ -1161,10 +1167,10 @@ export default {
 
 .check-icon {
   cursor: pointer;
-  width: 15px;
-  height: 15px;
+  width: 1.5rem;
+  height: 1.5rem;
 
-  border-radius: 2px;
+  border-radius: 0.2rem;
   fill: #545b77;
   background-color: #fff;
   transition: background-color 0.2s, fill 0.2s;
