@@ -169,12 +169,12 @@ export default {
   position: absolute;
   top: 0;
   right: 18vw;
-  width: 20px;
-  height: 20px;
+  width: 2rem;
+  height: 2rem;
   fill: #545b77;
   cursor: pointer;
-  border-radius: 2px 0px 2px 2px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0.2rem 0 0.2rem 0.2rem;
+  border: 0.1rem solid rgba(0, 0, 0, 0.2);
   border-right: none;
   transition: background-color 0.3s, fill 0.3s;
 }
@@ -193,7 +193,7 @@ export default {
   flex-direction: column;
 
   background-color: #fff;
-  border-radius: 0 2px 2px 2px;
+  border-radius: 0 0.2rem 0.2rem 0.2rem;
 }
 .content {
   flex: 93%;
@@ -207,7 +207,7 @@ export default {
   gap: 0.2vw;
   padding: 0 1vw;
   padding-top: 0.4vw;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  border-bottom: 0.1rem solid rgba(0, 0, 0, 0.2);
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 .insight-box:first-child {
@@ -217,19 +217,19 @@ export default {
   border: none;
 }
 .insight-box:hover {
-  box-shadow: -1px 3px 6px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: -0.1rem 0.3rem 0.6rem 0.1rem rgba(0, 0, 0, 0.2);
 }
 .info-box {
   flex: 0.2;
   display: grid;
   grid-template-columns: 0.2fr 0.8fr;
   align-items: center;
-  font-size: 11px;
+  font-size: 1.1rem;
   font-weight: bold;
 }
 
 .font-box {
-  font-size: 11px;
+  font-size: 1.1rem;
   font-weight: normal;
 }
 
@@ -244,10 +244,10 @@ export default {
 .check-icon {
   cursor: pointer;
 
-  width: 20px;
-  height: 20px;
+  width: 2rem;
+  height: 2rem;
 
-  border-radius: 2px;
+  border-radius: 0.2rem;
   fill: #545b77;
   background-color: #fff;
   transition: background-color 0.2s, fill 0.2s;
