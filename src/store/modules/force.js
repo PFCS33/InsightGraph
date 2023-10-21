@@ -2,7 +2,7 @@ export default {
   namespaced: true,
   state() {
     return {
-      baseUrl: "http://127.0.0.1:4523/m1/3208600-0-default",
+      baseUrl: "http://localhost:3004",
 
       // load state
       loading: false,

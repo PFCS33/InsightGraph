@@ -5,7 +5,7 @@
     element-loading-text="Computing..."
   >
     <nav class="navBar">
-      <div class="nav-title">InsightGraph</div>
+      <div class="nav-title">CoInsight</div>
       <div class="nav-button-box">
         <div class="uploader">
           <svg

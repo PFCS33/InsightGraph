@@ -12,6 +12,11 @@ export default defineConfig({
     process.env.NODE_ENV === "production"
       ? "/customed-force-directed-graph/"
       : "/",
+
+  server: {
+    host: true,
+    port: 8001, // This is the port which we will use in docker
+  },
   plugins: [
     vue(),
     AutoImport({

@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  vue-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: insight-graph:latest
+    ports:
+      - "8001:8001"
+      - "3004:3004"
+    command: /bin/sh -c "cd /app/json-server && json-server --watch db.json --host 0.0.0.0  --middlewares custom-post-response.js --port 3004 & cd /app/frontend && npm run dev"
