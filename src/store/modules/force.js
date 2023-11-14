@@ -1,8 +1,10 @@
+import { fetchPOST } from "@/services/fetch";
+
 export default {
   namespaced: true,
   state() {
     return {
-      baseUrl: "http://localhost:3004",
+      baseUrl: "http://10.1.114.103:5001",
 
       // load state
       loading: false,
@@ -89,34 +91,9 @@ export default {
     uploadData(context, payload) {
       const formData = new FormData();
       formData.append("file", payload);
-      const url = context.getters.baseUrl + "/table";
-      context.commit("setLoading", true);
-      fetch(url, {
-        method: "POST",
-        body: formData,
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("RESPONSE ERROR");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          context.commit("setError", {
-            state: false,
-            message: "",
-          });
-          context.commit("setLoading", false);
-          context.dispatch("handleData", data);
-        })
-        .catch((error) => {
-          context.commit("setError", {
-            state: true,
-            message: error.message,
-          });
-          context.commit("setLoading", false);
-          console.error("error:", error.message);
-        });
+      const url = context.getters.baseUrl + "/upload";
+
+      fetchPOST(url, { data: formData }, context);
     },
 
     // load force and table data

@@ -33,4 +33,13 @@ export default defineConfig({
       // 其他别名配置
     },
   },
+  // sass variable import
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@use "@/assets/styles/abstracts/_vars" as *;
+        @use '@/assets/styles/abstracts/_mixins' as *;`,
+      },
+    },
+  },
 });
