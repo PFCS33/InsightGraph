@@ -1,3 +1,5 @@
+import { fetchPOST } from "@/services/fetch";
+
 export default {
   namespaced: true,
   state() {
@@ -90,33 +92,8 @@ export default {
       const formData = new FormData();
       formData.append("file", payload);
       const url = context.getters.baseUrl + "/upload";
-      context.commit("setLoading", true);
-      fetch(url, {
-        method: "POST",
-        body: formData,
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("RESPONSE ERROR");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          context.commit("setError", {
-            state: false,
-            message: "",
-          });
-          context.commit("setLoading", false);
-          context.dispatch("handleData", data);
-        })
-        .catch((error) => {
-          context.commit("setError", {
-            state: true,
-            message: error.message,
-          });
-          context.commit("setLoading", false);
-          console.error("error:", error.message);
-        });
+
+      fetchPOST(url, { data: formData }, context);
     },
 
     // load force and table data
