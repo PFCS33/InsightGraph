@@ -1,3 +1,4 @@
+import { fetchPOST } from "@/services/fetch";
 export default {
   namespaced: true,
   state() {
@@ -42,7 +43,7 @@ export default {
     },
   },
   actions: {
-    handleTableData(context, payload) {
+    handleData(context, payload) {
       const data = payload;
       // 保存传来的所有table信息
       context.commit("setAllTableInfo", data);
@@ -51,39 +52,51 @@ export default {
       const stateList = payload.stateList;
       const baseUrl = context.rootGetters["force/baseUrl"];
       const url = baseUrl + "/photo";
-      context.commit("setLoading", true);
 
-      fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      fetchPOST(
+        url,
+        {
+          data: JSON.stringify({
+            stateList,
+          }),
+          type: "json",
         },
-        body: JSON.stringify({
-          stateList,
-        }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("RESPONSE ERROR");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          context.dispatch("handleTableData", data);
-          context.commit("setError", {
-            state: false,
-            message: "",
-          });
-          context.commit("setLoading", false);
-        })
-        .catch((error) => {
-          context.commit("setError", {
-            state: true,
-            message: error.message,
-          });
-          context.commit("setLoading", false);
-          console.error("error:", error.message);
-        });
+
+        context
+      );
+      // context.commit("setLoading", true);
+
+      // fetch(url, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     stateList,
+      //   }),
+      // })
+      //   .then((response) => {
+      //     if (!response.ok) {
+      //       throw new Error("RESPONSE ERROR");
+      //     }
+      //     return response.json();
+      //   })
+      //   .then((data) => {
+      //     context.dispatch("handleTableData", data);
+      //     context.commit("setError", {
+      //       state: false,
+      //       message: "",
+      //     });
+      //     context.commit("setLoading", false);
+      //   })
+      //   .catch((error) => {
+      //     context.commit("setError", {
+      //       state: true,
+      //       message: error.message,
+      //     });
+      //     context.commit("setLoading", false);
+      //     console.error("error:", error.message);
+      //   });
     },
   },
 };

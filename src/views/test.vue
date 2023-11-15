@@ -1,19 +1,12 @@
 <template>
-  <div class="container">
-    <!-- <ForceDirectedGraphOld></ForceDirectedGraphOld> -->
-    <BarChart></BarChart>
-  </div>
+  <div class="container"></div>
 </template>
 
 <script>
-import BarChart from "@/components/vega-lite-graph/BarChart.vue";
-
 import MiniTable from "../components/control-panel-graph/MiniTable.vue";
 
 export default {
   components: {
-    BarChart,
-
     MiniTable,
   },
   data() {

@@ -1,10 +1,11 @@
-import { fetchPOST } from "@/services/fetch";
+import { fetchPOST, fetchGET } from "@/services/fetch";
 
 export default {
   namespaced: true,
   state() {
     return {
       baseUrl: "http://10.1.114.103:5001",
+      // baseUrl: "http://localhost:3004",
 
       // load state
       loading: false,
@@ -93,39 +94,27 @@ export default {
       formData.append("file", payload);
       const url = context.getters.baseUrl + "/upload";
 
-      fetchPOST(url, { data: formData }, context);
+      fetchPOST(url, { data: formData, type: "form" }, context);
     },
 
     // load force and table data
     loadData(context, payload) {
       // const file = "test_data/result_0826_S1.json";
       // const url = `data/${file}`;
+
+      const mode = payload.mode;
+      let route = null;
+      switch (mode) {
+        case "back":
+          route = "back";
+          break;
+        case "forward":
+          route = "state";
+      }
       const targetState = payload.state;
-      context.commit("setLoading", true);
-      const url = context.getters.baseUrl + "/state/" + targetState;
-      fetch(url)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("NETWORK ERROR");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          context.commit("setLoading", false);
-          context.commit("setError", {
-            state: false,
-            message: "",
-          });
-          context.dispatch("handleData", data);
-        })
-        .catch((error) => {
-          context.commit("setError", {
-            state: true,
-            message: error.message,
-          });
-          context.commit("setLoading", false);
-          console.error("error:", error.message);
-        });
+      const url = context.getters.baseUrl + `/${route}/` + targetState;
+
+      fetchGET(url, null, context);
     },
 
     handleData(context, payload) {
