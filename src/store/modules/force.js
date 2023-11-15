@@ -2,7 +2,7 @@ export default {
   namespaced: true,
   state() {
     return {
-      baseUrl: "http://localhost:3004",
+      baseUrl: "http://10.1.114.103:5001",
 
       // load state
       loading: false,
@@ -89,7 +89,7 @@ export default {
     uploadData(context, payload) {
       const formData = new FormData();
       formData.append("file", payload);
-      const url = context.getters.baseUrl + "/table";
+      const url = context.getters.baseUrl + "/upload";
       context.commit("setLoading", true);
       fetch(url, {
         method: "POST",
@@ -152,6 +152,7 @@ export default {
     },
 
     handleData(context, payload) {
+      console.log("sourceData:", payload);
       const data = payload;
 
       // get table data
