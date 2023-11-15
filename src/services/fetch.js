@@ -6,7 +6,6 @@ async function fetchPOST(url, payload, context) {
     context.commit("setLoading", true);
     let headers = {};
     if (type === "form") {
-      // headers["Content-Type"] = "application/x-www-form-urlencoded";
     } else if (type === "json") {
       headers["Content-Type"] = "application/json";
     }
@@ -39,15 +38,13 @@ async function fetchPOST(url, payload, context) {
 }
 
 async function fetchGET(url, payload, context) {
-  const data = payload.data;
+  // const data = payload.data;
 
   try {
     context.commit("setLoading", true);
 
     let response = await fetch(url, {
       method: "GET",
-
-      body: data,
     });
     let responseData = await response.json();
 

@@ -45,7 +45,9 @@ export default {
   actions: {
     handleData(context, payload) {
       const data = payload;
+
       // 保存传来的所有table信息
+
       context.commit("setAllTableInfo", data);
     },
     loadTableInfo(context, payload) {
@@ -64,39 +66,6 @@ export default {
 
         context
       );
-      // context.commit("setLoading", true);
-
-      // fetch(url, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     stateList,
-      //   }),
-      // })
-      //   .then((response) => {
-      //     if (!response.ok) {
-      //       throw new Error("RESPONSE ERROR");
-      //     }
-      //     return response.json();
-      //   })
-      //   .then((data) => {
-      //     context.dispatch("handleTableData", data);
-      //     context.commit("setError", {
-      //       state: false,
-      //       message: "",
-      //     });
-      //     context.commit("setLoading", false);
-      //   })
-      //   .catch((error) => {
-      //     context.commit("setError", {
-      //       state: true,
-      //       message: error.message,
-      //     });
-      //     context.commit("setLoading", false);
-      //     console.error("error:", error.message);
-      //   });
     },
   },
 };

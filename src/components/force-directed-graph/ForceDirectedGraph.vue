@@ -994,6 +994,9 @@ export default {
       }
       // table 更新信息
       const stateList = Array.from(checkedAllStateData.keys());
+      if (!stateList.includes(this.focusState)) {
+        stateList.push(this.focusState);
+      }
       this.$store.dispatch("tree/loadTableInfo", {
         stateList: stateList,
       });
