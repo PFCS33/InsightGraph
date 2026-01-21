@@ -102,14 +102,6 @@ http://localhost:8001
 
 **Paper**: [IEEE Xplore](https://doi.org/10.1109/TVCG.2024.3388553)
 
-## My Contribution
-
-As a research assistant, I:
-
-- Led the frontend development of the web-based visualization tool
-- Implemented custom D3.js force layout combined with Vega-Lite, rendering 300+ interactive insight charts
-- Built statistical pattern extraction pipeline using SciPy
-- Contributed to user experiment design and data analysis
 
 ## Contact
 
