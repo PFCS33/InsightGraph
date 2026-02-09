@@ -6,6 +6,7 @@
 
 > A visual analytics system that extracts data insights from hierarchical tables and connects them into coherent data stories.
 
+## Video
 ![CoInsight Interface](./demo/demo.png)
 
 https://github.com/user-attachments/assets/d68b0283-633a-4898-af4c-e15eab40c844
